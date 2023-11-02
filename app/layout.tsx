@@ -4,7 +4,7 @@ import { SupabaseContextProvider } from "@/contexts/SupabaseContext";
 import "./globals.css";
 
 export const metadata = {
-  title: "Cost Estimator",
+  title: "FLOZ Cost",
   description: "Cost Estimator Web App",
 };
 

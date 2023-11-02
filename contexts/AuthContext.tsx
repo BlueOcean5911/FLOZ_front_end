@@ -33,7 +33,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     checkSession();
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
-        console.log(event);
+        if (event == "SIGNED_IN") {
+          localStorage?.setItem("AUTH_STATUS", event);
+        }
         await handleSessionChange(session);
       }
     );

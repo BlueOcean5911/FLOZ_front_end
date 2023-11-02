@@ -4,9 +4,7 @@ import { useRouter } from "next/navigation";
 
 export default function ProjectDetail(props: { pId: string }) {
   const router = useRouter();
-
   const { pId } = props;
-  console.log("pId: ", pId);
   return (
     <div className="mt-12 flex flex-col justify-between">
       <div className="flex w-full gap-4">

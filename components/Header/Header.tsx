@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/20/solid";
 
 export default function Header() {
@@ -6,9 +8,9 @@ export default function Header() {
       <div className="flex h-16 justify-between">
         <div className="flex">
           <div className="flex flex-shrink-0 items-center">
-            <a href="" className="font-extrabold text-indigo-500">
+            <Link href={`/home/`} className="font-extrabold text-indigo-500">
               Floz Cost
-            </a>
+            </Link>
           </div>
         </div>
         <div className="flex items-center">

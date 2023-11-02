@@ -1,5 +1,5 @@
 import Header from "@components/Header/Header";
-import ProjectNavigator from "@components/ProjectNavigator/ProjectNavigator";
+import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 
 interface pageProps {
   projectId?: string;
@@ -16,7 +16,7 @@ export default async function RootLayout({
     <body className="font-figtree flex min-h-screen flex-col justify-center px-3 md:px-16">
       <div className="mx-auto flex w-full max-w-[1400px] flex-grow flex-col">
         <Header />
-        <ProjectNavigator pId={params?.projectId} />
+        <ProjectPanel />
         <main className="flex-grow">{children}</main>
       </div>
     </body>

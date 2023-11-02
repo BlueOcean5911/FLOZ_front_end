@@ -30,9 +30,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [userSession, setUserSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Check if the user is logged in on page load
     checkSession();
-    // Listen for changes to the authentication state
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
         console.log(event);
@@ -47,6 +45,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function checkSession() {
     const { data, error } = await supabaseClient.auth.getSession();
+
+    if (data.session === null) {
+      router.push("/");
+    }
     if (error) {
       console.error("Error getting session:", error);
       return;
@@ -69,6 +71,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
     // Add the token to make authenticated HTTP requests
     const accessToken = session?.access_token;
+    console.log("session: ", session);
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     // Add the user if this is the first time they are signing in
@@ -81,6 +84,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     // If the user is signed in, don't show the sign in page
     // if (router.pathname === "/signin") {
     //   router.push("/");
+    router.push("/home");
     // }
   }
 
@@ -96,7 +100,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       const { data: supabase_user_exists_response_data } = await axios.get<{
         user_exists: boolean;
       }>(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/api/supabase/user/exists/${userId}`
+        `${process.env
+          .NEXT_PUBLIC_SUPABASE_URL!}/api/supabase/user/exists/${userId}`
       );
 
       userExists = supabase_user_exists_response_data.user_exists;
@@ -111,7 +116,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_ORIGIN}/api/supabase/user/create`,
+        `${process.env.NEXT_PUBLIC_API_ORIGIN!}/api/supabase/user/create`,
         { user_id: userId, name }
       );
     } catch (error) {

@@ -25,15 +25,15 @@ export default function ProjectPanel() {
   ];
 
   return (
-    <div className="mb-24 flex items-center">
-      <div className="flex h-40 w-[calc(wv-200px)] gap-x-4 overflow-x-auto py-5">
+    <div className=" flex items-center">
+      <div className="flex  gap-x-4 overflow-x-auto">
         {projects.map((project) => (
           <Link
             href={`/home/${project.id}`}
-            className="flex items-center justify-center rounded-md border border-neutral-300 px-10"
+            className="flex rounded-md border border-neutral-300 px-20"
             key={project.id}
           >
-            <h4 className="mr-4 text-2xl font-bold">{project.name}</h4>
+            <h4 className=" text-lg font-bold">{project.name}</h4>
           </Link>
         ))}
       </div>
@@ -42,7 +42,7 @@ export default function ProjectPanel() {
           <button
             type="button"
             onClick={openModal}
-            className="ms-4 h-[7.5rem] rounded-md border border-neutral-300 px-10 text-2xl font-bold"
+            className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
           >
             Create a new Project
           </button>

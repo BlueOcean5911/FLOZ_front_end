@@ -1,5 +1,3 @@
-import Login from "@components/Login";
-
-export default async function Page() {
+export default function Page() {
   return <div> I am authenticted</div>;
 }

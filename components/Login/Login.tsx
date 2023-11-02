@@ -5,8 +5,8 @@ import OauthButton from "@/components/button/OauthButton";
 function Login() {
   const { signInWithGoogle } = useAuthContext();
 
-  const onGoogleClick = async () => {
-    await signInWithGoogle();
+  const onGoogleClick = () => {
+    signInWithGoogle();
   };
 
   return (

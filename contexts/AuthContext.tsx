@@ -30,9 +30,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [userSession, setUserSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Check if the user is logged in on page load
     checkSession();
-    // Listen for changes to the authentication state
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
         console.log(event);

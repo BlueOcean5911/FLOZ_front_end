@@ -1,5 +1,4 @@
-import { AuthContextProvider } from "@/contexts/AuthContext";
-import { SupabaseContextProvider } from "@/contexts/SupabaseContext";
+import AuthProvider from "@middlewares/AuthProvider";
 
 import "./globals.css";
 
@@ -15,11 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <SupabaseContextProvider>
-          <AuthContextProvider>{children}</AuthContextProvider>
-        </SupabaseContextProvider>
-      </body>
+      <AuthProvider>
+        <body>{children}</body>
+      </AuthProvider>
     </html>
   );
 }

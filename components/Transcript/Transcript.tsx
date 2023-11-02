@@ -1,5 +1,6 @@
 "use client";
 
+import Select from "@components/Select/Select";
 import React from "react";
 
 export default function Transcript() {
@@ -47,7 +48,7 @@ export default function Transcript() {
   ];
 
   return (
-    <div className="m-20">
+    <div className="mx-10 my-1 overflow-y-hidden">
       <button
         data-drawer-target="default-sidebar"
         data-drawer-toggle="default-sidebar"
@@ -73,14 +74,13 @@ export default function Transcript() {
 
       {/* CONTENT */}
       <div className="flex gap-x-6 py-4">
-
         {/* TRANSCRIPT PART */}
-        <div className="w-full rounded-md border border-neutral-200">
-          <div className="flex h-40 items-center justify-center border-b border-neutral-200">
+        <div className="h-full rounded-md border border-neutral-200 bg-white shadow-md">
+          <div className="flex h-32 items-center justify-center border-b border-neutral-200">
             <p>Overview in meeting</p>
           </div>
 
-          <div className="flex h-[35rem] flex-col space-y-12 overflow-y-auto py-10 pe-40 ps-10">
+          <div className="flex max-h-[38rem] flex-col space-y-12 overflow-y-auto py-10 pe-40 ps-10 ">
             {testData.map((item) => (
               <div key={item.name}>
                 <h3 className="text-xl font-bold">{item.name}</h3>
@@ -89,19 +89,18 @@ export default function Transcript() {
             ))}
           </div>
         </div>
-            
-        <div>
 
-        {/* TODO LIST */}
-          <div className="relative overflow-x-auto shadow-md sm:rounded-lg me-4">
+        <div>
+          {/* TODO LIST */}
+          <div className="relative me-4 w-full overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    Product name
+                    To do list
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Color
+                    Deadline
                   </th>
                   <th scope="col" className="px-6 py-3">
                     <span className="sr-only">Edit</span>
@@ -114,9 +113,9 @@ export default function Transcript() {
                     scope="row"
                     className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
                   >
-                    Apple MacBook Pro 17"
+                    Email Joseph
                   </th>
-                  <td className="px-6 py-4">Silver</td>
+                  <td className="px-6 py-4">12 Nov</td>
                   <td className="px-6 py-4 text-right">
                     <a
                       href="#"
@@ -131,9 +130,9 @@ export default function Transcript() {
                     scope="row"
                     className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
                   >
-                    Microsoft Surface Pro
+                    Send GC the updated permit set
                   </th>
-                  <td className="px-6 py-4">White</td>
+                  <td className="px-6 py-4">Yesterday</td>
                   <td className="px-6 py-4 text-right">
                     <a
                       href="#"
@@ -148,9 +147,9 @@ export default function Transcript() {
                     scope="row"
                     className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
                   >
-                    Magic Mouse 2
+                    Call Procurement team
                   </th>
-                  <td className="px-6 py-4">Black</td>
+                  <td className="px-6 py-4">2 Dec</td>
 
                   <td className="px-6 py-4 text-right">
                     <a
@@ -164,21 +163,75 @@ export default function Transcript() {
               </tbody>
             </table>
           </div>
-          
-        {/* ROLES AND PERMISSIONS */}
-        <div>
-          <div>
-            <div className="bg-neutral-500 h-10 w-10 rounded-md"/>
-            <div>
-              <p>Name Here</p>
-              <p>name@name.com</p>
+
+          {/* ROLES AND PERMISSIONS */}
+          <div className="mt-6 flex flex-col space-y-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-x-4">
+              <div className="flex items-center gap-x-2">
+                <div className="h-10 w-10 rounded-md bg-neutral-500" />
+                <div>
+                  <p>Name Here</p>
+                  <p className="-mt-1">name@name.com</p>
+                </div>
+              </div>
+
+              <div className="flex gap-x-4">
+                <Select />
+                <Select />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-x-4">
+              <div className="flex items-center gap-x-2">
+                <div className="h-10 w-10 rounded-md bg-neutral-500" />
+                <div>
+                  <p>Name Here</p>
+                  <p className="-mt-1">name@name.com</p>
+                </div>
+              </div>
+
+              <div className="flex gap-x-4">
+                <Select />
+                <Select />
+              </div>
             </div>
           </div>
+
+          {/* MEETING SUMMARY */}
+          <div className="flex flex-col space-y-8 mt-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+            
+            <div>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-x-2">
+                  <input type="checkbox"/>
+                  <h3 className="font-bold text-l">Meeting Summary</h3>
+                </div>
+                <p>
+                  In publishing and graphic design, Lorem ipsum is a placeholder text 
+                  commonly used to demonstrate the visual form of a document or a typeface without
+                  relying on meaningful content. Lorem ipsum may be used as a placeholder before
+                  final copy is available.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-x-2">
+                  <input type="checkbox"/>
+                  <h3 className="font-bold text-l">Meeting Summary</h3>
+                </div>
+                <p>
+                  In publishing and graphic design, Lorem ipsum is a placeholder text 
+                  commonly used to demonstrate the visual form of a document or a typeface without
+                  relying on meaningful content. Lorem ipsum may be used as a placeholder before
+                  final copy is available.
+                </p>
+              </div>
+            </div>
+
+          </div>
         </div>
-
-        </div>
-
-
       </div>
     </div>
   );

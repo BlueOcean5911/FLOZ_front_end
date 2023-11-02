@@ -1,12 +1,15 @@
 "use client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import OauthButton from "@/components/button/OauthButton";
+import { useRouter } from "next/navigation";
 
 function Login() {
   const { signInWithGoogle } = useAuthContext();
-
+  const router = useRouter();
   const onGoogleClick = () => {
-    signInWithGoogle();
+    signInWithGoogle().then(() => {
+      router.push("/home");
+    });
   };
 
   return (

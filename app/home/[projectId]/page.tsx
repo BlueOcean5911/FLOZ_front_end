@@ -1,9 +1,13 @@
+import ProjectDetail from "@components/ProjectDetail";
+
 interface pageProps {
-  projectId?: string;
+  projectId: string;
 }
 
 export default function Page({ params }: { params: pageProps }) {
   return (
-    <div className="mt-10">Description of Project {params?.projectId}</div>
+    <div className="mt-10">
+      <ProjectDetail pId={params.projectId} />
+    </div>
   );
 }

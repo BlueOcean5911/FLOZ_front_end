@@ -1,3 +1,5 @@
-import ProjectDetail from "./ProjectDetail";
+export default function ProjectDetail(props: { pId: string }) {
+  const { pId } = props;
 
-export default ProjectDetail;
+  return <div className="mt-12 flex justify-between">Project DEtails</div>;
+}

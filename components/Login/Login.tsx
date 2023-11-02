@@ -1,6 +1,6 @@
 "use client";
-import { useAuthContext } from "../contexts/AuthContext";
-import OauthButton from "../components/button/OauthButton";
+import { useAuthContext } from "@/contexts/AuthContext";
+import OauthButton from "@/components/button/OauthButton";
 
 function Login() {
   const { signInWithGoogle } = useAuthContext();

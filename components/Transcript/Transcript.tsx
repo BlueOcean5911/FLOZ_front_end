@@ -1,6 +1,7 @@
 "use client";
 
 import Select from "@components/Select/Select";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import React from "react";
 
 export default function Transcript() {
@@ -48,7 +49,7 @@ export default function Transcript() {
   ];
 
   return (
-    <div className="mx-10 my-1 overflow-y-hidden">
+    <div>
       <button
         data-drawer-target="default-sidebar"
         data-drawer-toggle="default-sidebar"
@@ -166,9 +167,13 @@ export default function Transcript() {
 
           {/* ROLES AND PERMISSIONS */}
           <div className="mt-6 flex flex-col space-y-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-x-4">
+            <div className="flex items-center gap-x-20">
               <div className="flex items-center gap-x-2">
-                <div className="h-10 w-10 rounded-md bg-neutral-500" />
+                <img
+                  src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=256&h=256&q=80"
+                  alt="person-img"
+                  className="h-10 w-10 rounded-md bg-neutral-500"
+                />
                 <div>
                   <p>Name Here</p>
                   <p className="-mt-1">name@name.com</p>
@@ -176,14 +181,33 @@ export default function Transcript() {
               </div>
 
               <div className="flex gap-x-4">
-                <Select />
-                <Select />
+                <Select
+                  options={[
+                    { name: "Project Manager" },
+                    { name: "Software Engineer" },
+                    { name: "Web Developer" },
+                  ]}
+                  label="Role"
+                />
+                <Select
+                  options={[
+                    { name: "wadecooper@carteblanche.tech" },
+                    { name: "helloworld@carteblanche.tech" },
+                    { name: "scottcooper@carteblanche.tech" },
+                    { name: "timcook@carteblanche.tech" },
+                  ]}
+                  label="Email"
+                />
               </div>
             </div>
 
-            <div className="flex items-center gap-x-4">
+            <div className="flex items-center gap-x-20">
               <div className="flex items-center gap-x-2">
-                <div className="h-10 w-10 rounded-md bg-neutral-500" />
+                <img
+                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=256&h=256&q=80"
+                  alt="person-img"
+                  className="h-10 w-10 rounded-md bg-neutral-500"
+                />
                 <div>
                   <p>Name Here</p>
                   <p className="-mt-1">name@name.com</p>
@@ -191,45 +215,50 @@ export default function Transcript() {
               </div>
 
               <div className="flex gap-x-4">
-                <Select />
-                <Select />
+                <Select
+                  options={[
+                    { name: "Project Manager" },
+                    { name: "Software Engineer" },
+                    { name: "Web Developer" },
+                  ]}
+                  label="Role"
+                />
+                <Select
+                  options={[
+                    { name: "wadecooper@carteblanche.tech" },
+                    { name: "helloworld@carteblanche.tech" },
+                    { name: "scottcooper@carteblanche.tech" },
+                    { name: "timcook@carteblanche.tech" },
+                  ]}
+                  label="Email"
+                />
               </div>
             </div>
           </div>
 
           {/* MEETING SUMMARY */}
-          <div className="flex flex-col space-y-8 mt-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
-            
+          <div className="mt-6 flex flex-col space-y-8 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
             <div>
               <div className="flex flex-col space-y-2">
-                <div className="flex items-center gap-x-2">
-                  <input type="checkbox"/>
-                  <h3 className="font-bold text-l">Meeting Summary</h3>
-                </div>
-                <p>
-                  In publishing and graphic design, Lorem ipsum is a placeholder text 
-                  commonly used to demonstrate the visual form of a document or a typeface without
-                  relying on meaningful content. Lorem ipsum may be used as a placeholder before
-                  final copy is available.
-                </p>
+                <h3 className="text-l font-bold">Meeting Summary</h3>
+                <textarea className="h-48">
+                  In publishing and graphic design, Lorem ipsum is a placeholder
+                  text commonly used to demonstrate the visual form of a
+                  document or a typeface without relying on meaningful content.
+                  Lorem ipsum may be used as a placeholder before final copy is
+                  available.
+                </textarea>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for enhancements in text"
+                  className="mt-4 w-full rounded-md border-2 border-neutral-500 px-10 py-3 "
+                />
+                <MagnifyingGlassIcon className="absolute left-3 top-8 h-5 w-5 text-neutral-500 " />
               </div>
             </div>
-
-            <div>
-              <div className="flex flex-col space-y-2">
-                <div className="flex items-center gap-x-2">
-                  <input type="checkbox"/>
-                  <h3 className="font-bold text-l">Meeting Summary</h3>
-                </div>
-                <p>
-                  In publishing and graphic design, Lorem ipsum is a placeholder text 
-                  commonly used to demonstrate the visual form of a document or a typeface without
-                  relying on meaningful content. Lorem ipsum may be used as a placeholder before
-                  final copy is available.
-                </p>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>

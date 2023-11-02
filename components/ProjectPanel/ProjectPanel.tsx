@@ -2,10 +2,10 @@
 
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import Link from "next/link";
 
 export default function ProjectPanel() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
     setIsOpen(false);
@@ -16,26 +16,25 @@ export default function ProjectPanel() {
   }
 
   const projects = [
-    "proj1",
-    "proj2",
-    "proj3",
-    "proj4",
-    "proj1",
-    "proj2",
-    "proj3",
-    "proj4",
+    { id: "1", name: "Project 1" },
+    { id: "2", name: "Project 2" },
+    { id: "3", name: "Project 3" },
+    { id: "4", name: "Project 4" },
+    { id: "5", name: "Project 5" },
+    { id: "6", name: "Project 6" },
   ];
 
   return (
     <div className="mb-24 flex items-center">
       <div className="flex h-40 w-[calc(wv-200px)] gap-x-4 overflow-x-auto py-5">
         {projects.map((project) => (
-          <div
+          <Link
+            href={`/home/${project.id}`}
             className="flex items-center justify-center rounded-md border border-neutral-300 px-10"
-            key={project}
+            key={project.id}
           >
-            <h4 className="mr-4 text-2xl font-bold">{project}</h4>
-          </div>
+            <h4 className="mr-4 text-2xl font-bold">{project.name}</h4>
+          </Link>
         ))}
       </div>
       <div className="z-20 flex gap-x-4">
@@ -79,17 +78,16 @@ export default function ProjectPanel() {
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
                     >
-                      {`Create a new Project :)`}
+                      Create a new Project
                     </Dialog.Title>
                     <div className="my-10">
                       <label className="text-sm font-bold">Project Name</label>
                       <input
                         type="text"
-                        placeholder="enter project name"
+                        placeholder="Project X"
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
-
                     <button
                       type="button"
                       className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"

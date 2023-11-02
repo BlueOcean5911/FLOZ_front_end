@@ -1,10 +1,8 @@
-import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { useAuthContext } from "../contexts/AuthContext";
-import OauthButton from "../components/button/OauthButton";
+"use client";
+import { useAuthContext } from "@/contexts/AuthContext";
+import OauthButton from "@/components/button/OauthButton";
 
-export default function Home() {
+function Login() {
   const { signInWithGoogle } = useAuthContext();
 
   const onGoogleClick = async () => {
@@ -20,3 +18,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Login;

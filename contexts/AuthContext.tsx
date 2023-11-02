@@ -1,3 +1,5 @@
+"use client";
+
 import {
   createContext,
   ReactNode,
@@ -6,7 +8,7 @@ import {
   useState,
 } from "react";
 import { useSupabaseContext } from "./SupabaseContext";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Session } from "@supabase/supabase-js";
 
@@ -94,7 +96,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       const { data: supabase_user_exists_response_data } = await axios.get<{
         user_exists: boolean;
       }>(
-        `${process.env.NEXT_PUBLIC_API_ORIGIN}/api/supabase/user/exists/${userId}`
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/api/supabase/user/exists/${userId}`
       );
 
       userExists = supabase_user_exists_response_data.user_exists;

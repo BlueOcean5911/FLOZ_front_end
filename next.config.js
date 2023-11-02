@@ -1,12 +1,11 @@
-const path = require('path');
-
-/** @type {import('next').NextConfig} */
+/**
+ * @type {import('next').NextConfig}
+ **/
 const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
-  pageExtensions: ['page.tsx', 'api.tsx', 'api.ts', '.page.js'],
-  eslint: {
-    dirs: ["pages", "pageElements", "components", "contexts", "utils"],
+  /* config options here */
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
 };
 

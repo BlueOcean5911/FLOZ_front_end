@@ -1,5 +1,7 @@
 "use client";
 
+import Select from "@components/Select/Select";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import React from "react";
 
 export default function Transcript() {
@@ -47,7 +49,7 @@ export default function Transcript() {
   ];
 
   return (
-    <div className="m-20">
+    <div>
       <button
         data-drawer-target="default-sidebar"
         data-drawer-toggle="default-sidebar"
@@ -73,14 +75,13 @@ export default function Transcript() {
 
       {/* CONTENT */}
       <div className="flex gap-x-6 py-4">
-
         {/* TRANSCRIPT PART */}
-        <div className="w-full rounded-md border border-neutral-200">
-          <div className="flex h-40 items-center justify-center border-b border-neutral-200">
+        <div className="h-full rounded-md border border-neutral-200 bg-white shadow-md">
+          <div className="flex h-32 items-center justify-center border-b border-neutral-200">
             <p>Overview in meeting</p>
           </div>
 
-          <div className="flex h-[35rem] flex-col space-y-12 overflow-y-auto py-10 pe-40 ps-10">
+          <div className="flex max-h-[38rem] flex-col space-y-12 overflow-y-auto py-10 pe-40 ps-10 ">
             {testData.map((item) => (
               <div key={item.name}>
                 <h3 className="text-xl font-bold">{item.name}</h3>
@@ -89,19 +90,18 @@ export default function Transcript() {
             ))}
           </div>
         </div>
-            
-        <div>
 
-        {/* TODO LIST */}
-          <div className="relative overflow-x-auto shadow-md sm:rounded-lg me-4">
+        <div>
+          {/* TODO LIST */}
+          <div className="relative me-4 w-full overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    Product name
+                    To do list
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Color
+                    Deadline
                   </th>
                   <th scope="col" className="px-6 py-3">
                     <span className="sr-only">Edit</span>
@@ -114,9 +114,9 @@ export default function Transcript() {
                     scope="row"
                     className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
                   >
-                    Apple MacBook Pro 17"
+                    Email Joseph
                   </th>
-                  <td className="px-6 py-4">Silver</td>
+                  <td className="px-6 py-4">12 Nov</td>
                   <td className="px-6 py-4 text-right">
                     <a
                       href="#"
@@ -131,9 +131,9 @@ export default function Transcript() {
                     scope="row"
                     className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
                   >
-                    Microsoft Surface Pro
+                    Send GC the updated permit set
                   </th>
-                  <td className="px-6 py-4">White</td>
+                  <td className="px-6 py-4">Yesterday</td>
                   <td className="px-6 py-4 text-right">
                     <a
                       href="#"
@@ -148,9 +148,9 @@ export default function Transcript() {
                     scope="row"
                     className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
                   >
-                    Magic Mouse 2
+                    Call Procurement team
                   </th>
-                  <td className="px-6 py-4">Black</td>
+                  <td className="px-6 py-4">2 Dec</td>
 
                   <td className="px-6 py-4 text-right">
                     <a
@@ -164,21 +164,103 @@ export default function Transcript() {
               </tbody>
             </table>
           </div>
-          
-        {/* ROLES AND PERMISSIONS */}
-        <div>
-          <div>
-            <div className="bg-neutral-500 h-10 w-10 rounded-md"/>
+
+          {/* ROLES AND PERMISSIONS */}
+          <div className="mt-6 flex flex-col space-y-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-x-20">
+              <div className="flex items-center gap-x-2">
+                <img
+                  src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=256&h=256&q=80"
+                  alt="person-img"
+                  className="h-10 w-10 rounded-md bg-neutral-500"
+                />
+                <div>
+                  <p>Name Here</p>
+                  <p className="-mt-1">name@name.com</p>
+                </div>
+              </div>
+
+              <div className="flex gap-x-4">
+                <Select
+                  options={[
+                    { name: "Project Manager" },
+                    { name: "Software Engineer" },
+                    { name: "Web Developer" },
+                  ]}
+                  label="Role"
+                />
+                <Select
+                  options={[
+                    { name: "wadecooper@carteblanche.tech" },
+                    { name: "helloworld@carteblanche.tech" },
+                    { name: "scottcooper@carteblanche.tech" },
+                    { name: "timcook@carteblanche.tech" },
+                  ]}
+                  label="Email"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-x-20">
+              <div className="flex items-center gap-x-2">
+                <img
+                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=256&h=256&q=80"
+                  alt="person-img"
+                  className="h-10 w-10 rounded-md bg-neutral-500"
+                />
+                <div>
+                  <p>Name Here</p>
+                  <p className="-mt-1">name@name.com</p>
+                </div>
+              </div>
+
+              <div className="flex gap-x-4">
+                <Select
+                  options={[
+                    { name: "Project Manager" },
+                    { name: "Software Engineer" },
+                    { name: "Web Developer" },
+                  ]}
+                  label="Role"
+                />
+                <Select
+                  options={[
+                    { name: "wadecooper@carteblanche.tech" },
+                    { name: "helloworld@carteblanche.tech" },
+                    { name: "scottcooper@carteblanche.tech" },
+                    { name: "timcook@carteblanche.tech" },
+                  ]}
+                  label="Email"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* MEETING SUMMARY */}
+          <div className="mt-6 flex flex-col space-y-8 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
             <div>
-              <p>Name Here</p>
-              <p>name@name.com</p>
+              <div className="flex flex-col space-y-2">
+                <h3 className="text-l font-bold">Meeting Summary</h3>
+                <textarea className="h-48">
+                  In publishing and graphic design, Lorem ipsum is a placeholder
+                  text commonly used to demonstrate the visual form of a
+                  document or a typeface without relying on meaningful content.
+                  Lorem ipsum may be used as a placeholder before final copy is
+                  available.
+                </textarea>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for enhancements in text"
+                  className="mt-4 w-full rounded-md border-2 border-neutral-500 px-10 py-3 "
+                />
+                <MagnifyingGlassIcon className="absolute left-3 top-8 h-5 w-5 text-neutral-500 " />
+              </div>
             </div>
           </div>
         </div>
-
-        </div>
-
-
       </div>
     </div>
   );

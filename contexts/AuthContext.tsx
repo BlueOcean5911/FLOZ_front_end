@@ -71,7 +71,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
     // Add the token to make authenticated HTTP requests
     const accessToken = session?.access_token;
-    console.log("session: ", session);
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     // Add the user if this is the first time they are signing in
@@ -84,7 +83,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     // If the user is signed in, don't show the sign in page
     // if (router.pathname === "/signin") {
     //   router.push("/");
-    router.push("/home");
+
     // }
   }
 

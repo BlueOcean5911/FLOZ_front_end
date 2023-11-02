@@ -125,10 +125,13 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function signOut() {
     const { error } = await supabaseClient.auth.signOut();
-
     if (error) {
       // TODO: error handler
       console.error(`Error: ${error}`);
+    } else {
+      setUserSession(null);
+      setIsSignedIn(false);
+      localStorage?.removeItem("AUTH_STATUS");
     }
   }
 

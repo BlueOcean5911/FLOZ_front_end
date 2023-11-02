@@ -1,7 +1,7 @@
 export default function ProjectDetail(props: { pId: string }) {
   const { pId } = props;
   return (
-    <div className="mt-12 flex justify-between">
+    <div className="mt-12 flex flex-col justify-between">
       <div className="flex w-full gap-4">
         <div className="flex w-full items-center justify-center">
           <label className=" flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600">
@@ -69,6 +69,9 @@ export default function ProjectDetail(props: { pId: string }) {
             <input id="dropzone-file" type="file" className="hidden" />
           </label>
         </div>
+      </div>
+      <div className="mt-8">
+        <p className="text-2xl font-bold">Upcoming Meetings</p>
       </div>
     </div>
   );

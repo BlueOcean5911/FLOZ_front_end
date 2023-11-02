@@ -44,7 +44,7 @@ export default function ProjectPanel() {
             onClick={openModal}
             className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
           >
-            Create a new Project
+            Create Project
           </button>
         </div>
 

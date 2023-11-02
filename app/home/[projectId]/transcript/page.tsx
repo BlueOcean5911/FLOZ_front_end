@@ -2,7 +2,7 @@ import Transcript from "@components/Transcript/Transcript";
 
 export default function Page() {
   return (
-    <div className="m-20 flex flex-col">
+    <div className="mt-10 flex flex-col">
       <Transcript />
     </div>
   );

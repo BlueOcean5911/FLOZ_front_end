@@ -33,7 +33,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     checkSession();
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
-        console.log(event);
+        if (event == "SIGNED_IN") {
+          localStorage?.setItem("AUTH_STATUS", event);
+        }
         await handleSessionChange(session);
       }
     );
@@ -123,10 +125,13 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function signOut() {
     const { error } = await supabaseClient.auth.signOut();
-
     if (error) {
       // TODO: error handler
       console.error(`Error: ${error}`);
+    } else {
+      setUserSession(null);
+      setIsSignedIn(false);
+      localStorage?.removeItem("AUTH_STATUS");
     }
   }
 

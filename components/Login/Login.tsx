@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import OauthButton from "@/components/button/OauthButton";
 import { useRouter } from "next/navigation";
@@ -6,10 +7,16 @@ import { useRouter } from "next/navigation";
 function Login() {
   const { signInWithGoogle } = useAuthContext();
   const router = useRouter();
+
+  const status = localStorage.getItem("AUTH_STATUS");
+
+  useEffect(() => {
+    const status = localStorage.getItem("AUTH_STATUS");
+    if (status === "SIGNED_IN") router.push("/home");
+  }, [status]);
+
   const onGoogleClick = () => {
-    signInWithGoogle().then(() => {
-      router.push("/home");
-    });
+    signInWithGoogle();
   };
 
   return (

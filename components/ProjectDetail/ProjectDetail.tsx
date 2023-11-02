@@ -70,8 +70,54 @@ export default function ProjectDetail(props: { pId: string }) {
           </label>
         </div>
       </div>
-      <div className="mt-8">
+      <div className="mt-8 flex flex-col gap-2">
         <p className="text-2xl font-bold">Upcoming Meetings</p>
+        <div className="flex gap-4">
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

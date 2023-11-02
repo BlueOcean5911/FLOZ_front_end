@@ -5,9 +5,5 @@ interface pageProps {
 }
 
 export default function Page({ params }: { params: pageProps }) {
-  return (
-    <div className="mt-10">
-      <ProjectDetail pId={params.projectId} />
-    </div>
-  );
+  return <ProjectDetail pId={params.projectId} />;
 }

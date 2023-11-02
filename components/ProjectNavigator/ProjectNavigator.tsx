@@ -12,8 +12,8 @@ const people = {
     { id: "2", name: "Project 2" },
     { id: "3", name: "Project 3" },
     { id: "4", name: "Project 4" },
-    { id: "5", name: "Tanya Fox" },
-    { id: "6", name: "Hellen Schmidt" },
+    { id: "5", name: "Project 5" },
+    { id: "6", name: "Project 6" },
   ],
 };
 
@@ -30,11 +30,11 @@ export default function ProjectNavigator(props: { pId?: string }) {
       <div className="w-72">
         <Listbox value={selected.id} onChange={setSelected}>
           <div className="relative mt-1">
-            <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+            <Listbox.Button className="relative w-full cursor-pointer rounded-lg bg-white py-2 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
               <span className="block truncate font-bold">{selected.name}</span>
-              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              <span className="pointer-events-none  absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronUpIcon
-                  className="h-5 w-5 cursor-pointer text-gray-400 [[aria-expanded=false]_&]:rotate-180"
+                  className="h-5 w-5  text-gray-400 transition-transform [[aria-expanded=false]_&]:rotate-180"
                   aria-hidden="true"
                 />
               </span>

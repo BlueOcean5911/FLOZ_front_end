@@ -77,13 +77,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     // await addUserIfNew({
     //   userId: session.user.id,
     // });
-
     setIsSignedIn(true);
-
     // If the user is signed in, don't show the sign in page
     // if (router.pathname === "/signin") {
     //   router.push("/");
-
     // }
   }
 

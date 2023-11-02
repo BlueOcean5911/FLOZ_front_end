@@ -1,5 +1,12 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 export default function ProjectDetail(props: { pId: string }) {
+  const router = useRouter();
+
   const { pId } = props;
+  console.log("pId: ", pId);
   return (
     <div className="mt-12 flex flex-col justify-between">
       <div className="flex w-full gap-4">
@@ -34,6 +41,7 @@ export default function ProjectDetail(props: { pId: string }) {
               id="dropzone-file"
               type="file"
               placeholder="Upload"
+              onChange={() => router.push(`/home/${pId}/transcript`)}
               className="hidden"
             />
           </label>
@@ -66,12 +74,63 @@ export default function ProjectDetail(props: { pId: string }) {
                 SVG, PNG, JPG or GIF (MAX. 800x400px)
               </p>
             </div>
-            <input id="dropzone-file" type="file" className="hidden" />
+            <input
+              id="dropzone-file"
+              type="file"
+              onChange={() => router.push(`/home/${pId}}transcript`)}
+              className="hidden"
+            />
           </label>
         </div>
       </div>
-      <div className="mt-8">
+      <div className="mt-8 flex flex-col gap-2">
         <p className="text-2xl font-bold">Upcoming Meetings</p>
+        <div className="flex gap-4">
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+          <div className="b-4 flex w-full max-w-xs flex-col border p-2">
+            <p>With joseph</p>
+            <p>Monday, October 30, 2023</p>
+            <p>7:00-8:00PM</p>
+            <button>Join the meeting</button>
+            <ul>
+              <li>Gang Xiao</li>
+              <li>Hanyang Liu</li>
+              <li>Dashan Xiong</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

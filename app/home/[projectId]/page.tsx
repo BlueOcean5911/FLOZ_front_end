@@ -3,5 +3,7 @@ interface pageProps {
 }
 
 export default function Page({ params }: { params: pageProps }) {
-  return <div className="mt-20">Project {params?.projectId}</div>;
+  return (
+    <div className="mt-10">Description of Project {params?.projectId}</div>
+  );
 }

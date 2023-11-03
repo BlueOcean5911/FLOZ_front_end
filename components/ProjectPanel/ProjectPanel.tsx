@@ -30,18 +30,21 @@ export default function ProjectPanel({
   };
 
   return (
-    <div className=" flex items-center">
-      <div className="flex  gap-x-4 overflow-x-auto">
-        {data &&
-          data.map((project: { id: string; name: string }) => (
+    <div className="flex w-full items-center justify-between">
+      <div className="flex gap-x-4 overflow-x-auto">
+        {data?.length !== 0 ? (
+          <p>No Projects</p>
+        ) : (
+          data?.map((project: { id: string; name: string }) => (
             <Link
               href={`/home/${project.id}`}
               className="flex rounded-md border border-neutral-300 px-20"
               key={project.id}
             >
-              <h4 className=" text-lg font-bold">{project.name}</h4>
+              <h4 className="text-lg font-bold">{project.name}</h4>
             </Link>
-          ))}
+          ))
+        )}
       </div>
       <div className="z-20 flex gap-x-4">
         <div className="inset-0">

@@ -4,8 +4,6 @@ import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
 
-import { getProviderToken } from "@providerVar";
-
 interface pageProps {
   projectId: string;
 }

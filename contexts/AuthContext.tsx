@@ -153,9 +153,13 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   //   }
 
   async function signInWithGoogle() {
+    // const scopes = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/calendar/v3/calendars/calendarId/events"]
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.origin },
+      options: {
+        redirectTo: window.origin,
+        scopes: "https://www.googleapis.com/auth/calendar",
+      },
     });
 
     if (error) {

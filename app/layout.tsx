@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <AuthProvider>
-        <body className="font-figtree flex min-h-screen flex-col justify-center px-3 md:px-16">
+        <body className="font-figtree flex  flex-col justify-center px-3 md:px-16">
           <Header />
           {children}
         </body>

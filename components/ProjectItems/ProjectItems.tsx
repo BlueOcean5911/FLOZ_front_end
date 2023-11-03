@@ -28,14 +28,15 @@ export default function ProjectItems({
     setIsOpen(true);
   }
 
-  function updateProjectName(name: string) {
+  async function updateProjectName(name: string) {
     const project = { ...selectedProject };
+    await supabase.from("project").update({ name: name }).eq("id", project.id);
     const totalProjects = allProjects && [...allProjects];
     const p = totalProjects?.find((pjt) => pjt.id === project.id);
     p.name = name;
     project.name = name;
-    console.log("totalProjects: ", totalProjects);
     setSelectedProject(project);
+    return totalProjects;
   }
 
   async function deleteProject(project: { id: string; name: string }) {

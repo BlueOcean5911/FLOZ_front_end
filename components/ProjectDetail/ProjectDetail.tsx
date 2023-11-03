@@ -2,7 +2,13 @@
 
 import { useRouter } from "next/navigation";
 
-function FileUpload({ label, onClick }) {
+interface ProjectDetailsProps {
+  label: string;
+  onClick: () => void;
+}
+
+function FileUpload(props: ProjectDetailsProps) {
+  const { label, onClick } = props;
   return (
     <label className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600">
       <p className="text-4xl">{label}</p>

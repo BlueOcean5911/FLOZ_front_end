@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Fragment, useEffect } from "react";
-import { useSupabaseContext } from "../../contexts/SupabaseContext";
+import { useSupabaseContext } from "@contexts/SupabaseContext";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";

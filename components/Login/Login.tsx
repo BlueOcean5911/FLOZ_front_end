@@ -4,14 +4,17 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import OauthButton from "@/components/button/OauthButton";
 import { useRouter } from "next/navigation";
 
+import { getCookie } from "cookies-next";
+
 function Login() {
   const { signInWithGoogle } = useAuthContext();
   const router = useRouter();
+  const authStatus = getCookie("AUTH_STATUS");
 
-  const status = localStorage.getItem("AUTH_STATUS");
+  const status = authStatus ? authStatus : "";
 
   useEffect(() => {
-    const status = localStorage.getItem("AUTH_STATUS");
+    const status = authStatus;
     if (status === "SIGNED_IN") router.push("/home");
   }, [status]);
 

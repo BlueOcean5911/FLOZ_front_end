@@ -7,10 +7,12 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useSupabaseContext } from "./SupabaseContext";
+import supabase from "@utils/supabase";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Session } from "@supabase/supabase-js";
+import { setCookie } from "cookies-next";
+import { deleteCookie } from "cookies-next";
 
 interface AuthContextInterface {
   isSignedIn: boolean;
@@ -24,17 +26,16 @@ interface AuthContextInterface {
 const AuthContext = createContext<AuthContextInterface | undefined>(undefined);
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
-  const { supabaseClient } = useSupabaseContext();
 
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const [userSession, setUserSession] = useState<Session | null>(null);
 
   useEffect(() => {
     checkSession();
-    const { data: authListener } = supabaseClient.auth.onAuthStateChange(
+    const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event == "SIGNED_IN") {
-          localStorage?.setItem("AUTH_STATUS", event);
+          setCookie("AUTH_STATUS", event);
         }
         await handleSessionChange(session);
       }
@@ -46,9 +47,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }, [router]);
 
   async function checkSession() {
-    const { data, error } = await supabaseClient.auth.getSession();
+    const { data, error } = await supabase.auth.getSession();
 
     if (data.session === null) {
+      deleteCookie("user_id");
       router.push("/");
     }
     if (error) {
@@ -61,17 +63,11 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   async function handleSessionChange(session: Session | null) {
     setUserSession(session);
 
-    // Check if the user is signed in
     if (!session) {
       setIsSignedIn(false);
-      // If the user is not signed in, they must be redirected to the signin page
-      //   if (router.pathname !== "/signin") {
-      //     router.replace("/signin");
-      //   }
       return;
     }
-
-    // Add the token to make authenticated HTTP requests
+    setCookie("user_id", session.user.id);
     const accessToken = session?.access_token;
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
@@ -80,10 +76,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     //   userId: session.user.id,
     // });
     setIsSignedIn(true);
-    // If the user is signed in, don't show the sign in page
-    // if (router.pathname === "/signin") {
-    //   router.push("/");
-    // }
   }
 
   // Adds the user if they don't already exist
@@ -124,20 +116,20 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   async function signOut() {
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await supabase.auth.signOut();
     if (error) {
       // TODO: error handler
       console.error(`Error: ${error}`);
     } else {
       setUserSession(null);
       setIsSignedIn(false);
-      localStorage?.removeItem("AUTH_STATUS");
+      deleteCookie("AUTH_STATUS");
     }
   }
 
   // TODO: Set up custom SMTP to get around send limits
   //   async function signInWithEmail(email: string) {
-  //     const { error } = await supabaseClient.auth.signInWithOtp({
+  //     const { error } = await supabase.auth.signInWithOtp({
   //       email,
   //       options: {
   //         // Route where we employ Proof Key for Code Exchange (PKCE)
@@ -153,8 +145,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   //   }
 
   async function signInWithGoogle() {
-    // const scopes = ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/calendar/v3/calendars/calendarId/events"]
-    const { error } = await supabaseClient.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: window.origin,
@@ -169,7 +160,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   //   async function signInWithSlack() {
-  //     const { error } = await supabaseClient.auth.signInWithOAuth({
+  //     const { error } = await supabase.auth.signInWithOAuth({
   //       provider: "slack",
   //       options: {
   //         redirectTo: window.origin,

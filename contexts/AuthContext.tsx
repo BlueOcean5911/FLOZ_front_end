@@ -72,6 +72,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     }
     setProviderToken(session.provider_token);
     setCookie("user_id", session.user.id);
+    setCookie("p_token", session.provider_token);
     const accessToken = session?.access_token;
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 

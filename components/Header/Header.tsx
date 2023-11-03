@@ -13,7 +13,7 @@ export default function Header() {
             </Link>
           </div>
         </div>
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <div className="flex-shrink-0">
             <button
               type="button"
@@ -25,7 +25,7 @@ export default function Header() {
               />
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </nav>
   );

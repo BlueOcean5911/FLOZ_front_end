@@ -110,7 +110,7 @@ export default function Calendar({
     const form = new FormData(e.target);
     const formData = Object.fromEntries(form);
 
-    const { eventName, eventDescription } = formData;
+    const { eventName, eventDescription, attendees } = formData;
     const timestamp = Date.now().toString();
     const requestId = "conference-" + timestamp;
 
@@ -125,21 +125,23 @@ export default function Calendar({
         dateTime: currentDateTime.end, // Date.ISOString()
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
       },
-      conferenceDataVersion: 1,
+      attendees: [{'email': attendees}],
       conferenceData: {
         createRequest: {
-          requestId: "sample123",
-          conferenceSolution: {
-            key: {
-              type: "hangoutsMeet",
-            },
+          requestId: requestId,
+          conferenceSolutionKey: {
+            type: "hangoutsMeet",
           },
         },
       },
     };
 
+    const url = new URL("https://www.googleapis.com/calendar/v3/calendars/primary/events");
+    const params = { conferenceDataVersion: 1 };
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
     const eventCreationRes = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events`,
+      url,
       {
         method: "POST",
         headers: {
@@ -151,7 +153,6 @@ export default function Calendar({
 
     const eventCreationResponse = await eventCreationRes.json();
     const eventId = eventCreationResponse.id;
-    console.log("eventCreationResponse: ", eventCreationResponse);
 
     await supabase
       .from("event")
@@ -266,7 +267,7 @@ export default function Calendar({
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
-                    <div className="my-8 flex w-full items-center justify-between gap-x-8">
+                    <div className="my-8 flex flex-col w-full justify-between gap-x-8">
                       <label className="text-sm font-bold" for="eventName">
                         Projects
                       </label>
@@ -274,6 +275,17 @@ export default function Calendar({
                         options={projects}
                         onChange={handleSelectChange}
                         label="Projects"
+                      />
+                    </div>
+                    <div className="my-10">
+                      <label className="text-sm font-bold" for="attendees">
+                        Add Attendees
+                      </label>
+                      <input
+                        placeholder="Attendees"
+                        id="attendees"
+                        name="attendees"
+                        className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
                     {/* event description */}

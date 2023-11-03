@@ -45,7 +45,7 @@ export default function ProjectPanel({
   };
 
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex w-full items-center justify-between relative">
       <div className="flex gap-x-4 overflow-x-auto">
         {allProjects?.length === 0 ? (
           <p>No Projects</p>
@@ -62,15 +62,17 @@ export default function ProjectPanel({
         )}
       </div>
       <div className="z-20 flex gap-x-4">
-        <div className="inset-0">
+
+        {/* <div className="inset-0"> */}
           <button
             type="button"
             onClick={openModal}
-            className="ms-4 rounded-md border border-neutral-300 px-4 text-lg font-bold"
+            className="ms-4 rounded-md border border-neutral-300 px-4 text-lg text-white font-bold bg-gray-700 absolute right-0 top-0"
           >
             Add Project
           </button>
-        </div>
+        {/* </div> */}
+        
         <div className="z-20 flex gap-x-4">
           <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={closeModal}>

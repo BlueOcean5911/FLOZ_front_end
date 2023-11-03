@@ -32,9 +32,7 @@ export default function ProjectPanel({
   ) => {
     event.preventDefault();
     const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
-    const res = await supabase
-      .from("project")
-      .insert({ name: event.target[0].value });
+    await supabase.from("project").insert({ name: event.target[0].value });
     const newEntry = {
       id: tempId,
       name: event.target[0].value,
@@ -45,30 +43,7 @@ export default function ProjectPanel({
       }
       return [newEntry];
     });
-
-    // fetching session
-    const { data } = await supabaseClient.auth.getSession();
-
-    console.log(" event.target[0].value: ", event.target[0].value);
-    console.log("data.session.provider_token: ", data.session.provider_token);
-
-    /// create project calendar
-    const createCalendarRes = await fetch(
-      "https://www.googleapis.com/calendar/v3/calendars",
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + data.session.provider_token, // Access token for google
-        },
-        body: JSON.stringify({ summary: event.target[0].value }),
-      }
-    );
-
-    console.log("createCalendarRes: ", createCalendarRes);
-    const response = await createCalendarRes.json();
-    console.log("response: ", response);
-
-    res.status === 201 && setIsOpen(false);
+    setIsOpen(false);
   };
 
   return (

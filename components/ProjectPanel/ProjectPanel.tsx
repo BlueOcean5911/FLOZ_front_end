@@ -25,83 +25,95 @@ export default function ProjectPanel() {
   ];
 
   return (
-    <div className=" flex items-center">
-      <div className="flex  gap-x-4 overflow-x-auto">
-        {projects.map((project) => (
-          <Link
-            href={`/home/${project.id}`}
-            className="flex rounded-md border border-neutral-300 px-20"
-            key={project.id}
-          >
-            <h4 className=" text-lg font-bold">{project.name}</h4>
-          </Link>
-        ))}
-      </div>
-      <div className="z-20 flex gap-x-4">
-        <div className="inset-0">
-          <button
-            type="button"
-            onClick={openModal}
-            className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
-          >
-            Create Project
-          </button>
-        </div>
-
-        <Transition appear show={isOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-50" onClose={closeModal}>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+    <>
+      <div className=" flex items-center">
+        <div className="flex  gap-x-4 overflow-x-auto">
+          {projects.map((project) => (
+            <Link
+              href={`/home/${project.id}`}
+              className="flex rounded-md border border-neutral-300 px-20"
+              key={project.id}
             >
-              <div className="fixed inset-0 bg-black/25" />
-            </Transition.Child>
+              <h4 className=" text-lg font-bold">{project.name}</h4>
+            </Link>
+          ))}
+        </div>
+        <div className="z-20 flex gap-x-4">
+          <div className="inset-0">
+            <button
+              type="button"
+              onClick={openModal}
+              className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
+            >
+              Create Project
+            </button>
+          </div>
 
-            <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-                >
-                  <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
-                      Create a new Project
-                    </Dialog.Title>
-                    <div className="my-10">
-                      <label className="text-sm font-bold">Project Name</label>
-                      <input
-                        type="text"
-                        placeholder="Project X"
-                        className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={closeModal}
-                    >
-                      Submit
-                    </button>
-                  </Dialog.Panel>
-                </Transition.Child>
+          <Transition appear show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={closeModal}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black/25" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900"
+                      >
+                        Create a new Project
+                      </Dialog.Title>
+                      <div className="my-10">
+                        <label className="text-sm font-bold">
+                          Project Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Project X"
+                          className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        onClick={closeModal}
+                      >
+                        Submit
+                      </button>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
               </div>
-            </div>
-          </Dialog>
-        </Transition>
+            </Dialog>
+          </Transition>
+        </div>
       </div>
-    </div>
+      <div className="relative">
+      <Link
+        href="/home/projects"
+        className="flex items-center justify-center mt-8 shrink-0 rounded-md bg-gray-700 text-white w-32 absolute right-0"
+      >
+        <h4 className="text-sm">View All Projects</h4>
+      </Link>
+      </div>
+    </>
   );
 }

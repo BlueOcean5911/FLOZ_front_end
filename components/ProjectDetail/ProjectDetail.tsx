@@ -51,7 +51,7 @@ function FileUpload(props: ProjectDetailsProps) {
 function MeetingCard({ event }: { event: any }) {
   console.log("meeting: ", event);
   return (
-    <div className="b-4 flex w-full max-w-xs flex-col border p-2 relative">
+    <div className="b-4 flex w-full max-w-xs flex-col border p-2">
       <p>{event?.summary}</p>
       {/* {event?.attendees.length !== 0 && <p>With joseph</p>} */}
       <p>{format(parseISO(event?.created), "EEEE, MMMM d, yyyy")}</p>
@@ -59,14 +59,14 @@ function MeetingCard({ event }: { event: any }) {
         {format(parseISO(event?.start?.dateTime), "h:mm a")} -
         {format(parseISO(event?.end?.dateTime), "h:mm a")}
       </p>
-      {event?.attendees?.length ? (<p className="font-bold text-xl my-10">Attendees</p>) : <></>}
+      {event?.attendees?.length ? (<p className="font-bold text-xl mt-1">Attendees</p>) : <></>}
       <ul>
         {event?.attendees?.map((attendee: any) => (
           <li key={attendee.email}>{attendee.email}</li>
         ))}
       </ul>
       <a
-        className="b-4 my-3 w-full rounded-md border border-neutral-200 bg-gray-700 text-center text-white shadow-sm absolute bottom-0"
+        className="b-4 my-3 w-full rounded-md border border-neutral-200 bg-gray-700 text-center text-white shadow-sm"
         href={event.hangoutLink}
         target="_blank"
       >

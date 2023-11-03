@@ -16,7 +16,6 @@
     "@fullcalendar/timegrid": "^6.0.2",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
-    "@supabase/auth-helpers-nextjs": "^0.8.4",
     "@supabase/supabase-js": "^2.38.4",
     "@types/node": "18.11.9",
     "@types/react": "18.0.25",
@@ -29,9 +28,7 @@
     "next": "^14.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-responsive": "^9.0.0",
-    "typescript": "4.9.3",
-    "zod": "^3.22.4"
+    "typescript": "4.9.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.62.0",

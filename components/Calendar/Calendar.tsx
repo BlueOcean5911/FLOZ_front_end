@@ -59,11 +59,15 @@ export default function Calendar({
       const startStr = start?.replace(/T.*$/, "") ?? start;
 
       // Add the converted event to the INITIAL_EVENTS array
-      INITIAL_EVENTS.push({
-        id: eventId,
-        title: title,
-        start: startStr,
-      });
+      const ievents = INITIAL_EVENTS.filter((evt) => evt.id === eventId)
+      
+      if(!ievents.length) {
+        INITIAL_EVENTS.push({
+          id: eventId,
+          title: title,
+          start: startStr,
+        });
+      }
     }
 
     // Now, INITIAL_EVENTS contains the converted events in the desired format
@@ -130,7 +134,6 @@ export default function Calendar({
         },
       },
     };
-    const data = await checkSession();
 
     const eventCreationRes = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events`,

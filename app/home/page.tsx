@@ -20,7 +20,7 @@ export default async function Page() {
     <div className=" flex flex-col">
       <ProjectPanel data={projects} />
       <div className="mb-24" />
-      <Calendar />
+      <Calendar projects={projects} />
     </div>
   );
 }

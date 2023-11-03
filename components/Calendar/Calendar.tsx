@@ -2,6 +2,9 @@
 
 import React, { useState, Fragment, useEffect } from "react";
 import { useSupabaseContext } from "@contexts/SupabaseContext";
+import supabase from "@/utils/supabase";
+
+import Select from "@components/Select/Select";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -10,8 +13,12 @@ import interactionPlugin from "@fullcalendar/interaction";
 // import { INITIAL_EVENTS, createEventId } from "./event-utils";
 import { Dialog, Transition } from "@headlessui/react";
 
-export default function DemoApp() {
-  const [currentEvents, setCurrentEvents] = useState([]);
+export default function Calendar({
+  projects,
+}: {
+  projects: { id: any; name: any }[] | null;
+}) {
+  const [selectedProject, setSelectedProject] = useState("");
   const [currentDateTime, setCurrentDateTime] = useState({});
   const [isOpen, setIsOpen] = useState(false);
 
@@ -19,7 +26,6 @@ export default function DemoApp() {
 
   const { supabaseClient } = useSupabaseContext();
 
-  // Define an array to store the converted events
   const INITIAL_EVENTS = [];
 
   useEffect(() => {
@@ -178,23 +184,11 @@ export default function DemoApp() {
       }
     );
     const eventCreationResponse = await eventCreationRes.json();
+    const eventId = eventCreationResponse.id;
 
-    console.log("eventResponse: ", eventCreationResponse);
-
-    const eventRes = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventCreationResponse.id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + provider_token, // Access token for google
-        },
-      }
-    );
-
-    const eventResource = await eventRes.json();
-    console.log("eventResource: ", eventResource);
-
-    //
+    await supabase
+      .from("calendar")
+      .insert({ id: eventId, project_id: selectedProject });
 
     fetchEvents();
   };
@@ -221,6 +215,10 @@ export default function DemoApp() {
         <i>{eventInfo.event.title}</i>
       </>
     );
+  };
+
+  const handleSelectChange = (id: string) => {
+    setSelectedProject(id);
   };
 
   return (
@@ -299,8 +297,16 @@ export default function DemoApp() {
                         id="eventName"
                         name="eventName"
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                        // value={eventName}
-                        // onChange={(e) => setEventName(e.target.value)}
+                      />
+                    </div>
+                    <div className="my-8 flex w-full items-center justify-between gap-x-8">
+                      <label className="text-sm font-bold" for="eventName">
+                        Projects
+                      </label>
+                      <Select
+                        options={projects}
+                        onChange={handleSelectChange}
+                        label="Projects"
                       />
                     </div>
                     {/* event description */}
@@ -320,35 +326,7 @@ export default function DemoApp() {
                         // onChange={(e) => setEventDescription(e.target.value)}
                       />
                     </div>
-                    <div className="mb-8 flex items-center justify-between gap-x-8">
-                      {/* start date */}
-                      <div className="flex w-full flex-col">
-                        <label className="text-sm font-bold" for="startDate">
-                          Start Date
-                        </label>
-                        <input
-                          id="startDate"
-                          name="startDate"
-                          className="rounded-md border border-neutral-200 p-2 text-neutral-700"
-                          type="date"
-                          placeholder="start date"
-                        />
-                      </div>
 
-                      {/* end date */}
-                      <div className="flex w-full flex-col">
-                        <label className="text-sm font-bold" for="endDate">
-                          End Date
-                        </label>
-                        <input
-                          id="endDate"
-                          name="endDate"
-                          className="rounded-md border border-neutral-200 p-2 text-neutral-700"
-                          type="date"
-                          placeholder="end date"
-                        />
-                      </div>
-                    </div>
                     <button
                       type="submit"
                       className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"

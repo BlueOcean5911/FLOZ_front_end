@@ -48,6 +48,10 @@ export default function Transcript() {
     },
   ];
 
+  const handleSelectChange = (id: string) => {
+    console.log(`Selected option id: ${id}`);
+  };
+
   return (
     <div>
       <button
@@ -183,20 +187,23 @@ export default function Transcript() {
               <div className="flex gap-x-4">
                 <Select
                   options={[
-                    { name: "Project Manager" },
-                    { name: "Software Engineer" },
-                    { name: "Web Developer" },
+                    { id: "1", name: "Project Manager" },
+                    { id: "2", name: "Software Engineer" },
+                    { id: "3", name: "Web Developer" },
                   ]}
+                  onChange={handleSelectChange}
                   label="Role"
                 />
+
                 <Select
                   options={[
-                    { name: "wadecooper@carteblanche.tech" },
-                    { name: "helloworld@carteblanche.tech" },
-                    { name: "scottcooper@carteblanche.tech" },
-                    { name: "timcook@carteblanche.tech" },
+                    { id: "10", name: "wadecooper@carteblanche.tech" },
+                    { id: "20", name: "helloworld@carteblanche.tech" },
+                    { id: "30", name: "scottcooper@carteblanche.tech" },
                   ]}
-                  label="Email"
+                  onChange={handleSelectChange}
+                  key={Math.random()}
+                  label="Role"
                 />
               </div>
             </div>
@@ -217,20 +224,23 @@ export default function Transcript() {
               <div className="flex gap-x-4">
                 <Select
                   options={[
-                    { name: "Project Manager" },
-                    { name: "Software Engineer" },
-                    { name: "Web Developer" },
+                    { id: "1", name: "Project Manager" },
+                    { id: "2", name: "Software Engineer" },
+                    { id: "3", name: "Web Developer" },
                   ]}
+                  onChange={handleSelectChange}
                   label="Role"
                 />
+
                 <Select
                   options={[
-                    { name: "wadecooper@carteblanche.tech" },
-                    { name: "helloworld@carteblanche.tech" },
-                    { name: "scottcooper@carteblanche.tech" },
-                    { name: "timcook@carteblanche.tech" },
+                    { id: "10", name: "wadecooper@carteblanche.tech" },
+                    { id: "20", name: "helloworld@carteblanche.tech" },
+                    { id: "30", name: "scottcooper@carteblanche.tech" },
                   ]}
-                  label="Email"
+                  onChange={handleSelectChange}
+                  key={Math.random()}
+                  label="Role"
                 />
               </div>
             </div>
@@ -258,7 +268,10 @@ export default function Transcript() {
                 />
                 <MagnifyingGlassIcon className="absolute left-3 top-8 h-5 w-5 text-neutral-500 " />
               </div>
-              <button className="w-full border text-white border-neutral-300 bg-gray-800 p-2 rounded-md my-2" type="button">
+              <button
+                className="my-2 w-full rounded-md border border-neutral-300 bg-gray-800 p-2 text-white"
+                type="button"
+              >
                 Send Email
               </button>
             </div>

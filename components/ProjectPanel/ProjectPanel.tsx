@@ -47,7 +47,7 @@ export default function ProjectPanel({
     });
 
     // fetching session
-    const { data, error } = await supabaseClient.auth.getSession();
+    const { data } = await supabaseClient.auth.getSession();
 
     console.log(" event.target[0].value: ", event.target[0].value);
     console.log("data.session.provider_token: ", data.session.provider_token);

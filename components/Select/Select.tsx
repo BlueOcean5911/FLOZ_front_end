@@ -4,20 +4,33 @@ import { Fragment, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
+
+
 export default function Select({
   options,
   label,
+  key = 5,
+  onChange,
 }: {
-  options: Record<string, string>[];
+  options: { id: any; name: any }[] | null;
   label?: string;
+  key?: number;
+  onChange?: (id: string) => void;
 }) {
   const selectLabel = label ? `Select ${label}` : "Select";
-  const selectionOptions = [{ name: selectLabel }, ...options];
+  const selectionOptions = [{ id: 88, name: selectLabel }, ...options];
   const [selected, setSelected] = useState(selectionOptions[0]);
 
+  const handleOnChange = (option: { id: string; name: string }) => {
+    setSelected(option);
+    if (onChange) {
+      onChange(option.id);
+    }
+  };
+
   return (
-    <div className="w-40">
-      <Listbox value={selected} onChange={setSelected}>
+    <div className="w-40" key={key}>
+      <Listbox value={selected} onChange={handleOnChange}>
         <div className="relative mt-1">
           <Listbox.Button className="relative w-full cursor-default rounded-lg border border-neutral-200 bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
             <span className="block truncate">{selected.name}</span>
@@ -35,15 +48,15 @@ export default function Select({
             leaveTo="opacity-0"
           >
             <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-neutral-300 bg-white py-1 text-base ring-1 ring-black/5 focus:outline-none sm:text-sm">
-              {selectionOptions?.map((person, personIdx) => (
+              {selectionOptions?.map((option, index) => (
                 <Listbox.Option
-                  key={personIdx}
+                  key={index}
                   className={({ active }) =>
                     `relative cursor-default select-none px-4 py-2 pr-8 ${
                       active ? "bg-amber-100 text-amber-900" : "text-gray-900"
                     }`
                   }
-                  value={person}
+                  value={option}
                 >
                   {({ selected }) => (
                     <>
@@ -52,7 +65,7 @@ export default function Select({
                           selected ? "font-medium" : "font-normal"
                         }`}
                       >
-                        {person.name === selectLabel ? "None" : person.name}
+                        {option.name === selectLabel ? "None" : option.name}
                       </span>
                       {selected ? (
                         <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-amber-600">

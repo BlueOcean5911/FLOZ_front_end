@@ -49,7 +49,7 @@ export default function DemoApp() {
       const start = googleEvent.start.dateTime; // Start date
 
       // Format the start date as a string
-      const startStr = start.replace(/T.*$/, "");
+      const startStr = start?.replace(/T.*$/, "") ?? start;
 
       // Add the converted event to the INITIAL_EVENTS array
       INITIAL_EVENTS.push({
@@ -142,6 +142,8 @@ export default function DemoApp() {
     const formData = Object.fromEntries(form);
 
     const { eventName, eventDescription, startDate, endDate } = formData;
+    const timestamp = Date.now().toString();
+    const requestId = "conference-" + timestamp;
 
     const event = {
       summary: eventName,
@@ -154,11 +156,18 @@ export default function DemoApp() {
         dateTime: currentDateTime.end, // Date.ISOString()
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
       },
+      conferenceDataVersion: 1,
+      conferenceData: {
+        createRequest: {
+          requestId: "sample123",
+          conferenceSolutionKey: { type: "hangoutsMeet" },
+        },
+      },
     };
     const data = await checkSession();
     const { provider_token } = data;
 
-    await fetch(
+    const eventCreationRes = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events`,
       {
         method: "POST",
@@ -168,6 +177,24 @@ export default function DemoApp() {
         body: JSON.stringify(event),
       }
     );
+    const eventCreationResponse = await eventCreationRes.json();
+
+    console.log("eventResponse: ", eventCreationResponse);
+
+    const eventRes = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventCreationResponse.id}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + provider_token, // Access token for google
+        },
+      }
+    );
+
+    const eventResource = await eventRes.json();
+    console.log("eventResource: ", eventResource);
+
+    //
 
     fetchEvents();
   };

@@ -32,7 +32,7 @@ export default function ProjectPanel({
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex gap-x-4 overflow-x-auto">
-        {data?.length !== 0 ? (
+        {data?.length === 0 ? (
           <p>No Projects</p>
         ) : (
           data?.map((project: { id: string; name: string }) => (

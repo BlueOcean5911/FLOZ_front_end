@@ -1,10 +1,18 @@
 "use client";
 
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { ChangeEvent, Fragment, useState } from "react";
 import Link from "next/link";
 
-export default function ProjectPanel() {
+import supabase from "@/utils/supabase";
+
+import { z } from "zod";
+
+export default function ProjectPanel({
+  data,
+}: {
+  data: { id: any; name: any }[] | null;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
@@ -14,28 +22,45 @@ export default function ProjectPanel() {
   function openModal() {
     setIsOpen(true);
   }
+  // const schema = z.object({
+  //   name: z.string().nonempty("Please enter a name"),
+  // });
+  // const validateForm = (formData: any) => {
+  //   try {
+  //     schema.parse(formData);
+  //     return { isValid: true, errors: {} };
+  //   } catch (error) {
+  //     const errors = {};
+  //     const formErrors = error.flatten().formErrors;
+  //     for (const field in formErrors) {
+  //       errors[field] = formErrors[field][0];
+  //     }
+  //     return { isValid: false, errors };
+  //   }
+  // };
 
-  const projects = [
-    { id: "1", name: "Project 1" },
-    { id: "2", name: "Project 2" },
-    { id: "3", name: "Project 3" },
-    { id: "4", name: "Project 4" },
-    { id: "5", name: "Project 5" },
-    { id: "6", name: "Project 6" },
-  ];
+  const handleSubmit = async (
+    event: ChangeEvent<HTMLFormElement | undefined>
+  ) => {
+    event.preventDefault();
+    console.log("ok: ", event.target[0].value);
+    await supabase.from("project").insert({ name: event.target[0].value });
+    setIsOpen(false);
+  };
 
   return (
     <div className=" flex items-center">
       <div className="flex  gap-x-4 overflow-x-auto">
-        {projects.map((project) => (
-          <Link
-            href={`/home/${project.id}`}
-            className="flex rounded-md border border-neutral-300 px-20"
-            key={project.id}
-          >
-            <h4 className=" text-lg font-bold">{project.name}</h4>
-          </Link>
-        ))}
+        {data &&
+          data.map((project: { id: string; name: string }) => (
+            <Link
+              href={`/home/${project.id}`}
+              className="flex rounded-md border border-neutral-300 px-20"
+              key={project.id}
+            >
+              <h4 className=" text-lg font-bold">{project.name}</h4>
+            </Link>
+          ))}
       </div>
       <div className="z-20 flex gap-x-4">
         <div className="inset-0">
@@ -81,20 +106,26 @@ export default function ProjectPanel() {
                       Create a new Project
                     </Dialog.Title>
                     <div className="my-10">
-                      <label className="text-sm font-bold">Project Name</label>
-                      <input
-                        type="text"
-                        placeholder="Project X"
-                        className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                      />
+                      <form onSubmit={handleSubmit}>
+                        <label className="text-sm font-bold">
+                          Project Name
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          required
+                          placeholder="Project X"
+                          className={`w-full rounded-md border p-2 px-4 outline-none `}
+                        />
+                        <button
+                          type="submit"
+                          className="mt-3 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        >
+                          Submit
+                        </button>
+                      </form>
                     </div>
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={closeModal}
-                    >
-                      Submit
-                    </button>
                   </Dialog.Panel>
                 </Transition.Child>
               </div>

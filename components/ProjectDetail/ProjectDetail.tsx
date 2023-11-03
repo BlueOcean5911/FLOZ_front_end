@@ -109,20 +109,32 @@ export default function ProjectDetail(props: { pId: string; events: any }) {
         </div>
       </div>
       <div className="mt-8 flex flex-col gap-2">
-        <p className="text-2xl font-bold">Upcoming Meetings</p>
-        <div className="flex gap-4">
-          {events?.map((event: any) => (
-            <MeetingCard key={event.id} event={event} />
-          ))}
-        </div>
+        {events?.length === 0 ? (
+          <p className="text-bold text-3xl">No upcoming meetings</p>
+        ) : (
+          <>
+            <p className="text-2xl font-bold">Upcoming Meetings</p>
+            <div className="flex gap-4">
+              {events.map((event: any) => (
+                <MeetingCard key={event.id} event={event} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
       <div className="mt-8 flex flex-col gap-2">
-        <p className="text-2xl font-bold">Pass Meetings</p>
-        <div className="mb-8 flex gap-4">
-          {events?.map((event: any) => (
-            <PastMeetingsCard key={event.id} event={event} />
-          ))}
-        </div>
+        {events?.length === 0 ? (
+          <p className="text-bold text-3xl">No past meetings</p>
+        ) : (
+          <>
+            <p className="text-2xl font-bold">Past Meetings</p>
+            <div className="flex gap-4">
+              {events.map((event: any) => (
+                <PastMeetingsCard key={event.id} event={event} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

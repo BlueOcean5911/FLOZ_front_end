@@ -3,7 +3,6 @@
 
 import { Dialog, Transition } from "@headlessui/react";
 import { ChangeEvent, Fragment, useState } from "react";
-import { useSupabaseContext } from "@contexts/SupabaseContext";
 import Link from "next/link";
 
 import supabase from "@/utils/supabase";
@@ -17,7 +16,6 @@ export default function ProjectPanel({
   const [allProjects, setAllProjects] = useState<
     { id: any; name: any }[] | null
   >(data);
-  const { supabaseClient } = useSupabaseContext();
 
   function closeModal() {
     setIsOpen(false);

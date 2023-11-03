@@ -53,7 +53,7 @@ export default function ProjectPanel({
           allProjects?.map((project: { id: string; name: string }) => (
             <Link
               href={`/home/${project.id}`}
-              className="flex rounded-md border border-neutral-300 px-10"
+              className="flex rounded-md border border-neutral-300 px-4"
               key={project.id}
             >
               <h4 className="text-lg font-bold">{project.name}</h4>

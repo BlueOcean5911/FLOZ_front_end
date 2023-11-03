@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import supabase from "@/utils/supabase";
-
+const { format, parseISO } = require("date-fns");
 
 interface ProjectDetailsProps {
   label: string;
@@ -49,26 +48,44 @@ function FileUpload(props: ProjectDetailsProps) {
   );
 }
 
-function MeetingCard() {
+function MeetingCard({ event }: { event: any }) {
+  console.log("meeting: ", event);
   return (
     <div className="b-4 flex w-full max-w-xs flex-col border p-2">
-      <p>With joseph</p>
-      <p>Monday, October 30, 2023</p>
-      <p>7:00-8:00PM</p>
-      <button>Join the meeting</button>
+      <p>{event?.summary}</p>
+      {/* {event?.attendees.length !== 0 && <p>With joseph</p>} */}
+      <p>{format(parseISO(event?.created), "EEEE, MMMM d, yyyy")}</p>
+      <p>
+        {format(parseISO(event?.start?.dateTime), "h:mm a")} -
+        {format(parseISO(event?.end?.dateTime), "h:mm a")}
+      </p>
+      <button className="b-4 my-3 border">Join the meeting</button>
       <ul>
-        <li>Gang Xiao</li>
-        <li>Hanyang Liu</li>
-        <li>Dashan Xiong</li>
+        {event?.attendees?.map((attendee: any) => (
+          <li key={attendee.email}>{attendee.email}</li>
+        ))}
       </ul>
     </div>
   );
 }
+function PastMeetingsCard({ event }: { event: any }) {
+  console.log("meeting: ", event);
+  return (
+    <div className="b-4 mx-3  flex w-full max-w-xs flex-col gap-4 border  p-2">
+      <div className="flex justify-between">
+        <p>{event?.summary}</p>
+        <p> completed</p>
+      </div>
+      <a href=""> Summary </a>
+    </div>
+  );
+}
 
-export default function ProjectDetail(props: { pId: string, events : any }) {
+export default function ProjectDetail(props: { pId: string; events: any }) {
   const router = useRouter();
-  const { pId } = props;
+  const { pId, events } = props;
 
+  console.log("events::: ", events);
 
   const handleOnClick = () => {
     router.push(`/home/${pId}/transcript`);
@@ -87,10 +104,17 @@ export default function ProjectDetail(props: { pId: string, events : any }) {
       <div className="mt-8 flex flex-col gap-2">
         <p className="text-2xl font-bold">Upcoming Meetings</p>
         <div className="flex gap-4">
-          <MeetingCard />
-          <MeetingCard />
-          <MeetingCard />
-          <MeetingCard />
+          {events?.map((event: any) => (
+            <MeetingCard key={event.id} event={event} />
+          ))}
+        </div>
+      </div>
+      <div className="mt-8 flex flex-col gap-2">
+        <p className="text-2xl font-bold">Pass Meetings</p>
+        <div className="mb-8 flex gap-4">
+          {events?.map((event: any) => (
+            <PastMeetingsCard key={event.id} event={event} />
+          ))}
         </div>
       </div>
     </div>

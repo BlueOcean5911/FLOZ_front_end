@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Fragment, useState } from "react";
+import supabase from "@/utils/supabase";
 
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Dialog, Transition } from "@headlessui/react";
@@ -29,24 +30,24 @@ export default function ProjectItems({
 
   function updateProjectName(name: string) {
     const project = { ...selectedProject };
-    const totalProjects = [...allProjects];
-    const p = totalProjects.find((pjt) => pjt.id === project.id);
+    const totalProjects = allProjects && [...allProjects];
+    const p = totalProjects?.find((pjt) => pjt.id === project.id);
     p.name = name;
     project.name = name;
     console.log("totalProjects: ", totalProjects);
     setSelectedProject(project);
   }
 
-  function deleteProject(project: Record<string, string>) {
-    const remainingProjects = [...allProjects].filter(
-      (p) => p.id !== project.id
-    );
+  async function deleteProject(project: { id: string; name: string }) {
+    await supabase.from("project").delete().eq("id", project.id);
+    const remainingProjects =
+      allProjects && [...allProjects].filter((p) => p.id !== project.id);
     setAllProjects(remainingProjects);
+    return remainingProjects;
   }
 
   return (
     <div>
-      {/* PROJECT ITEMS */}
       <div className="flex flex-col space-y-6">
         {allProjects?.map((project: Record<string, string>) => (
           <div key={project.id}>
@@ -55,11 +56,11 @@ export default function ProjectItems({
               <div className="flex items-center gap-x-4">
                 <TrashIcon
                   onClick={() => deleteProject(project)}
-                  className="h-5 w-5"
+                  className="h-5 w-5 cursor-pointer"
                 />
                 <PencilSquareIcon
                   onClick={() => openModal(project)}
-                  className="h-5 w-5"
+                  className="h-5 w-5 cursor-pointer"
                 />
               </div>
             </div>
@@ -67,14 +68,12 @@ export default function ProjectItems({
         ))}
       </div>
 
-      {/* EMPTY STATE */}
-      {!allProjects.length && (
+      {!allProjects?.length && (
         <p className="mt-72 flex items-center justify-center text-2xl text-neutral-500">
           There are no projects available
         </p>
       )}
 
-      {/* DIALOGUE */}
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={closeModal}>
           <Transition.Child

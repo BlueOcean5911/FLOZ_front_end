@@ -1,10 +1,16 @@
 "use client";
 
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { ChangeEvent, Fragment, useState } from "react";
 import Link from "next/link";
 
-export default function ProjectPanel() {
+import supabase from "@/utils/supabase";
+
+export default function ProjectPanel({
+  data,
+}: {
+  data: { id: any; name: any }[] | null;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
@@ -15,20 +21,19 @@ export default function ProjectPanel() {
     setIsOpen(true);
   }
 
-  const projects = [
-    { id: "1", name: "Project 1" },
-    { id: "2", name: "Project 2" },
-    { id: "3", name: "Project 3" },
-    { id: "4", name: "Project 4" },
-    { id: "5", name: "Project 5" },
-    { id: "6", name: "Project 6" },
-  ];
+  const handleSubmit = async (
+    event: ChangeEvent<HTMLFormElement | undefined>
+  ) => {
+    event.preventDefault();
+    await supabase.from("project").insert({ name: event.target[0].value });
+    setIsOpen(false);
+  };
 
   return (
-    <>
-      <div className=" flex items-center">
-        <div className="flex  gap-x-4 overflow-x-auto">
-          {projects.map((project) => (
+    <div className=" flex items-center">
+      <div className="flex  gap-x-4 overflow-x-auto">
+        {data &&
+          data.map((project: { id: string; name: string }) => (
             <Link
               href={`/home/${project.id}`}
               className="flex rounded-md border border-neutral-300 px-20"
@@ -37,32 +42,20 @@ export default function ProjectPanel() {
               <h4 className=" text-lg font-bold">{project.name}</h4>
             </Link>
           ))}
+      </div>
+      <div className="z-20 flex gap-x-4">
+        <div className="inset-0">
+          <button
+            type="button"
+            onClick={openModal}
+            className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
+          >
+            Create Project
+          </button>
         </div>
         <div className="z-20 flex gap-x-4">
-          <div className="inset-0">
-            <button
-              type="button"
-              onClick={openModal}
-              className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
-            >
-              Create Project
-            </button>
-          </div>
-
           <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={closeModal}>
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <div className="fixed inset-0 bg-black/25" />
-              </Transition.Child>
-
               <div className="fixed inset-0 overflow-y-auto">
                 <div className="flex min-h-full items-center justify-center p-4 text-center">
                   <Transition.Child
@@ -82,22 +75,26 @@ export default function ProjectPanel() {
                         Create a new Project
                       </Dialog.Title>
                       <div className="my-10">
-                        <label className="text-sm font-bold">
-                          Project Name
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Project X"
-                          className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                        />
+                        <form onSubmit={handleSubmit}>
+                          <label className="text-sm font-bold">
+                            Project Name
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            required
+                            placeholder="Project X"
+                            className={`w-full rounded-md border p-2 px-4 outline-none `}
+                          />
+                          <button
+                            type="submit"
+                            className="mt-3 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          >
+                            Submit
+                          </button>
+                        </form>
                       </div>
-                      <button
-                        type="button"
-                        className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        onClick={closeModal}
-                      >
-                        Submit
-                      </button>
                     </Dialog.Panel>
                   </Transition.Child>
                 </div>
@@ -107,13 +104,13 @@ export default function ProjectPanel() {
         </div>
       </div>
       <div className="relative">
-      <Link
-        href="/home/projects"
-        className="flex items-center justify-center mt-8 shrink-0 rounded-md bg-gray-700 text-white w-32 absolute right-0"
-      >
-        <h4 className="text-sm">View All Projects</h4>
-      </Link>
+        <Link
+          href="/home/projects"
+          className="absolute right-0 mt-8 flex w-32 shrink-0 items-center justify-center rounded-md bg-gray-700 text-white"
+        >
+          <h4 className="text-sm">View All Projects</h4>
+        </Link>
       </div>
-    </>
+    </div>
   );
 }

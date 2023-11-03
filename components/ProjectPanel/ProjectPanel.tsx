@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import { Dialog, Transition } from "@headlessui/react";
@@ -12,6 +13,9 @@ export default function ProjectPanel({
   data: { id: any; name: any }[] | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [allProjects, setAllProjects] = useState<
+    { id: any; name: any }[] | null
+  >(data);
 
   function closeModal() {
     setIsOpen(false);
@@ -22,20 +26,31 @@ export default function ProjectPanel({
   }
 
   const handleSubmit = async (
-    event: ChangeEvent<HTMLFormElement | undefined>
+    event: ChangeEvent<HTMLFormElement[] | undefined>
   ) => {
     event.preventDefault();
+    const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
     await supabase.from("project").insert({ name: event.target[0].value });
+    const newEntry = {
+      id: tempId,
+      name: event.target[0].value,
+    };
+    setAllProjects((prevProjects) => {
+      if (prevProjects) {
+        return [...prevProjects, newEntry];
+      }
+      return [newEntry];
+    });
     setIsOpen(false);
   };
 
   return (
     <div className="flex w-full items-center justify-between">
       <div className="flex gap-x-4 overflow-x-auto">
-        {data?.length === 0 ? (
+        {allProjects?.length === 0 ? (
           <p>No Projects</p>
         ) : (
-          data?.map((project: { id: string; name: string }) => (
+          allProjects?.map((project: { id: string; name: string }) => (
             <Link
               href={`/home/${project.id}`}
               className="flex rounded-md border border-neutral-300 px-20"
@@ -51,9 +66,9 @@ export default function ProjectPanel({
           <button
             type="button"
             onClick={openModal}
-            className="ms-4 rounded-md border border-neutral-300 px-10 text-lg font-bold"
+            className="ms-4 rounded-md border border-neutral-300 px-4 text-lg font-bold"
           >
-            Create Project
+            Add Project
           </button>
         </div>
         <div className="z-20 flex gap-x-4">

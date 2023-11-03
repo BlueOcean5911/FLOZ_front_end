@@ -14,7 +14,7 @@ export default async function Page() {
     .from("project")
     .select("id, name")
     .eq("user_id", user?.value)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   return (
     <div className=" flex flex-col">

@@ -38,11 +38,9 @@ export default async function Page({ params }: { params: pageProps }) {
   const googleEvents = await allEvents.json();
   const myEvents = eventIds?.map((event) => event.id);
 
-  // Filter googleEvents to include only those events whose id is in the eventIds array
-  const filteredEvents = googleEvents?.filter((event) =>
+  const filteredEvents = googleEvents?.items?.filter((event) =>
     myEvents?.includes(event.id)
   );
-  console.log("Google events: ", filteredEvents);
 
   return (
     <>

@@ -241,7 +241,7 @@ export default function Transcript() {
             <div>
               <div className="flex flex-col space-y-2">
                 <h3 className="text-l font-bold">Meeting Summary</h3>
-                <textarea className="h-48">
+                <textarea className="h-32">
                   In publishing and graphic design, Lorem ipsum is a placeholder
                   text commonly used to demonstrate the visual form of a
                   document or a typeface without relying on meaningful content.
@@ -258,6 +258,9 @@ export default function Transcript() {
                 />
                 <MagnifyingGlassIcon className="absolute left-3 top-8 h-5 w-5 text-neutral-500 " />
               </div>
+              <button className="w-full border text-white border-neutral-300 bg-gray-800 p-2 rounded-md my-2" type="button">
+                Send Email
+              </button>
             </div>
           </div>
         </div>

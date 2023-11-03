@@ -5,6 +5,7 @@ import { useSupabaseContext } from "@contexts/SupabaseContext";
 import supabase from "@/utils/supabase";
 
 import Select from "@components/Select/Select";
+import { getCookie } from "cookies-next";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -12,8 +13,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 // import { INITIAL_EVENTS, createEventId } from "./event-utils";
 import { Dialog, Transition } from "@headlessui/react";
-
-import { getProviderToken } from "@providerVar";
 
 export default function Calendar({
   projects,
@@ -27,6 +26,7 @@ export default function Calendar({
   const [initialEvents, setInitialEvents] = useState([]);
 
   const { supabaseClient } = useSupabaseContext();
+  const providerToken = getCookie("p_token");
 
   const INITIAL_EVENTS = [];
 
@@ -34,7 +34,6 @@ export default function Calendar({
     fetchEvents();
   }, []);
 
-  const providerToken = getProviderToken();
   async function fetchEvents() {
     const allEvents = await fetch(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
@@ -59,9 +58,9 @@ export default function Calendar({
       const startStr = start?.replace(/T.*$/, "") ?? start;
 
       // Add the converted event to the INITIAL_EVENTS array
-      const ievents = INITIAL_EVENTS.filter((evt) => evt.id === eventId)
-      
-      if(!ievents.length) {
+      const ievents = INITIAL_EVENTS.filter((evt) => evt.id === eventId);
+
+      if (!ievents.length) {
         INITIAL_EVENTS.push({
           id: eventId,
           title: title,
@@ -130,7 +129,11 @@ export default function Calendar({
       conferenceData: {
         createRequest: {
           requestId: "sample123",
-          conferenceSolutionKey: { type: "hangoutsMeet" },
+          conferenceSolution: {
+            key: {
+              type: "hangoutsMeet",
+            },
+          },
         },
       },
     };
@@ -145,11 +148,13 @@ export default function Calendar({
         body: JSON.stringify(event),
       }
     );
+
     const eventCreationResponse = await eventCreationRes.json();
     const eventId = eventCreationResponse.id;
+    console.log("eventCreationResponse: ", eventCreationResponse);
 
     await supabase
-      .from("calendar")
+      .from("event")
       .insert({ id: eventId, project_id: selectedProject });
 
     fetchEvents();

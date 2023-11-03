@@ -17,7 +17,7 @@ export default async function Page() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="m-20 flex flex-col">
+    <div className=" flex flex-col">
       <ProjectPanel data={projects} />
       <div className="mb-24" />
       <Calendar />

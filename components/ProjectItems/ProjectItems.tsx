@@ -30,12 +30,12 @@ export default function ProjectItems({
 
   async function updateProjectName(name: string) {
     const project = { ...selectedProject };
-    await supabase.from("project").update({ name: name }).eq("id", project.id);
     const totalProjects = allProjects && [...allProjects];
     const p = totalProjects?.find((pjt) => pjt.id === project.id);
     p.name = name;
     project.name = name;
     setSelectedProject(project);
+    await supabase.from("project").update({ name: name }).eq("id", project.id);
     return totalProjects;
   }
 

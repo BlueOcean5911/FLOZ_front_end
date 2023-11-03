@@ -5,6 +5,7 @@ import OauthButton from "@/components/button/OauthButton";
 import { useRouter } from "next/navigation";
 
 import { getCookie } from "cookies-next";
+import LoginScreen from "./LoginScreen";
 
 function Login() {
   const { signInWithGoogle } = useAuthContext();
@@ -24,10 +25,11 @@ function Login() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-y-5">
-      <h1 className="text-3xl">FLOZ Cost</h1>
+      {/* <h1 className="text-3xl">FLOZ Cost</h1>
       <div className="max-w-[300px]">
         <OauthButton platform="Google" onClick={onGoogleClick} />
-      </div>
+      </div> */}
+      <LoginScreen onClick={onGoogleClick}/>
     </div>
   );
 }

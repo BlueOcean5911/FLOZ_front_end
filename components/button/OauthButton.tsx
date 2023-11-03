@@ -12,11 +12,11 @@ function OauthButton({ platform = "Google", onClick }: OauthButtonProps) {
 
   return (
     <button
-      className="flex w-full items-center justify-center gap-3 rounded-lg border border-[#6B6B6B] bg-white px-4 py-3 hover:bg-[#6B6B6B] hover:bg-opacity-20"
+      className="flex w-full items-center justify-center gap-3 rounded-lg shadow-lg border border-neutral-200 bg-white px-4 py-3 hover:bg-[#6B6B6B] hover:bg-opacity-20"
       onClick={onClick}
     >
       <img src={platformToImage[platform]} alt="Vector" className="h-4 w-4" />
-      {platform}
+      {`Sign in with ${platform}`}
     </button>
   );
 }

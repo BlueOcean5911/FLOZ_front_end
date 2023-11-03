@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import supabase from "@/utils/supabase";
+
 
 interface ProjectDetailsProps {
   label: string;
@@ -63,9 +65,10 @@ function MeetingCard() {
   );
 }
 
-export default function ProjectDetail(props: { pId: string }) {
+export default function ProjectDetail(props: { pId: string, events : any }) {
   const router = useRouter();
   const { pId } = props;
+
 
   const handleOnClick = () => {
     router.push(`/home/${pId}/transcript`);

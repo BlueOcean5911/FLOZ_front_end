@@ -29,6 +29,12 @@
       "@contexts/*": ["contexts/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "authVar.ts"
+  ],
   "exclude": ["node_modules", "templates"]
 }

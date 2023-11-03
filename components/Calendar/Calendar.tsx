@@ -13,6 +13,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 // import { INITIAL_EVENTS, createEventId } from "./event-utils";
 import { Dialog, Transition } from "@headlessui/react";
 
+import { getProviderToken } from "@providerVar";
+
 export default function Calendar({
   projects,
 }: {
@@ -32,15 +34,14 @@ export default function Calendar({
     fetchEvents();
   }, []);
 
+  const providerToken = getProviderToken();
   async function fetchEvents() {
-    const data = await checkSession();
-    const { provider_token } = data;
     const allEvents = await fetch(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
       {
         method: "GET",
         headers: {
-          Authorization: "Bearer " + provider_token, // Access token for google
+          Authorization: "Bearer " + providerToken, // Access token for google
         },
       }
     );
@@ -70,16 +71,12 @@ export default function Calendar({
   }
 
   async function checkSession() {
-    const { data, error } = await supabaseClient.auth.getSession();
+    const { data } = await supabaseClient.auth.getSession();
     return data.session;
   }
 
   function closeModal() {
     setIsOpen(false);
-  }
-
-  function openModal(project: Record<string, string>) {
-    setIsOpen(true);
   }
 
   const handleDateSelect = (selectInfo) => {
@@ -101,43 +98,6 @@ export default function Calendar({
 
   ////////////////////////////////////////////////////////////////
   const addEvent = async (selectInfo) => {
-    // const title = prompt("Please enter a new title for your event");
-    // const calendarApi = selectInfo.view.calendar;
-
-    // calendarApi.unselect(); // clear date selection
-
-    // if (title) {
-    //   calendarApi.addEvent({
-    //     id: createEventId(),
-    //     title,
-    //     start: selectInfo.startStr,
-    //     end: selectInfo.endStr,
-    //     allDay: selectInfo.allDay,
-    //   });
-    // }
-
-    // const event = {
-    //   'summary': eventName,
-    //   'description': eventDescription,
-    //   'start': {
-    //     'dateTime': start.ISOString(), // Date.ISOString()
-    //     'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone // Pakistan/Lahore
-    //   },
-    //   'end': {
-    //     'dateTime': end.ISOString(), // Date.ISOString()
-    //     'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone // Pakistan/Lahore
-    //   }
-    // }
-    // await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': 'Bearer ' + session.proivder_token // Access token for google
-
-    //   },
-    //   body: JSON.stringify(event);
-    // });
-
-    // console.log('selectInfo.start.toISOString(): ', selectInfo.start.toISOString());
     setCurrentDateTime(selectInfo);
     setIsOpen(true);
   };
@@ -147,7 +107,7 @@ export default function Calendar({
     const form = new FormData(e.target);
     const formData = Object.fromEntries(form);
 
-    const { eventName, eventDescription, startDate, endDate } = formData;
+    const { eventName, eventDescription } = formData;
     const timestamp = Date.now().toString();
     const requestId = "conference-" + timestamp;
 
@@ -171,14 +131,13 @@ export default function Calendar({
       },
     };
     const data = await checkSession();
-    const { provider_token } = data;
 
     const eventCreationRes = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events`,
       {
         method: "POST",
         headers: {
-          Authorization: "Bearer " + provider_token, // Access token for google
+          Authorization: "Bearer " + providerToken, // Access token for google
         },
         body: JSON.stringify(event),
       }

@@ -125,7 +125,7 @@ export default function Calendar({
         dateTime: currentDateTime.end, // Date.ISOString()
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
       },
-      attendees: [{'email': attendees}],
+      ...(attendees?.length && {attendees: [{email: attendees}]}),
       conferenceData: {
         createRequest: {
           requestId: requestId,

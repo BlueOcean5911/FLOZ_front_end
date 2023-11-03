@@ -195,16 +195,9 @@ export default function Transcript() {
                   label="Role"
                 />
 
-                <Select
-                  options={[
-                    { id: "10", name: "wadecooper@carteblanche.tech" },
-                    { id: "20", name: "helloworld@carteblanche.tech" },
-                    { id: "30", name: "scottcooper@carteblanche.tech" },
-                  ]}
-                  onChange={handleSelectChange}
-                  key={Math.random()}
-                  label="Role"
-                />
+                <button className="flex shrink-0 items-center rounded-md bg-gray-700 px-1 text-sm text-white shadow-sm">
+                  Generate Email
+                </button>
               </div>
             </div>
 
@@ -232,16 +225,9 @@ export default function Transcript() {
                   label="Role"
                 />
 
-                <Select
-                  options={[
-                    { id: "10", name: "wadecooper@carteblanche.tech" },
-                    { id: "20", name: "helloworld@carteblanche.tech" },
-                    { id: "30", name: "scottcooper@carteblanche.tech" },
-                  ]}
-                  onChange={handleSelectChange}
-                  key={Math.random()}
-                  label="Role"
-                />
+                <button className="flex shrink-0 items-center rounded-md bg-gray-700 px-1 text-white shadow-sm text-sm">
+                  Generate Email
+                </button>
               </div>
             </div>
           </div>

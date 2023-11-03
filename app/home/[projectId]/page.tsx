@@ -4,8 +4,6 @@ import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
 
-import { getProviderToken } from "@providerVar";
-
 interface pageProps {
   projectId: string;
 }
@@ -38,7 +36,7 @@ export default async function Page({ params }: { params: pageProps }) {
   const googleEvents = await allEvents.json();
   const myEvents = eventIds?.map((event) => event.id);
 
-  const filteredEvents = googleEvents?.items?.filter((event) =>
+  const filteredEvents = googleEvents?.items?.filter((event: any) =>
     myEvents?.includes(event.id)
   );
 

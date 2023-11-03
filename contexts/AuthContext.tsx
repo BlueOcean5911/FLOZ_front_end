@@ -129,6 +129,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       setUserSession(null);
       setIsSignedIn(false);
       deleteCookie("AUTH_STATUS");
+      deleteCookie("p_token");
+      deleteCookie("user_id");
+      router.push('/')
     }
   }
 

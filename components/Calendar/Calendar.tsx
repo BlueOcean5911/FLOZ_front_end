@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { formatDate } from "@fullcalendar/core";
+import React, { useState } from "react";
+
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -8,16 +8,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { INITIAL_EVENTS, createEventId } from "./event-utils";
 
 export default function DemoApp() {
-  const [weekendsVisible, setWeekendsVisible] = useState(true);
   const [currentEvents, setCurrentEvents] = useState([]);
-
-  useEffect(() => {
-    setCurrentEvents(INITIAL_EVENTS);
-  }, []);
-
-  const handleWeekendsToggle = () => {
-    setWeekendsVisible(!weekendsVisible);
-  };
 
   const handleDateSelect = (selectInfo) => {
     const title = prompt("Please enter a new title for your event");
@@ -59,49 +50,47 @@ export default function DemoApp() {
     );
   };
 
-  const renderSidebarEvent = (event) => {
-    return (
-      <li key={event.id}>
-        <b>
-          {formatDate(event.start, {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </b>
-        <i>{event.title}</i>
-      </li>
-    );
+  const handleAddEvent = (event) => {
+    console.log("add event: ", event);
   };
 
+  function handleRemoveEvent(arg: any): void {
+    console.log("remove not implemented.: ", arg);
+  }
+
+  function handleUpdateEvent(arg: any): void {
+    console.log("update not implemented.: ", arg);
+  }
+
   return (
-    <div className="flex w-full">
-      <div className="flex flex-grow p-12">
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay",
-          }}
-          initialView="dayGridMonth"
-          editable={true}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          weekends={weekendsVisible}
-          initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
-          select={handleDateSelect}
-          eventContent={renderEventContent} // custom render function
-          eventClick={handleEventClick}
-          eventsSet={handleEvents} // called after events are initialized/added/changed/removed
-          /* you can update a remote database when these fire:
+    <div className="">
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay",
+        }}
+        initialView="dayGridMonth"
+        editable={true}
+        selectable={true}
+        selectMirror={true}
+        dayMaxEvents={true}
+        initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
+        select={handleDateSelect}
+        eventContent={renderEventContent} // custom render function
+        eventClick={handleEventClick}
+        eventsSet={handleEvents} // called after events are initialized/added/changed/removed
+        eventAdd={handleAddEvent}
+        eventRemove={handleRemoveEvent}
+        eventChange={handleUpdateEvent}
+
+        /* you can update a remote database when these fire:
             eventAdd={function(){}}
             eventChange={function(){}}
             eventRemove={function(){}}
             */
-        />
-      </div>
+      />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import AuthProvider from "@middlewares/AuthProvider";
 
-import "./globals.css";
 import Header from "@components/Header";
 
 export const metadata = {
@@ -14,10 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <AuthProvider>{children}</AuthProvider>
-      </body>
-    </html>
+    <main className="px-8">
+      <Header />
+      {children}
+    </main>
   );
 }

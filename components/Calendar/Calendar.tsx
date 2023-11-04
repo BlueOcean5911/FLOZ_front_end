@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import React, { useState, Fragment, useEffect } from "react";
-import { useSupabaseContext } from "@contexts/SupabaseContext";
 import supabase from "@/utils/supabase";
 
 import Select from "@components/Select/Select";
@@ -11,8 +12,77 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-// import { INITIAL_EVENTS, createEventId } from "./event-utils";
 import { Dialog, Transition } from "@headlessui/react";
+
+interface Item {
+  kind: string;
+  etag: string;
+  id: string;
+  status: string;
+  htmlLink: string;
+  created: string;
+  updated: string;
+  summary: string;
+  description: string;
+  location: string;
+  creator: {
+    email: string;
+    self: boolean;
+  };
+  organizer: {
+    email: string;
+    self: boolean;
+  };
+  start: {
+    dateTime: string;
+    timeZone: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone: string;
+  };
+  iCalUID: string;
+  sequence: number;
+  attendees: [
+    {
+      email: string;
+      responseStatus: string;
+      self: boolean;
+    }
+  ];
+  reminders: {
+    useDefault: boolean;
+  };
+  eventType: string;
+  conferenceData: {
+    createRequest: {
+      requestId: string;
+      conferenceSolutionKey: {
+        type: string;
+      };
+    };
+    conferenceSolution: {
+      key: {
+        type: string;
+      };
+      name: string;
+      iconUri: string;
+    };
+    conferenceId: string;
+    signature: string;
+  };
+  hangoutLink: string;
+}
+interface Event {
+  kind: string;
+  summary: string;
+  items: Item[];
+}
+
+interface DateTime {
+  start: string;
+  end: string;
+}
 
 export default function Calendar({
   projects,
@@ -20,12 +90,16 @@ export default function Calendar({
   projects: { id: any; name: any }[] | null;
 }) {
   const [selectedProject, setSelectedProject] = useState("");
-  const [currentDateTime, setCurrentDateTime] = useState({});
+
+  const [currentDateTime, setCurrentDateTime] = useState<DateTime>({
+    start: "",
+    end: "",
+  });
+
   const [isOpen, setIsOpen] = useState(false);
 
   const [initialEvents, setInitialEvents] = useState([]);
 
-  const { supabaseClient } = useSupabaseContext();
   const providerToken = getCookie("p_token");
 
   const INITIAL_EVENTS = [];
@@ -35,7 +109,7 @@ export default function Calendar({
   }, []);
 
   async function fetchEvents() {
-    const allEvents = await fetch(
+    const allEvents: Response = await fetch(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
       {
         method: "GET",
@@ -44,21 +118,21 @@ export default function Calendar({
         },
       }
     );
-    const events = await allEvents.json();
 
-    const googleCalendarEvents = events.items;
-
+    const events: Event = await allEvents.json();
     // Loop through the Google Calendar events and convert them
-    for (const googleEvent of googleCalendarEvents) {
+
+    const googleEvents = events?.items;
+    for (const googleEvent of googleEvents) {
       const eventId = googleEvent.id; // Event ID
       const title = googleEvent.summary; // Event summary
       const start = googleEvent.start.dateTime; // Start date
 
-      // Format the start date as a string
       const startStr = start?.replace(/T.*$/, "") ?? start;
 
-      // Add the converted event to the INITIAL_EVENTS array
-      const ievents = INITIAL_EVENTS.filter((evt) => evt.id === eventId);
+      const ievents = INITIAL_EVENTS.filter(
+        (evt: { id: string }) => evt.id === eventId
+      );
 
       if (!ievents.length) {
         INITIAL_EVENTS.push({
@@ -73,41 +147,41 @@ export default function Calendar({
     setInitialEvents(INITIAL_EVENTS);
   }
 
-  async function checkSession() {
-    const { data } = await supabaseClient.auth.getSession();
-    return data.session;
-  }
+  // async function checkSession() {
+  //   const { data } = await supabaseClient.auth.getSession();
+  //   return data.session;
+  // }
 
   function closeModal() {
     setIsOpen(false);
   }
 
-  const handleDateSelect = (selectInfo) => {
-    const title = prompt("Please enter a new title for your event");
-    const calendarApi = selectInfo.view.calendar;
+  // const handleDateSelect = (selectInfo) => {
+  //   const title = prompt("Please enter a new title for your event");
+  //   const calendarApi = selectInfo.view.calendar;
 
-    calendarApi.unselect(); // clear date selection
+  //   calendarApi.unselect(); // clear date selection
 
-    if (title) {
-      calendarApi.addEvent({
-        id: createEventId(),
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        allDay: selectInfo.allDay,
-      });
-    }
-  };
+  //   if (title) {
+  //     calendarApi.addEvent({
+  //       id: createEventId(),
+  //       title,
+  //       start: selectInfo.startStr,
+  //       end: selectInfo.endStr,
+  //       allDay: selectInfo.allDay,
+  //     });
+  //   }
+  // };
 
   ////////////////////////////////////////////////////////////////
-  const addEvent = async (selectInfo) => {
+  const addEvent = (selectInfo: { start: string; end: string }) => {
     setCurrentDateTime(selectInfo);
     setIsOpen(true);
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.target);
+    const form = new FormData(e.target as HTMLFormElement);
     const formData = Object.fromEntries(form);
 
     const { eventName, eventDescription, attendees } = formData;
@@ -125,7 +199,7 @@ export default function Calendar({
         dateTime: currentDateTime.end, // Date.ISOString()
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
       },
-      ...(attendees?.length && {attendees: [{email: attendees}]}),
+      ...(attendees?.length && { attendees: [{ email: attendees }] }),
       conferenceData: {
         createRequest: {
           requestId: requestId,
@@ -136,22 +210,25 @@ export default function Calendar({
       },
     };
 
-    const url = new URL("https://www.googleapis.com/calendar/v3/calendars/primary/events");
+    const url = new URL(
+      "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+    );
     const params = { conferenceDataVersion: 1 };
-    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-
-    const eventCreationRes = await fetch(
-      url,
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + providerToken, // Access token for google
-        },
-        body: JSON.stringify(event),
-      }
+    Object.keys(params).forEach((key) =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      url.searchParams.append(key, params[key])
     );
 
-    const eventCreationResponse = await eventCreationRes.json();
+    const eventCreationRes = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + providerToken, // Access token for google
+      },
+      body: JSON.stringify(event),
+    });
+
+    const eventCreationResponse: { id: string } = await eventCreationRes.json();
+
     const eventId = eventCreationResponse.id;
 
     await supabase
@@ -162,28 +239,28 @@ export default function Calendar({
   };
   ////////////////////////////////////////////////////////////////
 
-  const handleEventClick = (clickInfo) => {
-    if (
-      confirm(
-        `Are you sure you want to delete the event '${clickInfo.event.title}'`
-      )
-    ) {
-      clickInfo.event.remove();
-    }
-  };
+  // const handleEventClick = (clickInfo) => {
+  //   if (
+  //     confirm(
+  //       `Are you sure you want to delete the event '${clickInfo.event.title}'`
+  //     )
+  //   ) {
+  //     clickInfo.event.remove();
+  //   }
+  // };
 
-  const handleEvents = (events) => {
-    // setCurrentEvents(events);
-  };
+  // const handleEvents = (events) => {
+  //   // setCurrentEvents(events);
+  // };
 
-  const renderEventContent = (eventInfo) => {
-    return (
-      <>
-        <b>{eventInfo.timeText}</b>
-        <i>{eventInfo.event.title}</i>
-      </>
-    );
-  };
+  // const renderEventContent = (eventInfo) => {
+  //   return (
+  //     <>
+  //       <b>{eventInfo.timeText}</b>
+  //       <i>{eventInfo.event.title}</i>
+  //     </>
+  //   );
+  // };
 
   const handleSelectChange = (id: string) => {
     setSelectedProject(id);
@@ -206,19 +283,9 @@ export default function Calendar({
         dayMaxEvents={true}
         initialEvents={initialEvents} // alternatively, use the `events` setting to fetch from a feed
         // select={handleDateSelect}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore No overload matches this call.
         select={addEvent}
-        // eventContent={renderEventContent} // custom render function
-        // eventClick={handleEventClick}
-        // eventsSet={handleEvents} // called after events are initialized/added/changed/removed
-        // eventAdd={handleAddEvent}
-        // eventRemove={handleRemoveEvent}
-        // eventChange={handleUpdateEvent}
-
-        /* you can update a remote database when these fire:
-            eventAdd={function(){}}
-            eventChange={function(){}}
-            eventRemove={function(){}}
-            */
       />
 
       {/* DIALOGUE */}
@@ -255,9 +322,8 @@ export default function Calendar({
                     >
                       Add Event
                     </Dialog.Title>
-                    {/* event name */}
                     <div className="my-10">
-                      <label className="text-sm font-bold" for="eventName">
+                      <label className="text-sm font-bold" htmlFor="eventName">
                         Event Name
                       </label>
                       <input
@@ -267,8 +333,8 @@ export default function Calendar({
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
-                    <div className="my-8 flex flex-col w-full justify-between gap-x-8">
-                      <label className="text-sm font-bold" for="eventName">
+                    <div className="my-8 flex w-full flex-col justify-between gap-x-8">
+                      <label className="text-sm font-bold" htmlFor="eventName">
                         Projects
                       </label>
                       <Select
@@ -278,7 +344,7 @@ export default function Calendar({
                       />
                     </div>
                     <div className="my-10">
-                      <label className="text-sm font-bold" for="attendees">
+                      <label className="text-sm font-bold" htmlFor="attendees">
                         Add Attendees
                       </label>
                       <input
@@ -288,11 +354,10 @@ export default function Calendar({
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
-                    {/* event description */}
                     <div className="my-6">
                       <label
                         className="text-sm font-bold"
-                        for="eventDescription"
+                        htmlFor="eventDescription"
                       >
                         Event Description
                       </label>
@@ -301,8 +366,6 @@ export default function Calendar({
                         name="eventDescription"
                         placeholder="Write event description here..."
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                        // value={eventDescription}
-                        // onChange={(e) => setEventDescription(e.target.value)}
                       />
                     </div>
 

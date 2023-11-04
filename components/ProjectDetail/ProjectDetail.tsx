@@ -8,6 +8,76 @@ interface ProjectDetailsProps {
   onClick: () => void;
 }
 
+// interface Attendee {
+//   [
+//   {
+//     email: string;
+//     responseStatus: string;
+//     self: boolean;
+//   }
+// ]
+// };
+
+interface Item {
+  kind: string;
+  etag: string;
+  id: string;
+  status: string;
+  htmlLink: string;
+  created: string;
+  updated: string;
+  summary: string;
+  description: string;
+  location: string;
+  creator: {
+    email: string;
+    self: boolean;
+  };
+  organizer: {
+    email: string;
+    self: boolean;
+  };
+  start: {
+    dateTime: string;
+    timeZone: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone: string;
+  };
+  iCalUID: string;
+  sequence: number;
+  attendees: [
+    {
+      email: string;
+      responseStatus: string;
+      self: boolean;
+    }
+  ];
+  reminders: {
+    useDefault: boolean;
+  };
+  eventType: string;
+  conferenceData: {
+    createRequest: {
+      requestId: string;
+      conferenceSolutionKey: {
+        type: string;
+      };
+    };
+    conferenceSolution: {
+      key: {
+        type: string;
+      };
+      name: string;
+      iconUri: string;
+    };
+    conferenceId: string;
+    signature: string;
+  };
+  hangoutLink: string;
+}
+
 function FileUpload(props: ProjectDetailsProps) {
   const { label, onClick } = props;
   return (
@@ -48,20 +118,22 @@ function FileUpload(props: ProjectDetailsProps) {
   );
 }
 
-function MeetingCard({ event }: { event: any }) {
-  console.log("meeting: ", event);
+function MeetingCard({ event }: { event: Item }) {
   return (
     <div className="b-4 flex w-full max-w-xs flex-col border p-2">
       <p>{event?.summary}</p>
-      {/* {event?.attendees.length !== 0 && <p>With joseph</p>} */}
       <p>{format(parseISO(event?.created), "EEEE, MMMM d, yyyy")}</p>
       <p>
         {format(parseISO(event?.start?.dateTime), "h:mm a")} -
         {format(parseISO(event?.end?.dateTime), "h:mm a")}
       </p>
-      {event?.attendees?.length ? (<p className="font-bold text-xl mt-1">Attendees</p>) : <></>}
+      {event?.attendees?.length ? (
+        <p className="mt-1 text-xl font-bold">Attendees</p>
+      ) : (
+        <></>
+      )}
       <ul>
-        {event?.attendees?.map((attendee: any) => (
+        {event?.attendees?.map((attendee: { email: string }) => (
           <li key={attendee.email}>{attendee.email}</li>
         ))}
       </ul>
@@ -75,24 +147,10 @@ function MeetingCard({ event }: { event: any }) {
     </div>
   );
 }
-function PastMeetingsCard({ event }: { event: any }) {
-  console.log("meeting: ", event);
-  return (
-    <div className="b-4 mx-3  flex w-full max-w-xs flex-col gap-4 border  p-2">
-      <div className="flex justify-between">
-        <p>{event?.summary}</p>
-        <p> completed</p>
-      </div>
-      <a href=""> Summary </a>
-    </div>
-  );
-}
 
-export default function ProjectDetail(props: { pId: string; events: any }) {
+export default function ProjectDetail(props: { pId: string; events: Item[] }) {
   const router = useRouter();
   const { pId, events } = props;
-
-  console.log("events::: ", events);
 
   const handleOnClick = () => {
     router.push(`/home/${pId}/transcript`);
@@ -115,17 +173,12 @@ export default function ProjectDetail(props: { pId: string; events: any }) {
           <>
             <p className="text-2xl font-bold">Upcoming Meetings</p>
             <div className="flex gap-4">
-              {events?.map((event: any) => (
+              {events?.map((event: Item) => (
                 <MeetingCard key={event.id} event={event} />
               ))}
             </div>
           </>
         )}
-      </div>
-      <div className="mt-8 flex flex-col gap-2">
-        {events?.length === 0 ? (
-          <p className="text-bold text-3xl">No past meetings</p>
-        ) : (<></>)}
       </div>
     </div>
   );

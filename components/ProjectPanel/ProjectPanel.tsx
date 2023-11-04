@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import { Dialog, Transition } from "@headlessui/react";
-import { ChangeEvent, Fragment, useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 
 import supabase from "@/utils/supabase";
@@ -25,27 +26,32 @@ export default function ProjectPanel({
     setIsOpen(true);
   }
 
-  const handleSubmit = async (
-    event: ChangeEvent<HTMLFormElement[] | undefined>
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
-    await supabase.from("project").insert({ name: event.target[0].value });
-    const newEntry = {
-      id: tempId,
-      name: event.target[0].value,
-    };
-    setAllProjects((prevProjects) => {
-      if (prevProjects) {
-        return [...prevProjects, newEntry];
-      }
-      return [newEntry];
-    });
-    setIsOpen(false);
+    const form = new FormData(event.currentTarget);
+
+    // Access the form element by name
+    const projectName = form.get("name"); // Assuming your form input has a name attribute
+
+    if (projectName) {
+      const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
+      await supabase.from("project").insert({ name: projectName.toString() });
+      const newEntry = {
+        id: tempId,
+        name: projectName.toString(),
+      };
+      setAllProjects((prevProjects) => {
+        if (prevProjects) {
+          return [...prevProjects, newEntry];
+        }
+        return [newEntry];
+      });
+      setIsOpen(false);
+    }
   };
 
   return (
-    <div className="flex w-full items-center justify-between relative">
+    <div className="relative flex w-full items-center justify-between">
       <div className="flex gap-x-4 overflow-x-auto">
         {allProjects?.length === 0 ? (
           <p>No Projects</p>
@@ -62,17 +68,16 @@ export default function ProjectPanel({
         )}
       </div>
       <div className="z-20 flex gap-x-4">
-
         {/* <div className="inset-0"> */}
-          <button
-            type="button"
-            onClick={openModal}
-            className="ms-4 rounded-md border border-neutral-300 px-4 text-lg text-white font-bold bg-gray-700 absolute right-0 top-0"
-          >
-            Add Project
-          </button>
+        <button
+          type="button"
+          onClick={openModal}
+          className="absolute right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
+        >
+          Add Project
+        </button>
         {/* </div> */}
-        
+
         <div className="z-20 flex gap-x-4">
           <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={closeModal}>

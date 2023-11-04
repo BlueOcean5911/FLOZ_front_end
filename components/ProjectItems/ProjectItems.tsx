@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 
 import React, { Fragment, useState } from "react";
@@ -50,7 +51,7 @@ export default function ProjectItems({
   return (
     <div>
       <div className="flex flex-col space-y-6">
-        {allProjects?.map((project: Record<string, string>) => (
+        {allProjects?.map((project: { id: string; name: string }) => (
           <div key={project.id}>
             <div className="flex items-center justify-between rounded-md border border-neutral-300 p-6 shadow-sm">
               <h4 className="text-4xl">{project.name}</h4>

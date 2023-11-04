@@ -171,8 +171,8 @@ export default function Transcript() {
           </div>
 
           {/* ROLES AND PERMISSIONS */}
-          <div className="mt-6 flex flex-col space-y-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-x-20">
+          <div className="mt-6 w-[30rem] flex flex-col space-y-6 rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-x-6">
               <div className="flex items-center gap-x-2">
                 <img
                   src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=256&h=256&q=80"
@@ -202,7 +202,7 @@ export default function Transcript() {
               </div>
             </div>
 
-            <div className="flex items-center gap-x-20">
+            <div className="flex items-center gap-x-6">
               <div className="flex items-center gap-x-2">
                 <img
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=4&w=256&h=256&q=80"

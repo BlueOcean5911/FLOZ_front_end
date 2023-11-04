@@ -1,5 +1,3 @@
-import AuthProvider from "@middlewares/AuthProvider";
-
 import Header from "@components/Header";
 
 export const metadata = {

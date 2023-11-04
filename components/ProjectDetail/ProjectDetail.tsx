@@ -8,6 +8,76 @@ interface ProjectDetailsProps {
   onClick: () => void;
 }
 
+// interface Attendee {
+//   [
+//   {
+//     email: string;
+//     responseStatus: string;
+//     self: boolean;
+//   }
+// ]
+// };
+
+interface Item {
+  kind: string;
+  etag: string;
+  id: string;
+  status: string;
+  htmlLink: string;
+  created: string;
+  updated: string;
+  summary: string;
+  description: string;
+  location: string;
+  creator: {
+    email: string;
+    self: boolean;
+  };
+  organizer: {
+    email: string;
+    self: boolean;
+  };
+  start: {
+    dateTime: string;
+    timeZone: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone: string;
+  };
+  iCalUID: string;
+  sequence: number;
+  attendees: [
+    {
+      email: string;
+      responseStatus: string;
+      self: boolean;
+    }
+  ];
+  reminders: {
+    useDefault: boolean;
+  };
+  eventType: string;
+  conferenceData: {
+    createRequest: {
+      requestId: string;
+      conferenceSolutionKey: {
+        type: string;
+      };
+    };
+    conferenceSolution: {
+      key: {
+        type: string;
+      };
+      name: string;
+      iconUri: string;
+    };
+    conferenceId: string;
+    signature: string;
+  };
+  hangoutLink: string;
+}
+
 function FileUpload(props: ProjectDetailsProps) {
   const { label, onClick } = props;
   return (
@@ -48,12 +118,10 @@ function FileUpload(props: ProjectDetailsProps) {
   );
 }
 
-function MeetingCard({ event }: { event: any }) {
-  console.log("meeting: ", event);
+function MeetingCard({ event }: { event: Item }) {
   return (
     <div className="b-4 flex w-full max-w-xs flex-col border p-2">
       <p>{event?.summary}</p>
-      {/* {event?.attendees.length !== 0 && <p>With joseph</p>} */}
       <p>{format(parseISO(event?.created), "EEEE, MMMM d, yyyy")}</p>
       <p>
         {format(parseISO(event?.start?.dateTime), "h:mm a")} -
@@ -65,7 +133,7 @@ function MeetingCard({ event }: { event: any }) {
         <></>
       )}
       <ul>
-        {event?.attendees?.map((attendee: any) => (
+        {event?.attendees?.map((attendee: { email: string }) => (
           <li key={attendee.email}>{attendee.email}</li>
         ))}
       </ul>
@@ -80,11 +148,9 @@ function MeetingCard({ event }: { event: any }) {
   );
 }
 
-export default function ProjectDetail(props: { pId: string; events: any }) {
+export default function ProjectDetail(props: { pId: string; events: Item[] }) {
   const router = useRouter();
   const { pId, events } = props;
-
-  console.log("events::: ", events);
 
   const handleOnClick = () => {
     router.push(`/home/${pId}/transcript`);
@@ -107,7 +173,7 @@ export default function ProjectDetail(props: { pId: string; events: any }) {
           <>
             <p className="text-2xl font-bold">Upcoming Meetings</p>
             <div className="flex gap-4">
-              {events?.map((event: { id: string }) => (
+              {events?.map((event: Item) => (
                 <MeetingCard key={event.id} event={event} />
               ))}
             </div>

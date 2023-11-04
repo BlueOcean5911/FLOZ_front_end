@@ -49,7 +49,8 @@ export default function Transcript() {
   ];
 
   const handleSelectChange = (id: string) => {
-    console.log(`Selected option id: ${id}`);
+    // console.log(`Selected option id: ${id}`);
+    return id;
   };
 
   return (
@@ -225,7 +226,7 @@ export default function Transcript() {
                   label="Role"
                 />
 
-                <button className="flex shrink-0 items-center rounded-md bg-gray-700 px-1 text-white shadow-sm text-sm">
+                <button className="flex shrink-0 items-center rounded-md bg-gray-700 px-1 text-sm text-white shadow-sm">
                   Generate Email
                 </button>
               </div>

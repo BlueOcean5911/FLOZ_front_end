@@ -27,6 +27,10 @@ export default function Select({
     }
   };
 
+  if(!selected){
+    return <></>
+  }
+
   return (
     <div className="w-40" key={key}>
       <Listbox value={selected} onChange={handleOnChange}>

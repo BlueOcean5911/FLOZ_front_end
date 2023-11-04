@@ -86,7 +86,6 @@ interface DateTime {
 }
 
 export default function Calendar() {
-
   const [selectedProject, setSelectedProject] = useState("");
   const [allProjects, setAllProjects] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState<DateTime>({
@@ -110,17 +109,16 @@ export default function Calendar() {
 
   useEffect(() => {
     fetchAllProjects();
-  }, [isOpen])
-
+  }, [isOpen]);
 
   const fetchAllProjects = async () => {
     const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user)
-    .order("created_at", { ascending: true });
+      .from("project")
+      .select("id, name")
+      .eq("user_id", user)
+      .order("created_at", { ascending: true });
     setAllProjects(projects);
-  }
+  };
 
   async function fetchEvents() {
     const allEvents: Response = await fetch(
@@ -247,7 +245,10 @@ export default function Calendar() {
 
     await supabase
       .from("event")
-      .insert({ id: eventId, project_id: selectedProject ? selectedProject : allProjects[0]?.id});
+      .insert({
+        id: eventId,
+        project_id: selectedProject ? selectedProject : allProjects[0]?.id,
+      });
 
     fetchEvents();
     setIsOpen(false);
@@ -330,7 +331,7 @@ export default function Calendar() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <form onSubmit={onSubmit}>
+                  {allProjects?.length > 0 ? (<form onSubmit={onSubmit}>
                     <Dialog.Title
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
@@ -349,16 +350,23 @@ export default function Calendar() {
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
-                    <div className="my-8 flex w-full flex-col justify-between gap-x-8">
-                      <label className="text-sm font-bold" htmlFor="eventName">
-                        Projects
-                      </label>
-                      <Select
-                        options={allProjects}
-                        onChange={handleSelectChange}
-                        label="Projects"
-                      />
-                    </div>
+                    {allProjects?.length > 0 ? (
+                      <div className="my-8 flex w-full flex-col justify-between gap-x-8">
+                        <label
+                          className="text-sm font-bold"
+                          htmlFor="eventName"
+                        >
+                          Projects
+                        </label>
+                        <Select
+                          options={allProjects}
+                          onChange={handleSelectChange}
+                          label="Projects"
+                        />
+                      </div>
+                    ) : (
+                      <></>
+                    )}
                     <div className="my-10">
                       <label className="text-sm font-bold" htmlFor="attendees">
                         Add Attendee
@@ -393,7 +401,7 @@ export default function Calendar() {
                     >
                       Submit
                     </button>
-                  </form>
+                  </form>) : <p className="flex justify-center text-l text-center p-16">Add a project in order to add events</p>}
                 </Dialog.Panel>
               </Transition.Child>
             </div>

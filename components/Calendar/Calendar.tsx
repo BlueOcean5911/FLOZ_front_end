@@ -361,10 +361,10 @@ export default function Calendar() {
                     </div>
                     <div className="my-10">
                       <label className="text-sm font-bold" htmlFor="attendees">
-                        Add Attendees
+                        Add Attendee
                       </label>
                       <input
-                        placeholder="Attendees"
+                        placeholder="Attendee"
                         id="attendees"
                         name="attendees"
                         required

@@ -342,6 +342,7 @@ export default function Calendar() {
                         Event Name
                       </label>
                       <input
+                        required
                         placeholder="Event Name"
                         id="eventName"
                         name="eventName"

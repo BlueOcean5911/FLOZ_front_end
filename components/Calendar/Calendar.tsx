@@ -13,6 +13,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
+import { log } from "console";
 
 interface Item {
   kind: string;
@@ -84,13 +85,10 @@ interface DateTime {
   end: string;
 }
 
-export default function Calendar({
-  projects,
-}: {
-  projects: { id: any; name: any }[] | null;
-}) {
-  const [selectedProject, setSelectedProject] = useState("");
+export default function Calendar() {
 
+  const [selectedProject, setSelectedProject] = useState("");
+  const [allProjects, setAllProjects] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState<DateTime>({
     start: "",
     end: "",
@@ -104,9 +102,25 @@ export default function Calendar({
 
   const INITIAL_EVENTS = [];
 
+  const user = getCookie("user_id");
+
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    fetchAllProjects();
+  }, [isOpen])
+
+
+  const fetchAllProjects = async () => {
+    const { data: projects } = await supabase
+    .from("project")
+    .select("id, name")
+    .eq("user_id", user)
+    .order("created_at", { ascending: true });
+    setAllProjects(projects);
+  }
 
   async function fetchEvents() {
     const allEvents: Response = await fetch(
@@ -233,9 +247,10 @@ export default function Calendar({
 
     await supabase
       .from("event")
-      .insert({ id: eventId, project_id: selectedProject });
+      .insert({ id: eventId, project_id: selectedProject ? selectedProject : allProjects[0]?.id});
 
     fetchEvents();
+    setIsOpen(false);
   };
   ////////////////////////////////////////////////////////////////
 
@@ -338,7 +353,7 @@ export default function Calendar({
                         Projects
                       </label>
                       <Select
-                        options={projects}
+                        options={allProjects}
                         onChange={handleSelectChange}
                         label="Projects"
                       />
@@ -351,6 +366,7 @@ export default function Calendar({
                         placeholder="Attendees"
                         id="attendees"
                         name="attendees"
+                        required
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
@@ -372,7 +388,7 @@ export default function Calendar({
                     <button
                       type="submit"
                       className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={closeModal}
+                      // onClick={closeModal}
                     >
                       Submit
                     </button>

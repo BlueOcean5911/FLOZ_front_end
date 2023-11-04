@@ -17,8 +17,7 @@ export default function Select({
   key?: number;
   onChange?: (id: string) => void;
 }) {
-  const selectLabel = label ? `Select ${label}` : "Select";
-  const selectionOptions = [{ id: 88, name: selectLabel }, ...options];
+  const selectionOptions = [...options];
   const [selected, setSelected] = useState(selectionOptions[0]);
 
   const handleOnChange = (option: { id: string; name: string }) => {
@@ -65,7 +64,7 @@ export default function Select({
                           selected ? "font-medium" : "font-normal"
                         }`}
                       >
-                        {option.name === selectLabel ? "None" : option.name}
+                        {option.name}
                       </span>
                       {selected ? (
                         <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-amber-600">

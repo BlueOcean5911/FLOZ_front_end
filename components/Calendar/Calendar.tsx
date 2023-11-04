@@ -242,12 +242,11 @@ export default function Calendar() {
 
     const eventId = eventCreationResponse.id;
 
-    await supabase
-      .from("event")
-      .insert({
-        id: eventId,
-        project_id: selectedProject ? selectedProject : allProjects[0]?.id,
-      });
+    await supabase.from("event").insert({
+      id: eventId,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      project_id: selectedProject ? selectedProject : allProjects[0]?.id,
+    });
 
     fetchEvents();
     setIsOpen(false);
@@ -330,77 +329,89 @@ export default function Calendar() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  {allProjects?.length > 0 ? (<form onSubmit={onSubmit}>
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
-                      Add Event
-                    </Dialog.Title>
-                    <div className="my-10">
-                      <label className="text-sm font-bold" htmlFor="eventName">
-                        Event Name
-                      </label>
-                      <input
-                        required
-                        placeholder="Event Name"
-                        id="eventName"
-                        name="eventName"
-                        className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                      />
-                    </div>
-                    {allProjects?.length > 0 ? (
-                      <div className="my-8 flex w-full flex-col justify-between gap-x-8">
+                  {allProjects?.length > 0 ? (
+                    <form onSubmit={onSubmit}>
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900"
+                      >
+                        Add Event
+                      </Dialog.Title>
+                      <div className="my-10">
                         <label
                           className="text-sm font-bold"
                           htmlFor="eventName"
                         >
-                          Projects
+                          Event Name
                         </label>
-                        <Select
-                          options={allProjects}
-                          onChange={handleSelectChange}
-                          label="Projects"
+                        <input
+                          required
+                          placeholder="Event Name"
+                          id="eventName"
+                          name="eventName"
+                          className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                         />
                       </div>
-                    ) : (
-                      <></>
-                    )}
-                    <div className="my-10">
-                      <label className="text-sm font-bold" htmlFor="attendees">
-                        Add Attendee
-                      </label>
-                      <input
-                        placeholder="Attendee"
-                        id="attendees"
-                        name="attendees"
-                        required
-                        className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                      />
-                    </div>
-                    <div className="my-6">
-                      <label
-                        className="text-sm font-bold"
-                        htmlFor="eventDescription"
-                      >
-                        Event Description
-                      </label>
-                      <textarea
-                        id="eventDescription"
-                        name="eventDescription"
-                        placeholder="Write event description here..."
-                        className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
-                      />
-                    </div>
+                      {allProjects?.length > 0 ? (
+                        <div className="my-8 flex w-full flex-col justify-between gap-x-8">
+                          <label
+                            className="text-sm font-bold"
+                            htmlFor="eventName"
+                          >
+                            Projects
+                          </label>
+                          <Select
+                            options={allProjects}
+                            onChange={handleSelectChange}
+                            label="Projects"
+                          />
+                        </div>
+                      ) : (
+                        <></>
+                      )}
+                      <div className="my-10">
+                        <label
+                          className="text-sm font-bold"
+                          htmlFor="attendees"
+                        >
+                          Add Attendee
+                        </label>
+                        <input
+                          placeholder="Attendee"
+                          id="attendees"
+                          name="attendees"
+                          required
+                          className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
+                        />
+                      </div>
+                      <div className="my-6">
+                        <label
+                          className="text-sm font-bold"
+                          htmlFor="eventDescription"
+                        >
+                          Event Description
+                        </label>
+                        <textarea
+                          id="eventDescription"
+                          name="eventDescription"
+                          placeholder="Write event description here..."
+                          className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
+                        />
+                      </div>
 
-                    <button
-                      type="submit"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      // onClick={closeModal}
-                    >
-                      Submit
-                    </button>
-                  </form>) : <p className="flex justify-center text-l text-center p-16">Add a project in order to add events</p>}
+                      <button
+                        type="submit"
+                        className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        // onClick={closeModal}
+                      >
+                        Submit
+                      </button>
+                    </form>
+                  ) : (
+                    <p className="text-l flex justify-center p-16 text-center">
+                      Add a project in order to add events
+                    </p>
+                  )}
                 </Dialog.Panel>
               </Transition.Child>
             </div>

@@ -330,7 +330,7 @@ export default function Calendar() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <form onSubmit={onSubmit}>
+                  {allProjects?.length > 0 ? (<form onSubmit={onSubmit}>
                     <Dialog.Title
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
@@ -349,16 +349,23 @@ export default function Calendar() {
                         className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
                       />
                     </div>
-                    <div className="my-8 flex w-full flex-col justify-between gap-x-8">
-                      <label className="text-sm font-bold" htmlFor="eventName">
-                        Projects
-                      </label>
-                      <Select
-                        options={allProjects}
-                        onChange={handleSelectChange}
-                        label="Projects"
-                      />
-                    </div>
+                    {allProjects?.length > 0 ? (
+                      <div className="my-8 flex w-full flex-col justify-between gap-x-8">
+                        <label
+                          className="text-sm font-bold"
+                          htmlFor="eventName"
+                        >
+                          Projects
+                        </label>
+                        <Select
+                          options={allProjects}
+                          onChange={handleSelectChange}
+                          label="Projects"
+                        />
+                      </div>
+                    ) : (
+                      <></>
+                    )}
                     <div className="my-10">
                       <label className="text-sm font-bold" htmlFor="attendees">
                         Add Attendee
@@ -393,7 +400,7 @@ export default function Calendar() {
                     >
                       Submit
                     </button>
-                  </form>
+                  </form>) : <p className="flex justify-center text-l text-center p-16">Add a project in order to add events</p>}
                 </Dialog.Panel>
               </Transition.Child>
             </div>

@@ -13,7 +13,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
-import { log } from "console";
 
 interface Item {
   kind: string;
@@ -86,7 +85,6 @@ interface DateTime {
 }
 
 export default function Calendar() {
-
   const [selectedProject, setSelectedProject] = useState("");
   const [allProjects, setAllProjects] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState<DateTime>({
@@ -110,17 +108,16 @@ export default function Calendar() {
 
   useEffect(() => {
     fetchAllProjects();
-  }, [isOpen])
-
+  }, [isOpen]);
 
   const fetchAllProjects = async () => {
     const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user)
-    .order("created_at", { ascending: true });
+      .from("project")
+      .select("id, name")
+      .eq("user_id", user)
+      .order("created_at", { ascending: true });
     setAllProjects(projects);
-  }
+  };
 
   async function fetchEvents() {
     const allEvents: Response = await fetch(
@@ -247,7 +244,10 @@ export default function Calendar() {
 
     await supabase
       .from("event")
-      .insert({ id: eventId, project_id: selectedProject ? selectedProject : allProjects[0]?.id});
+      .insert({
+        id: eventId,
+        project_id: selectedProject ? selectedProject : allProjects[0]?.id,
+      });
 
     fetchEvents();
     setIsOpen(false);

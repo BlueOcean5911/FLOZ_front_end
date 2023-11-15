@@ -1,6 +1,5 @@
-// import Calendar from "@components/Calendar/Calendar";
+import Calendar from "@components/Calendar/Calendar";
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
-import UserCard from "@components/UserCard/UserCard";
 
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
@@ -18,9 +17,10 @@ export default async function Page() {
     .order("created_at", { ascending: true });
 
   return (
-    <div className="flex flex-col">
-      <UserCard />
-      <ProjectPanel data={projects} />
+    <div className=" flex flex-col">
+      {/* <ProjectPanel data={projects} /> */}
+      <div className="mb-24" />
+      <Calendar />
     </div>
   );
 }

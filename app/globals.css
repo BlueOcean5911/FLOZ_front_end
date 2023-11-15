@@ -2,3 +2,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    .border-green {
+      border-color: #349989;
+    }
+
+    .nav-active {
+        background: var(--foundation-blue-blue-95, #EEF4FF);
+        box-shadow: 0px 3px 0px 0px #349989 inset;
+    }
+  }

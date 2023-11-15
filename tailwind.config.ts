@@ -36,7 +36,8 @@ export default {
         '6xl': '5rem',
       },
       fontFamily: {
-        sans: 'var(--font-inter)',
+        'sans': ['Segoe UI', 'Arial', 'sans-serif'],
+        // sans: 'var(--font-inter)',
         display: ['Cabinet Grotesk', ...defaultTheme.fontFamily.sans],
       },
     },

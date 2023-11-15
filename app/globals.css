@@ -4,12 +4,138 @@
 @tailwind utilities;
 
 @layer utilities {
-    .border-green {
-      border-color: #349989;
+  .border-green {
+    border-color: #349989;
+  }
+
+  .nav-active {
+    background: var(--foundation-blue-blue-95, #EEF4FF);
+    box-shadow: 0px 3px 0px 0px #349989 inset;
+  }
+
+  .title_color {
+    color: #349989;
+  }
+
+  .m0-important {
+    margin: 0 !important;
+  }
+
+  .f-small {
+    font-size: small !important
+  }
+
+  .view-all {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+  text-align: right;
+    flex-shrink: 0;
+    padding: 20px 20px;
+    text-decoration: underline;
+    border-radius: 4px;
+  }
+
+
+
+  /* Accoudian */
+
+
+  :root {
+    --primary: #227093;
+    --secondary: #ff5252;
+    --background: #eee;
+    --highlight: #ffda79;
+    /* Theme color */
+    --theme: var(--primary);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Core styles/functionality */
+  .tab input {
+    position: absolute;
+    opacity: 0;
+    z-index: -1;
+  }
+
+  .tab__content {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.35s;
+  }
+
+  .tab input:checked~.tab__content {
+    max-height: 20rem;
+  }
+
+  /* Visual styles */
+  .accordion {
+    color: black;
+    /* border: 2px solid; */
+    /* border-radius: 0.5rem; */
+    overflow: hidden;
+  }
+
+  .tab__label,
+  .tab__close {
+    display: flex;
+    color: black;
+    background: #F3F3F3;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .tab__label {
+    justify-content: space-between;
+    padding: 10px 10px 10px 10px;
+  }
+
+  .tab__label::after {
+    content: "\276F";
+    width: 1em;
+    height: 1em;
+    text-align: center;
+    transform: rotate(90deg);
+    transition: all 0.35s;
+  }
+
+  .tab input:checked+.tab__label::after {
+    transform: rotate(270deg);
+  }
+
+  .tab__content p {
+    margin: 0;
+    padding: 1rem;
+  }
+
+  .tab__close {
+    justify-content: flex-end;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .accordion--radio {
+    /* --theme: var(--secondary); */
+  }
+
+  /* Arrow animation */
+  .tab input:not(:checked)+.tab__label:hover::after {
+    animation: bounce .5s infinite;
+  }
+
+  @keyframes bounce {
+    25% {
+      transform: rotate(90deg) translate(.25rem);
     }
 
-    .nav-active {
-        background: var(--foundation-blue-blue-95, #EEF4FF);
-        box-shadow: 0px 3px 0px 0px #349989 inset;
+    75% {
+      transform: rotate(90deg) translate(-.25rem);
     }
   }
+
+}

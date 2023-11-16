@@ -1,5 +1,5 @@
 import AuthProvider from "@middlewares/AuthProvider";
-
+import NextAuthProvider from "../contexts/NextAuthContext";
 import "./globals.css";
 
 export const metadata = {
@@ -15,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <NextAuthProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

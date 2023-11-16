@@ -1,6 +1,8 @@
 import api from '../api/api';
 import User from '../models/user.model';
 
+
+
 export const updateUser = async (id: string, user: User) => {
     const resp = await api.patch(`/users/${id}`, user);
     const updatedUser = resp.data;
@@ -12,6 +14,12 @@ export const getUser = async (id: string) => {
     const user = resp.data;
     return user;
 
+}
+
+export const signInUser = async (user: User) => {
+    const resp = await api.post('/users/signIn', user);
+    const signedInUser = resp.data;
+    return signedInUser;
 }
 
 export const createUser = async (user: User) => {

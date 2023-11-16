@@ -13,6 +13,7 @@ import axios from "axios";
 import { Session } from "@supabase/supabase-js";
 import { setCookie } from "cookies-next";
 import { deleteCookie } from "cookies-next";
+import { signInUser } from "../service/user.service";
 
 import { setProviderToken } from "@providerVar";
 
@@ -81,6 +82,12 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     //   userId: session.user.id,
     // });
     setIsSignedIn(true);
+
+    signInUser({
+      email: session.user.email,
+      name: session.user.user_metadata.full_name as string,
+      oAuthToken: session.provider_token,
+    });
   }
 
   // Adds the user if they don't already exist
@@ -131,7 +138,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       deleteCookie("AUTH_STATUS");
       deleteCookie("p_token");
       deleteCookie("user_id");
-      router.push('/')
+      router.push("/");
     }
   }
 

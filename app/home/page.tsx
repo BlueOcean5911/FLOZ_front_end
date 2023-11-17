@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export default async function Page() {
   const cookieStore = cookies();
-  const userId = cookieStore.get("user_id");
+  const userId = cookieStore.get("user_id").value;
 
   const projects = await getProjects({ userId: userId });
 

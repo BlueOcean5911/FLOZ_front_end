@@ -1,4 +1,4 @@
-interface User {
+interface IUser {
     _id?: string;
     name?: string;
     email?: string;
@@ -8,4 +8,4 @@ interface User {
     createdAt?: Date;
 }
 
-export default User;
+export type  { IUser };

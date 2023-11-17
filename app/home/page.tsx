@@ -11,8 +11,7 @@ export const revalidate = 0;
 
 export default async function Page() {
   const cookieStore = cookies();
-  const user = cookieStore.get("user_id");
-
+  const userId = cookieStore.get("user_id").value;
 
   // Get projects from backend api
   const projects = await getProjects();
@@ -25,8 +24,8 @@ export default async function Page() {
 
   return (
     <div className="flex flex-col">
-      <UserCard data={ {todos} } />
-      <ProjectPanel data={ { projects, meetings } } />
+      <UserCard data={{ todos }} />
+      <ProjectPanel data={{ projects, meetings }} />
     </div>
   );
 }

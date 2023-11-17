@@ -5,9 +5,10 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
-import moment from 'moment';
+import { IProject } from "@models";
+import moment from "moment";
 import { get, post } from "../../httpService/http-service";
-import supabase from "@/utils/supabase";
+import { createProject } from "@./service/project.service";
 import Project from "@models/project.model";
 import Meeting from "@models/meeting.model";
 
@@ -16,15 +17,16 @@ function setMeetingsDay(meetingsList) {
   const meetingsByDay = meetingsList.reduce((acc, meeting) => {
     const date = new Date(meeting.date);
     const currentDate = new Date();
-    const dayDiff = ((date.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000));
-    let dayLabel = '';
+    const dayDiff =
+      (date.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000);
+    let dayLabel = "";
 
     if (dayDiff < 0.5) {
-      dayLabel = 'Today';
+      dayLabel = "Today";
     } else if (dayDiff < 1 && dayDiff > 0.5) {
-      dayLabel = 'Tomorrow';
+      dayLabel = "Tomorrow";
     } else {
-      dayLabel = date.toLocaleDateString('en-US', { weekday: 'long' });
+      dayLabel = date.toLocaleDateString("en-US", { weekday: "long" });
     }
 
     const existingDay = acc.find((item) => item.label === dayLabel);
@@ -37,34 +39,42 @@ function setMeetingsDay(meetingsList) {
 
     return acc;
   }, []);
-  console.log(meetingsByDay)
-  return meetingsByDay
+  console.log(meetingsByDay);
+  return meetingsByDay;
 }
 
 export default function ProjectPanel({
-  data
+  data,
 }: {
   data: {
-    projects: Project[] | null,
-    meetings: Meeting[] | null
+    projects: Project[] | null;
+    meetings: Meeting[] | null;
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<Project[] | null>(data.projects);
-  const [thisMonthProjects, setThisMonthProjects] = useState<Project[] | null>();
-  const [nextMonthProjects, setNextMonthProjects] = useState<Project[] | null>();
+  const [allProjects, setAllProjects] = useState<Project[] | null>(
+    data.projects
+  );
+  const [thisMonthProjects, setThisMonthProjects] = useState<
+    Project[] | null
+  >();
+  const [nextMonthProjects, setNextMonthProjects] = useState<
+    Project[] | null
+  >();
   const [meetings, setMeetings] = useState<Meeting[] | null>(data.meetings);
-  const [meetingsByDays, setMeetingsByDays] = useState(setMeetingsDay(data.meetings));
+  const [meetingsByDays, setMeetingsByDays] = useState(
+    setMeetingsDay(data.meetings)
+  );
 
   useEffect(() => {
     // filter this month and next month project
     let thisMonth = allProjects.filter((project) => {
       const date = new Date(project.createdAt);
-      return date.getMonth() === (new Date()).getMonth();
+      return date.getMonth() === new Date().getMonth();
     });
     let nextMonth = allProjects.filter((project) => {
       const date = new Date(project.createdAt);
-      return date.getMonth() === (new Date()).getMonth() + 1;
+      return date.getMonth() === new Date().getMonth() + 1;
     });
     setThisMonthProjects(thisMonth);
     setNextMonthProjects(nextMonth);
@@ -80,12 +90,12 @@ export default function ProjectPanel({
 
   //get time from date using moment js
   const getTime = (date: string) => {
-    return moment(date).format('HH:mm:ss');
-  }
+    return moment(date).format("HH:mm:ss");
+  };
   // get month name with date using moment js
   const getMonth = (date: any) => {
-    return moment(date).format('MMM Do');
-  }
+    return moment(date).format("MMM Do");
+  };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -95,15 +105,15 @@ export default function ProjectPanel({
 
     if (projectName) {
       const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
-      await supabase.from("project").insert({ name: projectName.toString() });
+      await createProject({ name: projectName.toString() });
       const newEntry = {
-        id: '1',
+        id: "1",
         name: projectName.toString(),
-        userId: '6555b669fdaccb0218c8695e',
+        userId: "6555b669fdaccb0218c8695e",
       };
-      const savedProject = await post('projects', newEntry);
+      const savedProject = await post("projects", newEntry);
       if (savedProject) {
-        const getProject = await get('projects');
+        const getProject = await get("projects");
         if (getProject.data) setAllProjects(getProject.data);
       }
 
@@ -112,16 +122,17 @@ export default function ProjectPanel({
   };
 
   return (
-    <div className="w-full items-center justify-between mb-5">
+    <div className="mb-5 w-full items-center justify-between">
       <div className="grid grid-cols-3 gap-4">
-
-        <div className="col-span-2 border rounded border-stone-300 p-3 bg-white">
-          <div className="flex flex-col h-full justify-between">
+        <div className="col-span-2 rounded border border-stone-300 bg-white p-3">
+          <div className="flex h-full flex-col justify-between">
             <div>
               <div className="flex justify-between">
                 <div className="flex">
-                  <h3 className="my-auto pr-2 font-bold text-sm">Project</h3>
-                  <p className="my-auto text-sm" >As of today at {getTime(new Date().toISOString())}</p>
+                  <h3 className="my-auto pr-2 text-sm font-bold">Project</h3>
+                  <p className="my-auto text-sm">
+                    As of today at {getTime(new Date().toISOString())}
+                  </p>
                 </div>
                 <div className="flex">
                   <input
@@ -132,97 +143,166 @@ export default function ProjectPanel({
                     placeholder="Search Project"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
                   />
-                  <button style={{ color: "#349989", borderRadius: "4px", border: "1px solid var(--Tone, #349989)", background: "var(--foundation-gray-neutral-100, #FFF)" }} type="button" onClick={openModal} className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white" >
+                  <button
+                    style={{
+                      color: "#349989",
+                      borderRadius: "4px",
+                      border: "1px solid var(--Tone, #349989)",
+                      background: "var(--foundation-gray-neutral-100, #FFF)",
+                    }}
+                    type="button"
+                    onClick={openModal}
+                    className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
+                  >
                     New
                   </button>
                 </div>
               </div>
 
               <div className="mt-4">
-                <div className="bg-white rounded-md">
+                <div className="rounded-md bg-white">
                   <div>
-                    <h2 className="mb-4 text-sm font-bold title_color">This month</h2>
+                    <h2 className="title_color mb-4 text-sm font-bold">
+                      This month
+                    </h2>
                     <div>
                       {thisMonthProjects?.length === 0 ? (
-                        <p className="my-4" style={{ textAlign: "center" }}>No Projects</p>
+                        <p className="my-4" style={{ textAlign: "center" }}>
+                          No Projects
+                        </p>
                       ) : (
                         <div>
-                          <div className="grid grid-cols-12 bg-gray-100 py-2 px-4 text-black-400 font-bold text-md">
+                          <div className="text-black-400 text-md grid grid-cols-12 bg-gray-100 px-4 py-2 font-bold">
                             <div className="col-span-1">
-                              <input type="checkbox" className="" id="checkbox" />
+                              <input
+                                type="checkbox"
+                                className=""
+                                id="checkbox"
+                              />
                             </div>
-                            <div className="col-span-3"><span>Name</span></div>
-                            <div className="col-span-3"><span className="m0-important" >Phase</span></div>
-                            <div className="col-span-2"><span>Due Date</span></div>
-                            <div className="col-span-2"><span></span></div>
-                            <div className="col-span-1"><span></span></div>
+                            <div className="col-span-3">
+                              <span>Name</span>
+                            </div>
+                            <div className="col-span-3">
+                              <span className="m0-important">Phase</span>
+                            </div>
+                            <div className="col-span-2">
+                              <span>Due Date</span>
+                            </div>
+                            <div className="col-span-2">
+                              <span></span>
+                            </div>
+                            <div className="col-span-1">
+                              <span></span>
+                            </div>
                           </div>
                           <div>
-
-                            {thisMonthProjects?.map(project => (
-                              <div key={project._id} className="grid grid-cols-12 border-b text-sm px-4 font-normal py-2 space-x-4">
+                            {thisMonthProjects?.map((project) => (
+                              <div
+                                key={project._id}
+                                className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"
+                              >
                                 <div className="col-span-1">
-                                  <input type="checkbox" className="" id="checkbox" />
+                                  <input
+                                    type="checkbox"
+                                    className=""
+                                    id="checkbox"
+                                  />
                                 </div>
 
-                                <div className="col-span-3 m0-important">
-                                  <span className="m0-important f-small">{project.name}</span>
+                                <div className="m0-important col-span-3">
+                                  <span className="m0-important f-small">
+                                    {project.name}
+                                  </span>
                                 </div>
-                                <div className="col-span-3 m0-important f-small">
+                                <div className="m0-important f-small col-span-3">
                                   <span>phase</span>
                                 </div>
-                                <div className="col-span-2 m0-important f-small">
+                                <div className="m0-important f-small col-span-2">
                                   <span>{getMonth(project.createdAt)}</span>
                                 </div>
-                                <div className="col-span-2 m0-important f-small">
-                                  <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
-                                  </Link></span>
+                                <div className="m0-important f-small col-span-2">
+                                  <span className="title_color">
+                                    {" "}
+                                    <Link
+                                      href={`/project/${project._id}`}
+                                      key={project._id}
+                                    >
+                                      <h4 className="f-small text-sm">
+                                        Go to project
+                                      </h4>
+                                    </Link>
+                                  </span>
                                 </div>
                                 <div className="col-span-1 mx-0">
-                                  <select style={{ float: 'right' }}>
-                                    <option value={''}></option>
-                                    <option value={''} >Admin</option>
-                                    <option value={''}>User</option>
+                                  <select style={{ float: "right" }}>
+                                    <option value={""}></option>
+                                    <option value={""}>Admin</option>
+                                    <option value={""}>User</option>
                                   </select>
                                 </div>
                               </div>
                             ))}
-
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 bg-white rounded-md">
+                <div className="mt-4 rounded-md bg-white">
                   <div>
-                    <h2 className="mb-4 text-sm font-bold title_color">Next month</h2>
+                    <h2 className="title_color mb-4 text-sm font-bold">
+                      Next month
+                    </h2>
                     <div>
                       {nextMonthProjects?.length === 0 ? (
-                        <p className="my-4" style={{ textAlign: "center" }}>No Projects</p>
-
+                        <p className="my-4" style={{ textAlign: "center" }}>
+                          No Projects
+                        </p>
                       ) : (
                         <div>
-                          <div className="grid grid-cols-6 bg-gray-100 py-2 px-4 text-black-400 font-bold text-md">
+                          <div className="text-black-400 text-md grid grid-cols-6 bg-gray-100 px-4 py-2 font-bold">
                             <div>
-                              <input type="checkbox" className="" id="checkbox" />
+                              <input
+                                type="checkbox"
+                                className=""
+                                id="checkbox"
+                              />
                             </div>
-                            <div><span>Name</span></div>
-                            <div><span className="m0-important" >Phase</span></div>
-                            <div><span>Due Date</span></div>
-                            <div><span></span></div>
-                            <div><span></span></div>
+                            <div>
+                              <span>Name</span>
+                            </div>
+                            <div>
+                              <span className="m0-important">Phase</span>
+                            </div>
+                            <div>
+                              <span>Due Date</span>
+                            </div>
+                            <div>
+                              <span></span>
+                            </div>
+                            <div>
+                              <span></span>
+                            </div>
                           </div>
                           <div>
-
                             {nextMonthProjects?.map((project) => (
-                              <div key={project._id} className="grid grid-cols-6 border-t text-sm px-4 font-normal mt-4 space-x-4">
+                              <div
+                                key={project._id}
+                                className="mt-4 grid grid-cols-6 space-x-4 border-t px-4 text-sm font-normal"
+                              >
                                 <div>
-                                  <input type="checkbox" className="" id="checkbox" />
+                                  <input
+                                    type="checkbox"
+                                    className=""
+                                    id="checkbox"
+                                  />
                                 </div>
 
                                 <div className="m0-important f-small">
-                                  <span className="m0-important">{project.name}</span>
+                                  <span className="m0-important">
+                                    {project.name}
+                                  </span>
                                 </div>
                                 <div className="m0-important f-small">
                                   <span>phase</span>
@@ -231,19 +311,27 @@ export default function ProjectPanel({
                                   <span>{getMonth(project.createdAt)}</span>
                                 </div>
                                 <div className="m0-important f-small">
-                                  <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
-                                  </Link></span>
+                                  <span className="title_color">
+                                    {" "}
+                                    <Link
+                                      href={`/project/${project._id}`}
+                                      key={project._id}
+                                    >
+                                      <h4 className="f-small text-sm">
+                                        Go to project
+                                      </h4>
+                                    </Link>
+                                  </span>
                                 </div>
-                                <div >
-                                  <select style={{ float: 'right' }}>
-                                    <option value={''}></option>
-                                    <option value={''} >Admin</option>
-                                    <option value={''}>User</option>
+                                <div>
+                                  <select style={{ float: "right" }}>
+                                    <option value={""}></option>
+                                    <option value={""}>Admin</option>
+                                    <option value={""}>User</option>
                                   </select>
                                 </div>
                               </div>
                             ))}
-
                           </div>
                         </div>
                       )}
@@ -254,20 +342,19 @@ export default function ProjectPanel({
             </div>
 
             <div className="title_color view-all">
-              <Link href="/home/projects" >
+              <Link href="/home/projects">
                 <h4 className="f-small text-sm">View All</h4>
               </Link>
             </div>
           </div>
         </div>
 
-
-        <div className="col-span-1 border rounded border-stone-300 p-3 bg-white relative" >
-          <div className="flex flex-col h-full justify-between">
+        <div className="relative col-span-1 rounded border border-stone-300 bg-white p-3">
+          <div className="flex h-full flex-col justify-between">
             <div>
               <div className="flex justify-between">
                 <div className="flex">
-                  <h3 className="my-auto pr-2 font-bold text-sm">Meetings</h3>
+                  <h3 className="my-auto pr-2 text-sm font-bold">Meetings</h3>
                 </div>
                 <div className="flex">
                   <input
@@ -278,47 +365,104 @@ export default function ProjectPanel({
                     placeholder="Search Meetings"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
                   />
-                  <button style={{ color: "#349989", borderRadius: "4px", border: "1px solid var(--Tone, #349989)", background: "var(--foundation-gray-neutral-100, #FFF)" }} type="button" onClick={openModal} className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white" >
+                  <button
+                    style={{
+                      color: "#349989",
+                      borderRadius: "4px",
+                      border: "1px solid var(--Tone, #349989)",
+                      background: "var(--foundation-gray-neutral-100, #FFF)",
+                    }}
+                    type="button"
+                    onClick={openModal}
+                    className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
+                  >
                     New
                   </button>
                 </div>
               </div>
 
               <div className="mt-4">
-                <div className="bg-white rounded-md">
+                <div className="rounded-md bg-white">
                   <div>
                     <div>
                       {meetingsByDays?.length === 0 ? (
-                        <p>{''}</p>
+                        <p>{""}</p>
                       ) : (
                         <div>
-                          {meetingsByDays?.map((day: { label: string, meetings: { _id: string; summary: string, date: string, createdAt: string }[] }, index: number) => (
-                            <section key={day.label} className="accordion mb-4">
-                              <div className="tab bg-white-100 text-black-400 text-md">
-                                <label htmlFor={`accordion-${index}`} className="tab__label font-bold">{day.label}</label>
-                                <input type="checkbox" name={`accordion-${index}`} id={`accordion-${index}`} />
-                                <div className="tab__content">
-                                  {day.meetings?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
-                                    <div key={meetings._id} className="grid grid-cols-4 border-b text-sm px-2 font-small py-4 space-x-4">
-                                      <div className="col-span-1 m0-important f-small">
-                                        <span>{getTime(meetings.date)}</span>
-                                      </div>
-                                      <div className="col-span-2 m0-important text-sm">
-                                        <span className="m0-important font-bold f-small">{meetings.summary}</span>
-                                      </div>
-                                      <div className="col-span-1 m0-important text-right">
-                                        <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
-                                        </Link></span>
-                                      </div>
-                                    </div>
-                                  ))}
+                          {meetingsByDays?.map(
+                            (
+                              day: {
+                                label: string;
+                                meetings: {
+                                  _id: string;
+                                  summary: string;
+                                  date: string;
+                                  createdAt: string;
+                                }[];
+                              },
+                              index: number
+                            ) => (
+                              <section
+                                key={day.label}
+                                className="accordion mb-4"
+                              >
+                                <div className="tab bg-white-100 text-black-400 text-md">
+                                  <label
+                                    htmlFor={`accordion-${index}`}
+                                    className="tab__label font-bold"
+                                  >
+                                    {day.label}
+                                  </label>
+                                  <input
+                                    type="checkbox"
+                                    name={`accordion-${index}`}
+                                    id={`accordion-${index}`}
+                                  />
+                                  <div className="tab__content">
+                                    {day.meetings?.map(
+                                      (meetings: {
+                                        _id: string;
+                                        summary: string;
+                                        date: string;
+                                        createdAt: string;
+                                      }) => (
+                                        <div
+                                          key={meetings._id}
+                                          className="font-small grid grid-cols-4 space-x-4 border-b px-2 py-4 text-sm"
+                                        >
+                                          <div className="m0-important f-small col-span-1">
+                                            <span>
+                                              {getTime(meetings.date)}
+                                            </span>
+                                          </div>
+                                          <div className="m0-important col-span-2 text-sm">
+                                            <span className="m0-important f-small font-bold">
+                                              {meetings.summary}
+                                            </span>
+                                          </div>
+                                          <div className="m0-important col-span-1 text-right">
+                                            <span className="title_color">
+                                              {" "}
+                                              <Link
+                                                href={`/home/${meetings._id}`}
+                                                key={meetings._id}
+                                              >
+                                                <h4 className="f-small text-sm">
+                                                  Details
+                                                </h4>
+                                              </Link>
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </section>
-                          ))}
+                              </section>
+                            )
+                          )}
                         </div>
-                      )
-                      }
+                      )}
                     </div>
                   </div>
                 </div>
@@ -326,19 +470,17 @@ export default function ProjectPanel({
             </div>
 
             {meetings?.length === 0 ? (
-                <p>{''}</p>
-              ) : (
-                <div className="title_color view-all">
-                  <Link href="/home/projects" >
-                    <h4 className="f-small text-sm">View All</h4>
-                  </Link>
-                </div>
-              )}
+              <p>{""}</p>
+            ) : (
+              <div className="title_color view-all">
+                <Link href="/home/projects">
+                  <h4 className="f-small text-sm">View All</h4>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-
 
       <div className="z-20 flex gap-x-4">
         <div className="z-20 flex gap-x-4">

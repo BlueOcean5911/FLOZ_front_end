@@ -34,7 +34,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [userSession, setUserSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    checkSession();
+      console.log(getProviderToken())
+    checkSession(); 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event == "SIGNED_IN") {

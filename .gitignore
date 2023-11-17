@@ -39,3 +39,7 @@ next-env.d.ts
 
 kaban.md
 .vscode
+
+yarn.lock
+package-lock.json
+

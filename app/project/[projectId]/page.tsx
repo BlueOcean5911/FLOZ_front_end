@@ -1,5 +1,6 @@
 import ProjectDetail from "@components/ProjectDetail";
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
+import ProjectView from "@components/ProjectView/ProjectView";
 
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
@@ -84,9 +85,9 @@ export default async function Page({ params }: { params: pageProps }) {
   const providerToken: ProviderToken = cookieStore.get("p_token");
   const { data: projects } = await supabase
     .from("project")
-    .select("id, name")
-    .eq("user_id", user?.value)
-    .order("created_at", { ascending: true });
+    .select("_id, name, userId, createdAt")
+    .eq("userId", user?.value)
+    .order("createdAt", { ascending: true });
 
   const { data: eventIds } = await supabase
     .from("event")
@@ -113,7 +114,7 @@ export default async function Page({ params }: { params: pageProps }) {
 
   return (
     <>
-      <ProjectDetail pId={params.projectId} events={filteredEvents} />
+      <ProjectView data={projects} />
     </>
   );
 }

@@ -1,5 +1,6 @@
 import ProjectDetail from "@components/ProjectDetail";
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
+import ProjectView from "@components/ProjectView/ProjectView";
 
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
@@ -113,8 +114,7 @@ export default async function Page({ params }: { params: pageProps }) {
 
   return (
     <>
-      <ProjectPanel data={projects} />
-      <ProjectDetail pId={params.projectId} events={filteredEvents} />
+    <ProjectView data={projects} />
     </>
   );
 }

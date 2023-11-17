@@ -206,7 +206,7 @@ export default function ProjectPanel({
                                       <span>{getMonth(project.createdAt)}</span>
                                     </div>
                                     <div className="m0-important f-small">
-                                      <span className="title_color"> <Link href={`/home/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
+                                      <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
                                       </Link></span>
                                     </div>
                                     <div className="mx-0">
@@ -264,7 +264,7 @@ export default function ProjectPanel({
                                       <span>{getMonth(project.createdAt)}</span>
                                     </div>
                                     <div className="m0-important f-small">
-                                      <span className="title_color"> <Link href={`/home/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
+                                      <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
                                       </Link></span>
                                     </div>
                                     <div >

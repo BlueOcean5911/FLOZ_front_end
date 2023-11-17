@@ -1,5 +1,5 @@
 import axios from "axios";
-const BaseUrl = process.env.BASE_URL||'http://localhost:3005/';
+const BaseUrl = process.env.BASE_URL||'http://localhost:3005';
 const get = async (endpoint) => {
     try {
         return axios.get(`${BaseUrl}/${endpoint}`, {

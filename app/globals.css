@@ -137,4 +137,70 @@
     }
   }
 
+  .meeting-card{
+    align-items: center;
+    padding: 0 42px 0 15px;
+    border-right: 2px solid gainsboro;
+  }
+
+  .item{
+    /* border-top: 1px solid #D05A6E; */
+    overflow: hidden;
+  }
+  .item:target .smenu{
+    max-height: 10em;
+  }
+
+  .btn{
+    display: block;
+    padding: 5px;
+    /* background: #E87A90; */
+    position: relative;
+  }
+  
+  .btn:before{
+    content: "";
+    position: absolute;
+    width: 15px;
+    /* height: 15px; */
+    /* background:#E87A90; */
+    left: 20px;
+    bottom: -7px;
+    transform: rotate(45deg);
+  }
+  
+  .btn i{
+    margin-right: 10px;
+  }
+  
+  .smenu{
+    /* background: #F596AA; */
+    transition: max-height .3s;
+    max-height: 0;
+  }
+  
+  .smenu a{
+    display: block;
+    /* padding: 10px; */
+    font-size: 18px;
+    position: relative;
+  }
+  
+  .smenu a::before{
+    content: "";
+    position: absolute;
+    width: 5px;
+    /* height: 100%; */
+    /* background: #DB4D6D; */
+    left: 0;
+    top: 0;
+    transition: linear .3s;
+    opacity: 0;
+  }
+  
+  .smenu a::hover:before{
+    opacity: 1;
+  }
+
 }
+

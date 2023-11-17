@@ -9,7 +9,7 @@ import { useAuthContext } from "@contexts/AuthContext";
 export default function Header() {
   const { signOut } = useAuthContext();
   const pathname = usePathname();
-
+  console.log(pathname, 'pathname')
   return (
     <>
       <div className="p-4 flex items-center justify-between">
@@ -103,7 +103,7 @@ export default function Header() {
               </li>
 
               <li>
-                <a href="#" className="block text-black px-3 py-2" aria-current="page">Project</a>
+                <a href="#" className={pathname.search("/project") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Project</a>
               </li>
 
               <li>

@@ -113,7 +113,6 @@ export default async function Page({ params }: { params: pageProps }) {
 
   return (
     <>
-      <ProjectPanel data={projects} />
       <ProjectDetail pId={params.projectId} events={filteredEvents} />
     </>
   );

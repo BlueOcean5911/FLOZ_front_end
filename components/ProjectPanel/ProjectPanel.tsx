@@ -10,14 +10,16 @@ import { get, post } from "../../httpService/http-service";
 import supabase from "@/utils/supabase";
 export default function ProjectPanel({
   data,
+  meetingsData
 }: {
   data: { _id: any; name: any, userId: String, createdAt: any }[] | null;
+  meetingsData: { _id: any; date: any, summary: string, createdAt: any }[] | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [allProjects, setAllProjects] = useState<{ _id: any; name: any, userId: String, createdAt: any }[] | null>(data);
   const [thisMonthProjects, setThisMonthProjects] = useState<{ _id: any; name: any, createdAt: any }[] | null>();
   const [nextMonthProjects, setNextMonthProjects] = useState<{ _id: any; name: any, createdAt: any }[] | null>();
-  const [meetings, setMeetings] = useState<{ _id: any; date: any, summary: string, createdAt: any }[] | null>([]);
+  const [meetings, setMeetings] = useState<{ _id: any; date: any, summary: string, createdAt: any }[] | null>(meetingsData);
   const [todayMeetings, setTodayMeetings] = useState([] as any);
   const [tomorrowMeetings, setTomorrowMeetings] = useState([] as any);
   const [meetingsTuesday, setMeetingsTuesday] = useState([] as any);
@@ -81,22 +83,11 @@ export default function ProjectPanel({
     setMeetingsFriday(meetingsFriday);
     setMeetings(meetingsToday);
   }
+
   useEffect(() => {
+    setMeetingsDay(meetingsData)
+  }, [])
 
-    const getMeetings = () => {
-      get('meetings').then((res) => {
-        console.log(res.data, 'res.data');
-        if (res.data) {
-          if (res.data.length > 0) {
-            setMeetings(res.data);
-            setMeetingsDay(res.data);
-          }
-        }
-      });
-    }; getMeetings();
-
-  }
-    , []);
   function closeModal() {
     setIsOpen(false);
   }
@@ -206,7 +197,7 @@ export default function ProjectPanel({
                                       <span>{getMonth(project.createdAt)}</span>
                                     </div>
                                     <div className="m0-important f-small">
-                                      <span className="title_color"> <Link href={`/home/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
+                                      <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
                                       </Link></span>
                                     </div>
                                     <div className="mx-0">

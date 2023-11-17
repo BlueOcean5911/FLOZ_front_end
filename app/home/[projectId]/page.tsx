@@ -83,7 +83,7 @@ export default async function Page({ params }: { params: pageProps }) {
   const cookieStore = cookies();
   const userId = cookieStore.get("user_id").value;
   const providerToken: ProviderToken = cookieStore.get("p_token");
-  const { data: projects } = await getProjects({ userId: userId as string });
+  const projects = await getProjects({ userId: userId });
 
   const { data: eventIds } = await supabase
     .from("event")

@@ -1,6 +1,7 @@
 import AuthProvider from "@middlewares/AuthProvider";
 
 import "./globals.css";
+import "./index.css"
 
 export const metadata = {
   title: "FLOZ Cost",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>{children}</AuthProvider>
+        {/* {children} */}
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import Header from "@components/Header";
+import Header from "@components/Header/Header";
 
 export const metadata = {
   title: "FLOZ Cost",
@@ -11,8 +11,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="px-8">
-      <Header />
+    <main>
       {children}
     </main>
   );

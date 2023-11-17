@@ -13,9 +13,12 @@ function Login() {
 
   const status = authStatus ? authStatus : "";
 
+
   useEffect(() => {
     const status = authStatus;
-    if (status === "SIGNED_IN") router.push("/home");
+    if (status === "SIGNED_IN") {
+      router.push("/dashboard/home");
+    }
   }, [status]);
 
   const onGoogleClick = () => {
@@ -25,6 +28,7 @@ function Login() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-y-5">
       <LoginScreen onClick={onGoogleClick}/>
+      
     </div>
   );
 }

@@ -2,3 +2,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.fc-media-screen {
+  height: 100%;
+}
+.fc-view-harness {
+  height: 100% !important;
+}
+
+.fc-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.fc-scroller {
+-ms-overflow-style: none;  /* IE and Edge */
+scrollbar-width: none;  /* Firefox */
+}
+
+.fc .fc-timegrid-slot-minor {
+  border-top: none;
+}
+
+.fc-direction-ltr .fc-timegrid-slot-label-frame {
+  text-align: center;
+}
+
+.fc .fc-timegrid-slot-label {
+  transform: translate(0, 100%);
+}

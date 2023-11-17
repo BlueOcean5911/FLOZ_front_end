@@ -1,32 +1,34 @@
 import api from '../api/api';
 import { IProject } from '../models';
-
+import { IResponse } from '@types';
 
 
 export const updateProject = async (id: string, body: IProject) => {
-    const resp = await api.patch(`/projects/${id}`, body);
-    const updated = resp.data;
+    const resp: IResponse = await api.patch(`/projects/${id}`, body);
+    const updated: IProject | null = resp?.data && resp.data.data as IProject;
     return updated;
 }
 
 export const getProject = async (id: string) => {
-    const resp = await api.get(`/projects/${id}`);
-    const data = resp.data;
+    const resp: IResponse = await api.get(`/projects/${id}`);
+    const data : IProject | null = resp?.data && resp.data.data as IProject;
     return data;
-
 }
 
 export const createProject = async (body: IProject) => {
-    const resp = await api.post('/projects', body);
-    const data = resp.data;
+    const resp: IResponse = await api.post('/projects', body);
+    const data: IProject | null = resp?.data && resp.data as IProject;
     return data;
-
 }
 
-export const getProjects = async (query) => {
+export const getProjects = async (query: any) => {
     const queryParams = new URLSearchParams(query).toString();
-    console.log("query paramsn",queryParams);
-    const resp = await api.get(`/projects?${queryParams}`);
-    const data = resp.data;
+    const resp: IResponse = await api.get(`/projects?${queryParams}`);
+    const data: IProject[] = resp?.data && resp.data.data as IProject[];
     return data;
+}
+
+export const deleteProject = async (id: string) => {
+    const resp: IResponse = await api.delete(`/projects/${id}`);
+    return resp;
 }

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import React, { useState, Fragment, useEffect } from "react";
@@ -13,6 +11,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
+import { getProjects } from "../../service/project.service";
 
 interface Item {
   kind: string;
@@ -100,7 +99,7 @@ export default function Calendar() {
 
   const INITIAL_EVENTS = [];
 
-  const user = getCookie("user_id");
+  const userId = getCookie("user_id");
 
   useEffect(() => {
     fetchEvents();
@@ -111,12 +110,7 @@ export default function Calendar() {
   }, [isOpen]);
 
   const fetchAllProjects = async () => {
-    const { data: projects } = await supabase
-      .from("project")
-      .select("id, name")
-      .eq("user_id", user)
-      .order("created_at", { ascending: true });
-    setAllProjects(projects);
+    const projects = await getProjects({ userId: userId });
   };
 
   async function fetchEvents() {
@@ -130,7 +124,7 @@ export default function Calendar() {
       }
     );
 
-    const events: Event = await allEvents.json();
+    const events: Event = (await allEvents.json()) as Event;
     // Loop through the Google Calendar events and convert them
 
     const googleEvents = events?.items;
@@ -238,7 +232,8 @@ export default function Calendar() {
       body: JSON.stringify(event),
     });
 
-    const eventCreationResponse: { id: string } = await eventCreationRes.json();
+    const eventCreationResponse: { id: string } =
+      (await eventCreationRes.json()) as { id: string };
 
     const eventId = eventCreationResponse.id;
 

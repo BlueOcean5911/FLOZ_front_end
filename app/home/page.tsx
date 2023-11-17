@@ -1,20 +1,15 @@
 import Calendar from "@components/Calendar/Calendar";
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
-
+import { getProjects } from "../../service/project.service";
 import { cookies } from "next/headers";
-import supabase from "@/utils/supabase";
 
 export const revalidate = 0;
 
 export default async function Page() {
   const cookieStore = cookies();
-  const user = cookieStore.get("user_id");
+  const userId = cookieStore.get("user_id").value;
 
-  const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user?.value)
-    .order("created_at", { ascending: true });
+  const projects = await getProjects({ userId: userId });
 
   return (
     <div className=" flex flex-col">

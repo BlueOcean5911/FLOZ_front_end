@@ -5,18 +5,12 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 import Link from "next/link";
+import { IProject } from "@models";
+import { createProject } from "@./service/project.service";
 
-import supabase from "@/utils/supabase";
-
-export default function ProjectPanel({
-  data,
-}: {
-  data: { id: any; name: any }[] | null;
-}) {
+export default function ProjectPanel({ data }: { data: IProject[] | null }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<
-    { id: any; name: any }[] | null
-  >(data);
+  const [allProjects, setAllProjects] = useState<IProject[] | null>(data);
 
   function closeModal() {
     setIsOpen(false);
@@ -35,7 +29,7 @@ export default function ProjectPanel({
 
     if (projectName) {
       const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
-      await supabase.from("project").insert({ name: projectName.toString() });
+      await createProject({ name: projectName.toString() });
       const newEntry = {
         id: tempId,
         name: projectName.toString(),

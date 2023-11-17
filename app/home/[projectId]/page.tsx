@@ -3,6 +3,7 @@ import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
+import { getProjects } from "@./service/project.service";
 
 interface pageProps {
   projectId: string;
@@ -80,13 +81,9 @@ interface ProviderToken {
 
 export default async function Page({ params }: { params: pageProps }) {
   const cookieStore = cookies();
-  const user = cookieStore.get("user_id");
+  const userId = cookieStore.get("user_id").value;
   const providerToken: ProviderToken = cookieStore.get("p_token");
-  const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user?.value)
-    .order("created_at", { ascending: true });
+  const { data: projects } = await getProjects({ userId: userId as string });
 
   const { data: eventIds } = await supabase
     .from("event")

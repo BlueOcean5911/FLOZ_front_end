@@ -1,17 +1,14 @@
 import ProjectItems from "@components/ProjectItems/ProjectItems";
 import React from "react";
 import { cookies } from "next/headers";
-import supabase from "@/utils/supabase";
+import { getProjects } from "@./service/project.service";
+import { IProject } from "@./models";
 
 export default async function Page() {
   const cookieStore = cookies();
-  const user = cookieStore.get("user_id");
+  const userId = cookieStore.get("user_id").value;
 
-  const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user?.value)
-    .order("created_at", { ascending: false });
+  const projects = await getProjects({ userId: userId });
 
   return (
     <div className="m-20">

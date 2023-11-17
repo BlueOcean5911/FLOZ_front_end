@@ -8,6 +8,8 @@ import Link from "next/link";
 import moment from 'moment';
 import { get, post } from "../../httpService/http-service";
 import supabase from "@/utils/supabase";
+import Project from "@models/project.model";
+import Meeting from "@models/meeting.model";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -43,24 +45,24 @@ export default function ProjectPanel({
   data
 }: {
   data: {
-    projects: { _id: any; name: any, userId: String, createdAt: any }[] | null,
-    meetings: { _id: any; date: any, summary: string, createdAt: any }[] | null
+    projects: Project[] | null,
+    meetings: Meeting[] | null
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<{ _id: any; name: any, userId: String, createdAt: any }[] | null>(data.projects);
-  const [thisMonthProjects, setThisMonthProjects] = useState<{ _id: any; name: any, createdAt: any }[] | null>();
-  const [nextMonthProjects, setNextMonthProjects] = useState<{ _id: any; name: any, createdAt: any }[] | null>();
-  const [meetings, setMeetings] = useState<{ _id: any; date: any, summary: string, createdAt: any }[] | null>(data.meetings);
+  const [allProjects, setAllProjects] = useState<Project[] | null>(data.projects);
+  const [thisMonthProjects, setThisMonthProjects] = useState<Project[] | null>();
+  const [nextMonthProjects, setNextMonthProjects] = useState<Project[] | null>();
+  const [meetings, setMeetings] = useState<Meeting[] | null>(data.meetings);
   const [meetingsByDays, setMeetingsByDays] = useState(setMeetingsDay(data.meetings));
 
   useEffect(() => {
     // filter this month and next month project
-    let thisMonth = allProjects.filter((project: { createdAt: string }) => {
+    let thisMonth = allProjects.filter((project) => {
       const date = new Date(project.createdAt);
       return date.getMonth() === (new Date()).getMonth();
     });
-    let nextMonth = allProjects.filter((project: { createdAt: string }) => {
+    let nextMonth = allProjects.filter((project) => {
       const date = new Date(project.createdAt);
       return date.getMonth() === (new Date()).getMonth() + 1;
     });
@@ -81,7 +83,7 @@ export default function ProjectPanel({
     return moment(date).format('HH:mm:ss');
   }
   // get month name with date using moment js
-  const getMonth = (date: string) => {
+  const getMonth = (date: any) => {
     return moment(date).format('MMM Do');
   }
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -213,7 +215,7 @@ export default function ProjectPanel({
                           </div>
                           <div>
 
-                            {nextMonthProjects?.map((project: { _id: string; name: string, date: string, createdAt: string }) => (
+                            {nextMonthProjects?.map((project) => (
                               <div key={project._id} className="grid grid-cols-6 border-t text-sm px-4 font-normal mt-4 space-x-4">
                                 <div>
                                   <input type="checkbox" className="" id="checkbox" />

@@ -111,10 +111,15 @@ export default async function Page({ params }: { params: pageProps }) {
   const filteredEvents = googleEvents?.items?.filter((event: Item) =>
     myEvents?.includes(event.id)
   );
-
+  const todolist = [
+    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "warning" },
+    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "warning" },
+    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "success" },
+    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "success" }
+  ]
   return (
     <>
-    <ProjectView data={projects} />
+      <ProjectView data={projects,todolist} />
     </>
   );
 }

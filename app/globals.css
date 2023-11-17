@@ -96,7 +96,7 @@
 
   .tab__label::after {
     content: "\276F";
-    width: 1em;
+    /* width: 1em; */
     height: 1em;
     text-align: center;
     transform: rotate(90deg);
@@ -137,28 +137,125 @@
     }
   }
 
-  .meeting-card{
+  .meeting-card {
     align-items: center;
-    padding: 0 42px 0 15px;
+    padding: 0 25px 0 15px;
     border-right: 2px solid gainsboro;
   }
 
-  .item{
+  .manage-project-box {
+    padding: 13px 32px 24px 32px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  }
+
+  .card-title-font {
+    font-family: 'Segoe UI';
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  .card-desc-font {
+    font-family: 'Segoe UI';
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+  }
+
+  .prev-meetings-items {
+    display: flex;
+    width: 200px;
+    color: #181818;
+    /* height: 26px; */
+    /* justify-content: center; */
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 10px;
+    border: 1px solid gainsboro;
+    /* padding: 1px 0px; */
+    margin: 6px 0px;
+  }
+
+  .select-project-dropdown {
+    float: right;
+    padding: 5px 12px;
+    background-color: #F3F3F3;
+    border-radius: 5px;
+  }
+
+  .prev-meetings-items p {
+    font-size: 13px;
+    text-align: left;
+    padding: 2px 8px;
+  }
+
+  .card_shadow {
+    box-shadow: 0px 1px 4px 0px #C9C9C9
+  }
+
+
+  /* Radio toggle */
+  .switch {
+    position: relative;
+  }
+
+  .switch label {
+    width: 55px;
+    height: 23px;
+    background-color: #999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50px;
+  }
+
+  .switch input[type="checkbox"] {
+    visibility: hidden;
+  }
+
+  .switch label:after {
+    content: '';
+    width: 21px;
+    height: 21px;
+    border-radius: 50px;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    transition: 100ms;
+    background-color: white;
+  }
+
+  .switch .look:checked+label:after {
+    left: 32px;
+  }
+
+  .switch .look:checked+label {
+    background-color: lightsteelblue;
+  }
+
+
+
+
+
+  .item {
     /* border-top: 1px solid #D05A6E; */
     overflow: hidden;
   }
-  .item:target .smenu{
+
+  .item:target .smenu {
     max-height: 10em;
   }
 
-  .btn{
+  .btn {
     display: block;
     padding: 5px;
     /* background: #E87A90; */
     position: relative;
   }
-  
-  .btn:before{
+
+  .btn:before {
     content: "";
     position: absolute;
     width: 15px;
@@ -168,25 +265,25 @@
     bottom: -7px;
     transform: rotate(45deg);
   }
-  
-  .btn i{
+
+  .btn i {
     margin-right: 10px;
   }
-  
-  .smenu{
+
+  .smenu {
     /* background: #F596AA; */
     transition: max-height .3s;
     max-height: 0;
   }
-  
-  .smenu a{
+
+  .smenu a {
     display: block;
     /* padding: 10px; */
     font-size: 18px;
     position: relative;
   }
-  
-  .smenu a::before{
+
+  .smenu a::before {
     content: "";
     position: absolute;
     width: 5px;
@@ -197,10 +294,34 @@
     transition: linear .3s;
     opacity: 0;
   }
-  
-  .smenu a::hover:before{
+
+  .smenu a::hover:before {
     opacity: 1;
   }
 
-}
 
+
+
+  .todo-card-content-title {
+    color: var(--text-weak, #444);
+    font-feature-settings: 'clig' off, 'liga' off;
+
+    /* 02 - Label / Default */
+    font-family: Segoe UI;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    /* 150% */
+  }
+  .todo-card-content-desc {
+    color: black;
+    font-feature-settings: 'clig' off, 'liga' off;
+    /* 03 - Body/Default */
+    font-family: Segoe UI;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; /* 153.846% */
+  }
+}

@@ -8,19 +8,18 @@ import Link from "next/link";
 import moment from 'moment';
 import { get, post } from "../../httpService/http-service";
 import supabase from "@/utils/supabase";
-export default function ProjectView({
-  data,
+import Project from "@models/project.model";
+import Todo from "@models/todo.model";
 
+export default function ProjectView({
+  data
 }: {
-  data: { _id: any, name: any, userId: any, createdAt: any }[] | null;
-  todolist: { _id: any, time: any, name: any, title: any, desc: any, type: any }[] | null;
+  data: {
+    projects: Project[] | null;
+    todolist: Todo[] | null;
+  }
 }) {
-  const [todoList, setTodoList] = useState([
-    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "warning" },
-    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "warning" },
-    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "success" },
-    { time: '10:00 AM phone call with GC', title: 'Upload the audio', desc: "Regroup for SD 75% Presentation", type: "success" }
-  ]);
+  const [todoList, setTodoList] = useState(data.todolist);
 
   //get time from date using moment js
   const getTime = (date: string) => {
@@ -44,7 +43,7 @@ export default function ProjectView({
 
   //DELETE TASK
   function closeTask(value) {
-    todoList.splice(todoList.findIndex(item => item.title == value.title), 1);
+    todoList.splice(todoList.findIndex(item => item._id == value._id), 1);
     setTodoList([...todoList]);
   }
 
@@ -380,18 +379,18 @@ export default function ProjectView({
           <div className="grid grid-cols-1 ">
 
             {todoList.map((item, index) => (
-              <div className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.type == 'success' ? 'white' : '#FBF3E0'}` }} >
+              <div className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'success' ? 'white' : '#FBF3E0'}` }} >
                 <div>
                   <h3 className="todo-card-content-title">Internal*</h3>
                   <div className="flex justify-between">
                     <p className="todo-card-content-desc" >Regroup For SD 75 Presentation</p>
                   </div>
                 </div>
-                <div style={{ textAlign: '-webkit-right' }}>
+                <div className="text-right">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => closeTask(item)}>
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
                   </svg>
-                  <p className="todo-card-content-desc" >Oct 16 {item.type == 'warning' ? 'EOD' : ''}</p>
+                  <p className="todo-card-content-desc" >Oct 16 {item.status == 'warning' ? 'EOD' : ''}</p>
                 </div>
               </div>
             ))}
@@ -404,18 +403,18 @@ export default function ProjectView({
           <div className="grid grid-cols-1 ">
 
             {todoList.map((item, index) => (
-              <div className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.type == 'success' ? '#DDF1EE' : '#DDF1EE'}` }} >
+              <div className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'success' ? '#DDF1EE' : '#DDF1EE'}` }} >
                 <div>
                   <h3 className="todo-card-content-title">Internal*</h3>
                   <div className="flex justify-between">
                     <p className="todo-card-content-desc" >Regroup For SD 75 Presentation</p>
                   </div>
                 </div>
-                <div style={{ textAlign: '-webkit-right' }}>
+                <div className="text-right">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
                   </svg>
-                  <p className="todo-card-content-desc" >Oct 16 {item.type == 'warning' ? 'EOD' : ''}</p>
+                  <p className="todo-card-content-desc" >Oct 16 {item.status == 'warning' ? 'EOD' : ''}</p>
                 </div>
               </div>
             ))}

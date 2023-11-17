@@ -8,7 +8,6 @@ const get = async (endpoint) => {
             return response.data;
 
         }).catch((error) => {
-            console.log(error, 'error-------------');
             return error;
 
         });
@@ -22,7 +21,6 @@ const post = async (endpoint, data) => {
             return response.data;
 
         }).catch((error) => {
-            console.log(error, 'error-------------');
             return error;
 
         });

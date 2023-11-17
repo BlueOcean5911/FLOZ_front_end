@@ -3,7 +3,9 @@ import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import UserCard from "@components/UserCard/UserCard";
 import { cookies } from "next/headers";
 import supabase from "@/utils/supabase";
-import { get, post } from "../../httpService/http-service";
+import { getProjects } from "../../service/project.service";
+import { getMeetings } from "../../service/meeting.service";
+import { getTodos } from "../../service/todo.service";
 
 export const revalidate = 0;
 
@@ -11,20 +13,20 @@ export default async function Page() {
   const cookieStore = cookies();
   const user = cookieStore.get("user_id");
 
-  const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user?.value)
-    .order("created_at", { ascending: true });
 
-  let projectList = [];
-  const getProject = await get('projects');
-  if (getProject.data) projectList = getProject.data;
+  // Get projects from backend api
+  const projects = await getProjects();
+
+  // Get meetings from backend api
+  const meetings = await getMeetings();
+
+  // Get todos from backend api
+  const todos = await getTodos();
 
   return (
     <div className="flex flex-col">
-      <UserCard />
-      <ProjectPanel data={projectList} />
+      <UserCard data={ {todos} } />
+      <ProjectPanel data={ { projects, meetings } } />
     </div>
   );
 }

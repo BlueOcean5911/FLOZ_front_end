@@ -8,24 +8,53 @@ import Link from "next/link";
 import moment from 'moment';
 import { get, post } from "../../httpService/http-service";
 import supabase from "@/utils/supabase";
+
+function setMeetingsDay(meetingsList) {
+  // filter meetings for week days today, tomorrow, this week
+  const meetingsByDay = meetingsList.reduce((acc, meeting) => {
+    const date = new Date(meeting.date);
+    const currentDate = new Date();
+    const dayDiff = ((date.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000));
+    let dayLabel = '';
+
+    if (dayDiff < 0.5) {
+      dayLabel = 'Today';
+    } else if (dayDiff < 1 && dayDiff > 0.5) {
+      dayLabel = 'Tomorrow';
+    } else {
+      dayLabel = date.toLocaleDateString('en-US', { weekday: 'long' });
+    }
+
+    const existingDay = acc.find((item) => item.label === dayLabel);
+
+    if (existingDay) {
+      existingDay.meetings.push(meeting);
+    } else {
+      acc.push({ label: dayLabel, meetings: [meeting] });
+    }
+
+    return acc;
+  }, []);
+  console.log(meetingsByDay)
+  return meetingsByDay
+}
+
 export default function ProjectPanel({
-  data,
+  data
 }: {
-  data: { _id: any; name: any, userId: String, createdAt: any }[] | null;
+  data: {
+    projects: { _id: any; name: any, userId: String, createdAt: any }[] | null,
+    meetings: { _id: any; date: any, summary: string, createdAt: any }[] | null
+  };
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<{ _id: any; name: any, userId: String, createdAt: any }[] | null>(data);
+  const [allProjects, setAllProjects] = useState<{ _id: any; name: any, userId: String, createdAt: any }[] | null>(data.projects);
   const [thisMonthProjects, setThisMonthProjects] = useState<{ _id: any; name: any, createdAt: any }[] | null>();
   const [nextMonthProjects, setNextMonthProjects] = useState<{ _id: any; name: any, createdAt: any }[] | null>();
-  const [meetings, setMeetings] = useState<{ _id: any; date: any, summary: string, createdAt: any }[] | null>([]);
-  const [todayMeetings, setTodayMeetings] = useState([] as any);
-  const [tomorrowMeetings, setTomorrowMeetings] = useState([] as any);
-  const [meetingsTuesday, setMeetingsTuesday] = useState([] as any);
-  const [meetingsThursday, setMeetingsThursday] = useState([] as any);
-  const [meetingsFriday, setMeetingsFriday] = useState([] as any);
+  const [meetings, setMeetings] = useState<{ _id: any; date: any, summary: string, createdAt: any }[] | null>(data.meetings);
+  const [meetingsByDays, setMeetingsByDays] = useState(setMeetingsDay(data.meetings));
 
   useEffect(() => {
-
     // filter this month and next month project
     let thisMonth = allProjects.filter((project: { createdAt: string }) => {
       const date = new Date(project.createdAt);
@@ -37,66 +66,8 @@ export default function ProjectPanel({
     });
     setThisMonthProjects(thisMonth);
     setNextMonthProjects(nextMonth);
-    console.log(thisMonth, 'thisMonth', nextMonth, 'nextMonth');
-
-
-    //Request to get All meetings
   }, [data, allProjects]);
 
-
-  function setMeetingsDay(meetingsList) {
-    // filter meetings for week days today, tomorrow, this week
-    let tomorrow = new Date(new Date());
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    let meetingsToday = (meetingsList).filter((meeting: { date: string }) => {
-      const date = new Date(meeting.date);
-      return date.getDate() === (new Date()).getDate();
-    });
-    let meetingsTomorrow = (meetingsList).filter((meeting: { date: string }) => {
-      const date = new Date(meeting.date);
-      return date.getDate() === tomorrow.getDate();
-    });
-    
-
-    
-    let meetingsTuesday = (meetingsList).filter((meeting: { date: string }) => {
-      const date = new Date(meeting.date);
-      return date.getDay() === 2;
-    });
-    
-    let meetingsThursday = (meetingsList).filter((meeting: { date: string }) => {
-      const date = new Date(meeting.date);
-      return date.getDay() === 4;
-    });
-
-    // filter meetings for friday and tuesday in current week
-    let meetingsFriday = (meetingsList).filter((meeting: { date: string }) => {
-      const date = new Date(meeting.date);
-      return date.getDay() === 5;
-    }); 
-    setTodayMeetings(meetingsToday);
-    setTomorrowMeetings(meetingsTomorrow);
-    setMeetingsTuesday(meetingsTuesday);
-    setMeetingsThursday(meetingsThursday);
-    setMeetingsFriday(meetingsFriday);
-    setMeetings(meetingsToday);
-  }
-  useEffect(() => {
-
-    const getMeetings = () => {
-      get('meetings').then((res) => {
-        console.log(res.data, 'res.data');
-        if (res.data) {
-          if (res.data.length > 0) {
-            setMeetings(res.data);
-            setMeetingsDay(res.data);
-          }
-        }
-      });
-    }; getMeetings();
-
-  }
-    , []);
   function closeModal() {
     setIsOpen(false);
   }
@@ -139,396 +110,228 @@ export default function ProjectPanel({
   };
 
   return (
-    <div className="w-full items-center justify-between">
-      <div className="flex">
-        <div className="w-[910px] border rounded border-stone-300 px-3 py-3 bg-white mr-4" >
+    <div className="w-full items-center justify-between mb-5">
+      <div className="grid grid-cols-3 gap-4">
 
-          <div className="flex justify-between">
-            <div className="flex">
-              <h3 className="my-auto pr-2 font-bold text-sm">Project</h3>
-              <p className="my-auto text-sm" >As of today at 10:54 AM</p>
-            </div>
-            <div className="flex">
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                placeholder="Search for the project"
-                className={`w-full rounded-md border p-2 px-4 outline-none `}
-              />
-              <button style={{ color: "#349989", borderRadius: "4px", border: "1px solid var(--Tone, #349989)", background: "var(--foundation-gray-neutral-100, #FFF)" }} type="button" onClick={openModal} className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white" >
-                New
-              </button>
-            </div>
-          </div>
-
-
-          <div>
-            <div className="">
-
-              <div>
-                <div className="mt-1 min-h-screen">
-                  <div className="bg-white rounded-md">
-                    <div>
-                      <h2 className="mb-4 text-sm font-bold title_color">This month</h2>
-                      <div>
-                        {thisMonthProjects?.length === 0 ? (
-                          <p className="my-4" style={{ textAlign: "center" }}>No Projects</p>
-                        ) :
-                          (
-                            <div>
-                              <div className="grid grid-cols-6 bg-gray-100 py-2 px-4 text-black-400 font-bold text-md">
-                                <div>
-                                  <input type="checkbox" className="" id="checkbox" />
-                                </div>
-                                <div><span>Name</span></div>
-                                <div><span className="m0-important" >Phase</span></div>
-                                <div><span>Due Date</span></div>
-                                <div><span></span></div>
-                                <div><span></span></div>
-                              </div>
-                              <div>
-
-                                {thisMonthProjects?.map((project: { _id: string; name: string, createdAt: string }) => (
-                                  <div className="grid grid-cols-6 border-t text-sm px-4 font-normal mt-4 space-x-4">
-                                    <div>
-                                      <input type="checkbox" className="" id="checkbox" />
-                                    </div>
-
-                                    <div className="m0-important">
-                                      <span className="m0-important f-small">{project.name}</span>
-                                    </div>
-                                    <div className="m0-important f-small">
-                                      <span>phase</span>
-                                    </div>
-                                    <div className="m0-important f-small">
-                                      <span>{getMonth(project.createdAt)}</span>
-                                    </div>
-                                    <div className="m0-important f-small">
-                                      <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
-                                      </Link></span>
-                                    </div>
-                                    <div className="mx-0">
-                                      <select style={{ float: 'right' }}>
-                                        <option value={''}></option>
-                                        <option value={''} >Admin</option>
-                                        <option value={''}>User</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                ))}
-
-                              </div>
-                            </div>
-                          )
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 bg-white rounded-md">
-                    <div>
-                      <h2 className="mb-4 text-sm font-bold title_color">Next month</h2>
-                      <div>
-                        {nextMonthProjects?.length === 0 ? (
-                          <p className="my-4" style={{ textAlign: "center" }}>No Projects</p>
-
-                        ) :
-                          (
-                            <div>
-                              <div className="grid grid-cols-6 bg-gray-100 py-2 px-4 text-black-400 font-bold text-md">
-                                <div>
-                                  <input type="checkbox" className="" id="checkbox" />
-                                </div>
-                                <div><span>Name</span></div>
-                                <div><span className="m0-important" >Phase</span></div>
-                                <div><span>Due Date</span></div>
-                                <div><span></span></div>
-                                <div><span></span></div>
-                              </div>
-                              <div>
-
-                                {nextMonthProjects?.map((project: { _id: string; name: string, date: string, createdAt: string }) => (
-                                  <div className="grid grid-cols-6 border-t text-sm px-4 font-normal mt-4 space-x-4">
-                                    <div>
-                                      <input type="checkbox" className="" id="checkbox" />
-                                    </div>
-
-                                    <div className="m0-important f-small">
-                                      <span className="m0-important">{project.name}</span>
-                                    </div>
-                                    <div className="m0-important f-small">
-                                      <span>phase</span>
-                                    </div>
-                                    <div className="m0-important f-small">
-                                      <span>{getMonth(project.createdAt)}</span>
-                                    </div>
-                                    <div className="m0-important f-small">
-                                      <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
-                                      </Link></span>
-                                    </div>
-                                    <div >
-                                      <select style={{ float: 'right' }}>
-                                        <option value={''}></option>
-                                        <option value={''} >Admin</option>
-                                        <option value={''}>User</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                ))}
-
-                              </div>
-                            </div>
-                          )
-                        }
-                      </div>
-                    </div>
-                  </div>
+        <div className="col-span-2 border rounded border-stone-300 p-3 bg-white">
+          <div className="flex flex-col h-full justify-between">
+            <div>
+              <div className="flex justify-between">
+                <div className="flex">
+                  <h3 className="my-auto pr-2 font-bold text-sm">Project</h3>
+                  <p className="my-auto text-sm" >As of today at {getTime(new Date().toISOString())}</p>
                 </div>
-                <div>
-                  <span className="title_color text-center"> <Link href="/home/projects" ><h4 className="view-all text-center f-small text-sm">View All</h4>
-                  </Link></span>
+                <div className="flex">
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="Search Project"
+                    className={`w-full rounded-md border p-2 px-4 outline-none `}
+                  />
+                  <button style={{ color: "#349989", borderRadius: "4px", border: "1px solid var(--Tone, #349989)", background: "var(--foundation-gray-neutral-100, #FFF)" }} type="button" onClick={openModal} className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white" >
+                    New
+                  </button>
                 </div>
               </div>
+
+              <div className="mt-4">
+                <div className="bg-white rounded-md">
+                  <div>
+                    <h2 className="mb-4 text-sm font-bold title_color">This month</h2>
+                    <div>
+                      {thisMonthProjects?.length === 0 ? (
+                        <p className="my-4" style={{ textAlign: "center" }}>No Projects</p>
+                      ) : (
+                        <div>
+                          <div className="grid grid-cols-12 bg-gray-100 py-2 px-4 text-black-400 font-bold text-md">
+                            <div className="col-span-1">
+                              <input type="checkbox" className="" id="checkbox" />
+                            </div>
+                            <div className="col-span-3"><span>Name</span></div>
+                            <div className="col-span-3"><span className="m0-important" >Phase</span></div>
+                            <div className="col-span-2"><span>Due Date</span></div>
+                            <div className="col-span-2"><span></span></div>
+                            <div className="col-span-1"><span></span></div>
+                          </div>
+                          <div>
+
+                            {thisMonthProjects?.map(project => (
+                              <div key={project._id} className="grid grid-cols-12 border-b text-sm px-4 font-normal py-2 space-x-4">
+                                <div className="col-span-1">
+                                  <input type="checkbox" className="" id="checkbox" />
+                                </div>
+
+                                <div className="col-span-3 m0-important">
+                                  <span className="m0-important f-small">{project.name}</span>
+                                </div>
+                                <div className="col-span-3 m0-important f-small">
+                                  <span>phase</span>
+                                </div>
+                                <div className="col-span-2 m0-important f-small">
+                                  <span>{getMonth(project.createdAt)}</span>
+                                </div>
+                                <div className="col-span-2 m0-important f-small">
+                                  <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
+                                  </Link></span>
+                                </div>
+                                <div className="col-span-1 mx-0">
+                                  <select style={{ float: 'right' }}>
+                                    <option value={''}></option>
+                                    <option value={''} >Admin</option>
+                                    <option value={''}>User</option>
+                                  </select>
+                                </div>
+                              </div>
+                            ))}
+
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 bg-white rounded-md">
+                  <div>
+                    <h2 className="mb-4 text-sm font-bold title_color">Next month</h2>
+                    <div>
+                      {nextMonthProjects?.length === 0 ? (
+                        <p className="my-4" style={{ textAlign: "center" }}>No Projects</p>
+
+                      ) : (
+                        <div>
+                          <div className="grid grid-cols-6 bg-gray-100 py-2 px-4 text-black-400 font-bold text-md">
+                            <div>
+                              <input type="checkbox" className="" id="checkbox" />
+                            </div>
+                            <div><span>Name</span></div>
+                            <div><span className="m0-important" >Phase</span></div>
+                            <div><span>Due Date</span></div>
+                            <div><span></span></div>
+                            <div><span></span></div>
+                          </div>
+                          <div>
+
+                            {nextMonthProjects?.map((project: { _id: string; name: string, date: string, createdAt: string }) => (
+                              <div key={project._id} className="grid grid-cols-6 border-t text-sm px-4 font-normal mt-4 space-x-4">
+                                <div>
+                                  <input type="checkbox" className="" id="checkbox" />
+                                </div>
+
+                                <div className="m0-important f-small">
+                                  <span className="m0-important">{project.name}</span>
+                                </div>
+                                <div className="m0-important f-small">
+                                  <span>phase</span>
+                                </div>
+                                <div className="m0-important f-small">
+                                  <span>{getMonth(project.createdAt)}</span>
+                                </div>
+                                <div className="m0-important f-small">
+                                  <span className="title_color"> <Link href={`/project/${project._id}`} key={project._id}><h4 className="text-sm f-small">Go to project</h4>
+                                  </Link></span>
+                                </div>
+                                <div >
+                                  <select style={{ float: 'right' }}>
+                                    <option value={''}></option>
+                                    <option value={''} >Admin</option>
+                                    <option value={''}>User</option>
+                                  </select>
+                                </div>
+                              </div>
+                            ))}
+
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="title_color view-all">
+              <Link href="/home/projects" >
+                <h4 className="f-small text-sm">View All</h4>
+              </Link>
             </div>
           </div>
         </div>
 
 
+        <div className="col-span-1 border rounded border-stone-300 p-3 bg-white relative" >
+          <div className="flex flex-col h-full justify-between">
+            <div>
+              <div className="flex justify-between">
+                <div className="flex">
+                  <h3 className="my-auto pr-2 font-bold text-sm">Meetings</h3>
+                </div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="Search Meetings"
+                    className={`w-full rounded-md border p-2 px-4 outline-none `}
+                  />
+                  <button style={{ color: "#349989", borderRadius: "4px", border: "1px solid var(--Tone, #349989)", background: "var(--foundation-gray-neutral-100, #FFF)" }} type="button" onClick={openModal} className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white" >
+                    New
+                  </button>
+                </div>
+              </div>
 
-
-
-
-
-
-
-        <div className="w-[428px] border rounded border-stone-300 px-3 py-3 bg-white" >
-          <div className="flex justify-between">
-            <div className="flex">
-              <h3 className="my-auto pr-2 font-bold text-sm">Meetings</h3>
-            </div>
-            <div className="flex">
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                placeholder="Search for the project"
-                className={`w-full rounded-md border p-2 px-4 outline-none `}
-              />
-              <button style={{ color: "#349989", borderRadius: "4px", border: "1px solid var(--Tone, #349989)", background: "var(--foundation-gray-neutral-100, #FFF)" }} type="button" onClick={openModal} className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white" >
-                New
-              </button>
-            </div>
-          </div>
-
-
-          <div>
-            <div className="">
-              <div>
-                <div className="mt-4 min-h-screen">
-                  <div className="bg-white rounded-md">
+              <div className="mt-4">
+                <div className="bg-white rounded-md">
+                  <div>
                     <div>
-                      <div>
-                        {todayMeetings?.length === 0 ? (
-                          <p>{''}</p>
-                        ) :
-                          (
-                            <div>
-                              <div>
-                                <section className="accordion">
-                                  <div className="tab bg-white-100 py-2 px-4 text-black-400 text-md">
-                                    <label htmlFor="cb1" className="tab__label font-bold">Today</label>
-                                    <input type="checkbox" name="accordion-1" id="cb1" />
-                                    <div className="tab__content">
-                                      {todayMeetings?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
-                                        <div className="grid grid-cols-3 border-t text-sm px-4 font-small mt-4 space-x-4">
-                                          <div className="m0-important f-small">
-                                            <span>{getTime(meetings.date)}</span>
-                                          </div>
-                                          <div className="m0-important text-sm">
-                                            <span className="m0-important font-bold f-small">{meetings.summary}</span>
-                                          </div>
-                                          <div className="m0-important text-right">
-                                            <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
-                                            </Link></span>
-                                          </div>
-                                        </div>
-                                      ))}
+                      {meetingsByDays?.length === 0 ? (
+                        <p>{''}</p>
+                      ) : (
+                        <div>
+                          {meetingsByDays?.map((day: { label: string, meetings: { _id: string; summary: string, date: string, createdAt: string }[] }, index: number) => (
+                            <section key={day.label} className="accordion mb-4">
+                              <div className="tab bg-white-100 text-black-400 text-md">
+                                <label htmlFor={`accordion-${index}`} className="tab__label font-bold">{day.label}</label>
+                                <input type="checkbox" name={`accordion-${index}`} id={`accordion-${index}`} />
+                                <div className="tab__content">
+                                  {day.meetings?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
+                                    <div key={meetings._id} className="grid grid-cols-4 border-b text-sm px-2 font-small py-4 space-x-4">
+                                      <div className="col-span-1 m0-important f-small">
+                                        <span>{getTime(meetings.date)}</span>
+                                      </div>
+                                      <div className="col-span-2 m0-important text-sm">
+                                        <span className="m0-important font-bold f-small">{meetings.summary}</span>
+                                      </div>
+                                      <div className="col-span-1 m0-important text-right">
+                                        <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
+                                        </Link></span>
+                                      </div>
                                     </div>
-                                  </div>
-                                </section>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-md">
-                    <div>
-                      <div>
-                        {tomorrowMeetings?.length === 0 ? (
-                          <p>{''}</p>
-                        ) :
-                          (
-                            <div>
-                              <div>
-                                <section className="accordion">
-                                  <div className="tab bg-white-100 py-2 px-4 text-black-400 text-md">
-                                    <label htmlFor="cb2" className="tab__label font-bold">Tomorrow</label>
-                                    <input type="checkbox" name="accordion-1" id="cb2" />
-                                    <div className="tab__content">
-                                      {tomorrowMeetings?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
-                                        <div className="grid grid-cols-3 border-t text-sm px-4 font-small mt-4 space-x-4">
-                                          <div className="m0-important f-small">
-                                            <span>{getTime(meetings.date)}</span>
-                                          </div>
-                                          <div className="m0-important text-sm">
-                                            <span className="m0-important font-bold f-small">{meetings.summary}</span>
-                                          </div>
-                                          <div className="m0-important text-right">
-                                            <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
-                                            </Link></span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </section>
-                              </div>
-                            </div>
-                          )
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-md">
-                    <div>
-                      <div>
-                        {meetingsTuesday?.length === 0 ? (
-                          <p>{''}</p>
-                        ) :
-                          (
-                            <div>
-                              <div>
-                                <section className="accordion">
-                                  <div className="tab bg-white-100 py-2 px-4 text-black-400 text-md">
-                                    <label htmlFor="cb2" className="tab__label font-bold">Tuesday</label>
-                                    <input type="checkbox" name="accordion-1" id="cb2" />
-                                    <div className="tab__content">
-                                      {meetingsTuesday?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
-                                        <div className="grid grid-cols-3 border-t text-sm px-4 font-small mt-4 space-x-4">
-                                          <div className="m0-important f-small">
-                                            <span>{getTime(meetings.date)}</span>
-                                          </div>
-                                          <div className="m0-important text-sm">
-                                            <span className="m0-important font-bold f-small">{meetings.summary}</span>
-                                          </div>
-                                          <div className="m0-important text-right">
-                                            <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
-                                            </Link></span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </section>
-                              </div>
-                            </div>
-                          )
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-md">
-                    <div>
-                      <div>
-                        {meetingsThursday?.length === 0 ? (
-                          <p>{''}</p>
-                        ) :
-                          (
-                            <div>
-                              <div>
-                                <section className="accordion">
-                                  <div className="tab bg-white-100 py-2 px-4 text-black-400 text-md">
-                                    <label htmlFor="cb2" className="tab__label font-bold">Thursday</label>
-                                    <input type="checkbox" name="accordion-1" id="cb2" />
-                                    <div className="tab__content">
-                                      {meetingsThursday?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
-                                        <div className="grid grid-cols-3 border-t text-sm px-4 font-small mt-4 space-x-4">
-                                          <div className="m0-important f-small">
-                                            <span>{getTime(meetings.date)}</span>
-                                          </div>
-                                          <div className="m0-important text-sm">
-                                            <span className="m0-important font-bold f-small">{meetings.summary}</span>
-                                          </div>
-                                          <div className="m0-important text-right">
-                                            <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
-                                            </Link></span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </section>
-                              </div>
-                            </div>
-                          )
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-md">
-                    <div>
-                      <div>
-                        {meetingsFriday?.length === 0 ? (
-                          <p>{''}</p>
-                        ) :
-                          (
-                            <div>
-                              <div>
-                                <section className="accordion">
-                                  <div className="tab bg-white-100 py-2 px-4 text-black-400 text-md">
-                                    <label htmlFor="cb2" className="tab__label font-bold">Friday</label>
-                                    <input type="checkbox" name="accordion-1" id="cb2" />
-                                    <div className="tab__content">
-                                      {meetingsFriday?.map((meetings: { _id: string; summary: string, date: string, createdAt: string }) => (
-                                        <div className="grid grid-cols-3 border-t text-sm px-4 font-small mt-4 space-x-4">
-                                          <div className="m0-important f-small">
-                                            <span>{getTime(meetings.date)}</span>
-                                          </div>
-                                          <div className="m0-important text-sm">
-                                            <span className="m0-important font-bold f-small">{meetings.summary}</span>
-                                          </div>
-                                          <div className="m0-important text-right">
-                                            <span className="title_color"> <Link href={`/home/${meetings._id}`} key={meetings._id}><h4 className="f-small text-sm">Details</h4>
-                                            </Link></span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </section>
-                              </div>
-                            </div>
-                          )
-                        }
-                      </div>
+                            </section>
+                          ))}
+                        </div>
+                      )
+                      }
                     </div>
                   </div>
                 </div>
-                {meetings?.length === 0 ? (
-                  <p>{''}</p>
-                ) : (
-
-                  <div>
-                    <span className="title_color text-center"> <Link href="/home/projects" ><h4 className="view-all text-center f-small text-sm">View All</h4>
-                    </Link></span>
-                  </div>
-                )}
               </div>
             </div>
+
+            {meetings?.length === 0 ? (
+                <p>{''}</p>
+              ) : (
+                <div className="title_color view-all">
+                  <Link href="/home/projects" >
+                    <h4 className="f-small text-sm">View All</h4>
+                  </Link>
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -536,14 +339,6 @@ export default function ProjectPanel({
 
 
       <div className="z-20 flex gap-x-4">
-        <button
-          type="button"
-          onClick={openModal}
-          className="absolute right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
-        >
-          Add Project
-        </button>
-
         <div className="z-20 flex gap-x-4">
           <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={closeModal}>
@@ -563,7 +358,7 @@ export default function ProjectPanel({
                         as="h3"
                         className="text-lg font-medium leading-6 text-gray-900"
                       >
-                        Create a new Project
+                        Create new Project
                       </Dialog.Title>
                       <div className="my-10">
                         <form onSubmit={handleSubmit}>
@@ -594,14 +389,6 @@ export default function ProjectPanel({
           </Transition>
         </div>
       </div>
-      {/* <div className="relative">
-        <Link
-          href="/home/projects"
-          className="absolute right-0 mt-8 flex w-32 shrink-0 items-center justify-center rounded-md bg-gray-700 text-white"
-        >
-          <h4 className="text-sm">View All Projects</h4>
-        </Link>
-      </div> */}
     </div>
   );
 }

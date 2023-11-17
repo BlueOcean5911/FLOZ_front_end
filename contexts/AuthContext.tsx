@@ -14,7 +14,7 @@ import { Session } from "@supabase/supabase-js";
 import { setCookie } from "cookies-next";
 import { deleteCookie } from "cookies-next";
 import { signInUser } from "../service/user.service";
-
+import { IUser } from "../models";
 import { setProviderToken } from "@providerVar";
 
 interface AuthContextInterface {
@@ -72,7 +72,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     setProviderToken(session.provider_token);
-    setCookie("user_id", session.user.id);
     setCookie("p_token", session.provider_token);
     const accessToken = session?.access_token;
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -83,11 +82,14 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     // });
     setIsSignedIn(true);
 
-    signInUser({
+    const resp = await signInUser({
       email: session.user.email,
       name: session.user.user_metadata.full_name as string,
       oAuthToken: session.provider_token,
     });
+    const user: IUser = resp.data;
+
+    setCookie("user_id", user._id);
   }
 
   // Adds the user if they don't already exist

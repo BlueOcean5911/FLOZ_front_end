@@ -119,15 +119,16 @@ export default function Calendar() {
   const [personName, setPersonName] = React.useState<string[]>([]);
 
 
-  const [summary, setSummary] = React.useState('');
-
   // Start and End date that reflect to the calendar 
+  const [summary, setSummary] = React.useState('');
   const [startDate, setStartDate] = React.useState<Dayjs | null>(dayjs(''));
   const [endDate, setEndDate] = React.useState<Dayjs | null>(dayjs('2022-04-17'));
 
   // Selected project from the Form
   const [selectedProject, setSelectedProject] = useState("");
   const [allProjects, setAllProjects] = useState([]);
+
+  const [description, setDescription] = useState("");
 
   // Selected Date by clicking on the calendar with user
   const [currentDateTime, setCurrentDateTime] = useState<Dayjs | null>(dayjs((new Date()).toISOString()));
@@ -136,10 +137,22 @@ export default function Calendar() {
   // Attributes for the calendar
   const [initialEvents, setInitialEvents] = useState([]);
 
+  const [users, setUsers] = useState([]);
+  //////////////////////////////////////////////////////////////////////////
+  const calendarRef: any = useRef();
+  const providerToken = getCookie("p_token");
+  const INITIAL_EVENTS = [];
+  const user = getCookie("user_id");
+  ///////////////////////////////////////////////////////////////////////////
+
   useEffect(() => {
     setCurrentDateTime(dayjs((new Date()).toISOString()));
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    fetchAllProjects();
+  }, [isOpen]);
 
   const handleSelected = (event: SelectChangeEvent<typeof personName>) => {
     const {
@@ -150,26 +163,10 @@ export default function Calendar() {
       typeof value === 'string' ? value.split(',') : value,
     );
   };
-
+  // If summary in the is changed, the new value is added to the summary state;
   const handleChange = (event: SelectChangeEvent) => {
     setSummary(event.target.value as string);
   };
-
-  const providerToken = getCookie("p_token");
-
-  const INITIAL_EVENTS = [];
-
-  const user = getCookie("user_id");
-
-
-
-  useEffect(() => {
-    // calendarRef.current.getApi().gotoDate(currentDateTime.toISOString());
-  });
-
-  useEffect(() => {
-    fetchAllProjects();
-  }, [isOpen]);
 
   const fetchAllProjects = async () => {
     const { data: projects } = await supabase
@@ -248,7 +245,7 @@ export default function Calendar() {
   //   }
   // };
   ////////////////////////////////////////////////////////////////
-  const [users, setUsers] = useState([]);
+
 
 
   const addEvent = async (selectInfo: { start: string; end: string }) => {
@@ -348,8 +345,6 @@ export default function Calendar() {
     setPersonName([]);
   }
 
-  const [description, setDescription] = useState("");
-
   const onChangeDescription = (e: any) => {
     setDescription(e.target.value);
   };
@@ -429,7 +424,6 @@ export default function Calendar() {
     ],
   };
 
-  const calendarRef: any = useRef();
   const getCalendarTitle = () => {
     return calendarRef.current?.getApi().view.title;
   }
@@ -442,7 +436,7 @@ export default function Calendar() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <div onClick={() => {setIsOpen(true)}}>Create</div>
+            <div onClick={() => { setIsOpen(true) }}>Create</div>
           </div>
           <div className="flex justify-center w-[85px] h-[32px] mx-[12px] border-2 border-[#349989] rounded-md text-[#349989]">
             <select className="focus:border-none selected:border-none focus:outline-none" defaultValue={'timeGridWeek'} onChange={(e) => { calendarRef.current.getApi().changeView(e.target.value) }}>
@@ -672,10 +666,10 @@ export default function Calendar() {
           <DemoContainer components={[
             'DateCalendar',
           ]}>
-            <DateCalendar value={currentDateTime} onChange={(newValue) => {setCurrentDateTime(newValue); calendarRef.current.getApi().gotoDate(newValue.toISOString())}} />
+            <DateCalendar value={currentDateTime} onChange={(newValue) => { setCurrentDateTime(newValue); calendarRef.current.getApi().gotoDate(newValue.toISOString()) }} />
           </DemoContainer>
         </LocalizationProvider>
-        <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => {setCurrentDateTime(dayjs(new Date())); calendarRef.current.getApi().gotoDate(new Date())}}>Today</div>
+        <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => { setCurrentDateTime(dayjs(new Date())); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>
       </div>
     </div>
   );

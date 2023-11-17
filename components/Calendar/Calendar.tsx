@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, Fragment, useEffect } from "react";
-import supabase from "@/utils/supabase";
 
 import Select from "@components/Select/Select";
 import { getCookie } from "cookies-next";
@@ -12,6 +11,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
 import { getProjects } from "../../service/project.service";
+import { createEvent } from "@./service/event.service";
 
 interface Item {
   kind: string;
@@ -237,10 +237,9 @@ export default function Calendar() {
 
     const eventId = eventCreationResponse.id;
 
-    await supabase.from("event").insert({
-      id: eventId,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      project_id: selectedProject ? selectedProject : allProjects[0]?.id,
+    await createEvent({
+      eventId: eventId,
+      projectId: selectedProject ? selectedProject : allProjects[0]?._id,
     });
 
     fetchEvents();

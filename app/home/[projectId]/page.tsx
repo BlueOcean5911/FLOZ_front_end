@@ -2,8 +2,9 @@ import ProjectDetail from "@components/ProjectDetail";
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 
 import { cookies } from "next/headers";
-import supabase from "@/utils/supabase";
 import { getProjects } from "@./service/project.service";
+import { getEvents } from "@./service/event.service";
+import { IEvent } from "@./models/event.model";
 
 interface pageProps {
   projectId: string;
@@ -85,11 +86,7 @@ export default async function Page({ params }: { params: pageProps }) {
   const providerToken: ProviderToken = cookieStore.get("p_token");
   const projects = await getProjects({ userId: userId });
 
-  const { data: eventIds } = await supabase
-    .from("event")
-    .select("id")
-    .eq("project_id", params.projectId)
-    .order("created_at", { ascending: false });
+  const eventIds = await getEvents({ projectId: params.projectId });
 
   const allEvents = await fetch(
     "https://www.googleapis.com/calendar/v3/calendars/primary/events",
@@ -102,7 +99,7 @@ export default async function Page({ params }: { params: pageProps }) {
   );
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const googleEvents: Event = await allEvents.json();
-  const myEvents: string[] = eventIds?.map((event: { id: string }) => event.id);
+  const myEvents: string[] = eventIds?.map((event: IEvent) => event._id);
 
   const filteredEvents = googleEvents?.items?.filter((event: Item) =>
     myEvents?.includes(event.id)

@@ -87,7 +87,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       name: session.user.user_metadata.full_name as string,
       oAuthToken: session.provider_token,
     });
-    const user: IUser = resp.data;
+    const user: IUser = resp;
 
     setCookie("user_id", user._id);
   }

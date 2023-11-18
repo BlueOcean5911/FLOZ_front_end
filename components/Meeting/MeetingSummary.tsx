@@ -4,39 +4,39 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState, useEffect } from "react";
+import { get, post } from 'httpService/http-service'
+import api from 'api/api'
+import { getCookie } from 'cookies-next';
+
 
 const MeetingSummary = ({ meetingsummary, people, selMemId }) => {
 
-  const [emailPrompt, setEmailPrompt] = useState(meetingsummary);
+  const [emailPrompt, setEmailPrompt] = useState("Hania is working on a project in Berkeley Downtown. She needs to get a cost estimation for adding a new window to the bathroom. Joseph is helping her out and will be sending her different window types with different prices tonight. The estimated cost for adding a new window with the current design is approximately $300.   Some options include Sierra Pacific, which is a more affordable choice ranging from $100 to $200 depending on the size, and Marvin, a higher quality option priced between $300 to $350. The Marvin window is recommended due to the high salt content in the air near the project location.");
 
   useEffect(() => {
-    setEmailPrompt("Hania is working on a project in Berkeley Downtown. She needs to get a cost estimation for adding a new window to the bathroom. Joseph is helping her out and will be sending her different window types with different prices tonight. The estimated cost for adding a new window with the current design is approximately $300.   Some options include Sierra Pacific, which is a more affordable choice ranging from $100 to $200 depending on the size, and Marvin, a higher quality option priced between $300 to $350. The Marvin window is recommended due to the high salt content in the air near the project location.")
-  })
+    // for the test
+    // setEmailPrompt(meetingsummary)
+  }, [])
+
+  useEffect(() => {
+    setEmailPrompt(meetingsummary);
+  }, [meetingsummary])
   // send email to server for sending email to receptionist
-  const sendEmail = async () => {
 
-    const { data } = await axios.get('http://localhost:3000/sendEmail', {
-      params: {
-        recipient: people[selMemId].email,
-        content: emailPrompt
-      }
-    });
-
-    if (data.success === true) {
-      toast.success('Email sent successfully');
-    } else {
-
-      toast.success('Unfortunately email can\'t be sent');
-    }
-  }
   // polish the email
   const polish = async () => {
-    const { data } = await axios.get('http://localhost:3000/polish', {
+    const { data } = await api.get('/polish', {
       params: {
         emailPrompt: emailPrompt
       }
     });
     setEmailPrompt(data.emailPrompt);
+  }
+
+  const providerToken = getCookie('p_token');
+
+  const sendEmail = async () => {
+    const resq = await api.get('/sendEmail', { params: { man:people[selMemId], email:"jason.baker.infor@gmail.com", emailPrompt: emailPrompt } });
   }
 
   return (

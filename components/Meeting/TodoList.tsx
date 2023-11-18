@@ -3,59 +3,102 @@
 import { useEffect, useState } from 'react'
 import ToggleButton from "@components/button/ToogleButton";
 import Task from "./Task";
-import { content } from 'googleapis/build/src/apis/content';
-import { clear } from 'console';
+import Todo from '@models/todo.model'
+import { createTodo, getTodosByMeetingId, deleteTodo, deleteTodosByMeetingId } from 'service/todo.service'
+import { id } from 'date-fns/locale';
+import { log } from 'console';
 
 
 // the list of tasks in the meeting summary
 const TaskList = ({ todo, remove }) => {
   return (
     <>
-      {todo.map((task, index) => (
-        <Task key={index} id={index} title={task.title} content={task.content} date={task.date} remove={remove} />
-      ))}
+      {todo ? todo.map((task, index) => (
+        <Task key={index} id={index} content={task.description} date={task.dueDate} remove={remove} />
+      )) : <></>}
     </>
   );
 };
+// for the test data
+const testData = [
+  {
+    title: 'Joseph',
+    content: '- Work on cost estimation for adding a new window to the bathroomn- Send different window types with prices to Hanian- Make a note to send a follow-up email to Hania',
+    date: '2023-11-17T11:41:25.267Z'
+  },
+  {
+    title: 'Hania',
+    content: '- Receive cost estimation for new windown- Receive different window types with pricesn- Receive follow-up email from Joseph',
+    date: '2023-11-17T11:41:25.267Z'
+  }
+]
 
 //render the todoliat
 /*
   @todoValue is the value of the todo list from the meeting summary
 */
-const TodoList = ({ todoVal }) => {
+const TodoList = ({ todoVal, id }) => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("")
+  const [meetingId, setMeetingId] = useState(id);
+  const [todos, setTodos] = useState<Todo[] | null>([]);
+  interface TodoFromAI {
+    title: string;
+    content: string;
+    date: string;
+  }
 
-  const [todos, setTodos] = useState(
-    [
-      {
-        title: 'Joseph',
-        content: '- Work on cost estimation for adding a new window to the bathroomn- Send different window types with prices to Hanian- Make a note to send a follow-up email to Hania',
-        date: '2023-11-17T11:41:25.267Z'
-      },
-      {
-        title: 'Hania',
-        content: '- Receive cost estimation for new windown- Receive different window types with pricesn- Receive follow-up email from Joseph',
-        date: '2023-11-17T11:41:25.267Z'
+  const createTodos = async (todoVal: [TodoFromAI]) => {
+    let createdTodos = [];
+    for (let i = 0; i < todoVal.length; i++) {
+      const todo: TodoFromAI = {
+        title: todoVal[i].title,
+        content: todoVal[i].content,
+        date: todoVal[i].date
       }
-    ]
-  );
+      const newTodo: Todo = {
+        // title: todoVal[todo].title,
+        description: `${todo.title}&${todo.content}`,
+        dueDate: new Date(todo.date),
+        createdAt: new Date(todo.date),
+        updatedAt: new Date(todo.date),
+        status: "pending",
+        meetingId: meetingId,
+      }
+      await createTodo(newTodo);
+    }
+    const updatedTodos = await getTodosByMeetingId(meetingId);
+    
+    setTodos(updatedTodos);
+  }
+
+  const initialize = async () => {
+    // clear todos with meeting id existing before now in the database by meeting id
+    await deleteTodosByMeetingId(meetingId);
+    //for test
+    todoVal = [...testData]
+    // add todos from AI into database
+    await createTodos(todoVal);
+  }
 
   useEffect(() => {
-    // for the test
-    // setTodos([...todoVal]);
+    initialize();
   }, [])
 
   const removeALL = () => {
+    for (let i = 0; i < todos.length; i++) {
+      deleteTodo(todos[i]?._id);
+    }
     setTodos([]);
   }
 
   const removeOne = (index: number) => {
-    console.log("remove taak", index)
-    todos.splice(index, 1);
-    setTodos([...todos])
+    console.log("remove task", index);
+    const todo: any = todos.splice(index, 1);
+    setTodos([...todos]);
+    deleteTodo(todo?._id);
   }
 
   // clear the data in the form
@@ -65,11 +108,22 @@ const TodoList = ({ todoVal }) => {
   }
 
   // add todo into the todo state value.
-  const addTodo = () => {
+  const addTodo = async () => {
     if (title.length > 0 && content.length > 0) {
       setIsOpen(false);
       clearData();
-      setTodos([...todos, { title: title, content: content, date: (new Date).toISOString() }])
+      // TODO update
+      const newTodo: Todo = {
+        // title: todoVal[todo].title,
+        description: `${title}&${content}`,
+        dueDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        status: "pending",
+        meetingId: meetingId,
+      }
+      const addedTodo = await createTodo(newTodo);
+      setTodos([...todos, addedTodo]);
     }
   }
 

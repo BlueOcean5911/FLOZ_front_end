@@ -46,6 +46,12 @@ const MenuProps = {
   },
 };
 
+const eventBackColor = {
+  "Call": "#FF5BA0",
+  "Meeting": "#7B61FF",
+  "Send letter/Quote": "#00D079"
+}
+
 interface Item {
   kind: string;
   etag: string;
@@ -191,8 +197,9 @@ export default function Calendar() {
 
     const events: Event = await allEvents.json();
     // Loop through the Google Calendar events and convert them
-
     const googleEvents = events?.items;
+    console.log(googleEvents, "googleEvents");
+    console.log(events, "events");
     for (const googleEvent of googleEvents) {
       const eventId = googleEvent.id; // Event ID
       const title = googleEvent.summary; // Event summary
@@ -208,7 +215,9 @@ export default function Calendar() {
           id: eventId,
           title: title,
           start: start,
-          end: end, // Add the end time to the event
+          end: end, 
+          backgroundColor:eventBackColor[title],
+          borderColor:"transparent",
           // ...googleEvent
         });
       }
@@ -261,7 +270,8 @@ export default function Calendar() {
     const date = new Date(val);
     const offset = date.getTimezoneOffset();
     const localTime = new Date(date.getTime() + offset * 60 * 1000)
-    return localTime.toISOString();
+    // return localTime.toISOString();
+    return date.toISOString();
   }
 
   const onSave = async () => {
@@ -285,7 +295,7 @@ export default function Calendar() {
 
     const event = {
       summary: summary,
-      title: description ?? "",
+      description: description ?? "",
       start: {
         dateTime: getLocalTime(startDate.toISOString()), // Date.ISOString()
         timeZone: Intl.DateTimeFormat().resolvedOptions, // Pakistan/Lahore
@@ -294,15 +304,15 @@ export default function Calendar() {
         dateTime: getLocalTime(endDate.toISOString()),
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
       },
-      // ...(attendees?.length && { attendees: [attendees] }),
-      // conferenceData: {
-      //   createRequest: {
-      //     requestId: requestId,
-      //     conferenceSolutionKey: {
-      //       type: "hangoutsMeet",
-      //     },
-      //   },
-      // },
+      ...(attendees?.length && { attendees: [attendees] }),
+      conferenceData: {
+        createRequest: {
+          requestId: requestId,
+          conferenceSolutionKey: {
+            type: "hangoutsMeet",
+          },
+        },
+      },
     };
 
     const url = new URL(
@@ -336,6 +346,35 @@ export default function Calendar() {
     setIsOpen(false);
     clearData();
   };
+
+  const handleChangeEvent = async (info) => {
+
+    handleClickedEvent(info);
+
+    const url = new URL(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${info.event.id}`
+    );
+    const updatedEvent = {
+      summary: info.event.title,
+      description: description ?? "",
+      start : {
+        dateTime : info.event.start
+      },
+      end : {
+        dateTime : info.event.end,
+      },
+      attendees:info.event.attedeees,
+      conferenceData: info.event.conferenceData,
+    };
+    const eventCreationRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + providerToken, // Access token for google
+      },
+      body: JSON.stringify(updatedEvent),
+    });
+    
+  } 
 
   const clearData = () => {
     setSummary("");
@@ -424,6 +463,15 @@ export default function Calendar() {
     ],
   };
 
+  let previousClickedElement = null;
+
+  const handleClickedEvent = ((info) => {
+    info.el.style.borderColor = 'red' 
+    if(previousClickedElement) {
+      previousClickedElement.style.borderColor = "transparent"
+    }
+    previousClickedElement = info.el;
+  })
   const getCalendarTitle = () => {
     return calendarRef.current?.getApi().view.title;
   }
@@ -476,11 +524,15 @@ export default function Calendar() {
               selectable={true}
               selectMirror={true}
               dayMaxEvents={true}
+              eventResizableFromStart={true}
               initialEvents={initialEvents} // alternatively, use the `events` setting to fetch from a feed
               // select={handleDateSelect}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               //@ts-ignore No overload matches this call.
               select={addEvent}
+              eventResize={(info) => handleChangeEvent(info)}
+              eventDrop={(info) => handleChangeEvent(info)}
+              eventClick={(info) => {handleClickedEvent(info)}}
             />
           </div>
         </div>
@@ -532,7 +584,7 @@ export default function Calendar() {
                               // variant="outlined"
                               IconComponent={() => (<span></span>)}
                             >
-                              <MenuItem key={0} value={'Cell'}>Call</MenuItem>
+                              <MenuItem key={0} value={'Call'}>Call</MenuItem>
                               <MenuItem key={1} value={'Meeting'}>Meeting</MenuItem>
                               <MenuItem key={2} value={'Send letter/Quote'}>Send letter/Quote</MenuItem>
                               <MenuItem key={3} value={'Other'}>Other</MenuItem>

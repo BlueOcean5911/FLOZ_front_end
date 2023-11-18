@@ -4,51 +4,18 @@ import UserIcon from "@components/icons/iconUser";
 import ToggleButton from "@components/button/ToogleButton"
 
 import { createUser } from '@service/user.service'
-
-const Memeber = ({ name, mail, role }) => {
-
-  return (
-    <div className="member px-1 flex justify-between gap-1 overflow-hidden">
-      <div className="flex w-1/2 gap-1 overflow-hidden">
-        <div className="flex items-center">
-          <UserIcon />
-        </div>
-        <div className="flex flex-col justify-center text-gray-500">
-          <h3 className="text-[13px]">{name}</h3>
-          <h3 className="text-[10px]">{mail}</h3>
-        </div>
-      </div>
-      <div className="flex w-1/2 max-h-[60px] gap-1 justify-between">
-        <select data-te-select-init defaultValue={role} className="border-2 border-solid min-h-[40px] text-gray-500 w-1/2 border-[#C9C9C9] rounded-xl text-[13px] font-bold" >
-          <option value="0" className="font-bold text-gray-500">Role</option>
-          <option value="1" className="font-bold text-gray-500" >Project Manager</option>
-          <option value="2" className="font-bold text-gray-500" >Software Engineer</option>
-          <option value="3" className="font-bold  text-gray-500">Web Developer</option>
-        </select>
-        <button className="bg-[#06A59A] rounded-md text-[10px] w-1/2 text-white " onClick={() => { }}>Generate<br />Email</button>
-      </div>
-    </div>
-  )
-}
-// the list of members in the supabase
-const MemberList = ({ users }) => {
-  return (
-    <div>
-      {users && users.map((member, index) => (
-        <div key={index} className="p-1">
-          <Memeber name={member.name} mail={member.email} role={1} />
-        </div>
-      ))}
-    </div>
-  );
-};
+import api from '@api/api'
+import { getCookie } from 'cookies-next';
 // rendering the members list
-const Members = ({ users }) => {
+
+
+const Members = ({ users, meetingsummary, setEmailPrompt, selMem }) => {
 
   const [persons, setPersons] = useState([])
   const [isOpen, setIsOpen] = useState(false);
   const [personname, setPersonName] = useState("");
   const [email, setEmail] = useState("")
+  const [summary, setSummary] = useState("")
 
   useEffect(() => {
     setPersons(users)
@@ -58,9 +25,11 @@ const Members = ({ users }) => {
     if (personname.length > 0 && email.length > 0) {
       setIsOpen(false);
       clearData();
-      const newUser = await createUser({ name: personname, email: email });
-      console.log(newUser);
-      persons.push({...newUser});
+      // const providerToken = getCookie('p_token')
+      // const newUser = await createUser({ name: personname, email: email, oAuthToken: providerToken});
+      // console.log(newUser);
+
+      persons.push({ name: [personname], email: [email] });
       setPersons([...persons])
     }
   }
@@ -71,8 +40,13 @@ const Members = ({ users }) => {
   }
   // remove all users in the database
   const removeAllUsers = () => {
+    setPersons([])
+  }
 
-  } 
+  const generateEmail = async (name, email) => {
+    const resp = await api.post('/generateEmail', { params: { name: name, email: email, summary: summary } })
+    setEmailPrompt(resp.data.emailPrompt);
+  }
 
   return (
     <div className="projects-members TodoList rounded-md mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
@@ -84,7 +58,32 @@ const Members = ({ users }) => {
         </div>
       </div>
       <div className="grow flex flex-col overflow-auto">
-        <MemberList users={persons} />
+        <div>
+          {persons && persons.map((member, index) => (
+            <div key={index} className="p-1" onClick={()=>{}}>
+              <div className="member px-1 flex justify-between gap-1 overflow-hidden">
+                <div className="flex w-1/2 gap-1 overflow-hidden">
+                  <div className="flex items-center">
+                    <UserIcon />
+                  </div>
+                  <div className="flex flex-col justify-center text-gray-500">
+                    <h3 className="text-[13px]">{member.name}</h3>
+                    <h3 className="text-[10px]">{member.email}</h3>
+                  </div>
+                </div>
+                <div className="flex w-1/2 max-h-[60px] gap-1 justify-between">
+                  <select data-te-select-init defaultValue={1} className="border-2 border-solid min-h-[40px] text-gray-500 w-1/2 border-[#C9C9C9] rounded-xl text-[13px] font-bold" >
+                    <option value="0" className="font-bold text-gray-500">Role</option>
+                    <option value="1" className="font-bold text-gray-500" >Project Manager</option>
+                    <option value="2" className="font-bold text-gray-500" >Software Engineer</option>
+                    <option value="3" className="font-bold  text-gray-500">Web Developer</option>
+                  </select>
+                  <button className="bg-[#06A59A] rounded-md text-[10px] w-1/2 text-white " onClick={() => {generateEmail(member.name, member.email)}}>Generate<br />Email</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="members-footer flex justify-between px-6 mb-4">
         <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => setIsOpen(true)}>Add members</button>

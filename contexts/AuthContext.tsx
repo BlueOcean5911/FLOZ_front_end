@@ -14,8 +14,8 @@ import { Session } from "@supabase/supabase-js";
 import { setCookie } from "cookies-next";
 import { deleteCookie } from "cookies-next";
 
-import { getProviderToken, setProviderToken } from "@providerVar";
-import { setEmitFlags } from "typescript";
+import { setProviderToken } from "@providerVar";
+import { createUser, getUserByEmail } from "@service/user.service";
 
 interface AuthContextInterface {
   isSignedIn: boolean;
@@ -34,8 +34,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [userSession, setUserSession] = useState<Session | null>(null);
 
   useEffect(() => {
-      console.log(getProviderToken())
-    checkSession(); 
+    checkSession();
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event == "SIGNED_IN") {
@@ -56,7 +55,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function checkSession() {
     const { data, error } = await supabase.auth.getSession();
-    console.log(data, "data")
     if (data.session === null) {
       deleteCookie("user_id");
       router.push("/");
@@ -84,29 +82,24 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     // Add the user if this is the first time they are signing in
-    // await addUserIfNew({
-    //   userId: session.user.id,
-    // });
+    await addUserIfNew({ ...session.user.user_metadata, oAuthToken: accessToken });
     setIsSignedIn(true);
   }
 
   // Adds the user if they don't already exist
   type AddUserIfNewArgs = {
-    userId: string;
+    email?: string;
     name?: string;
+    picture?: string;
+    oAuthToken?: string;
   };
-  async function addUserIfNew({ userId, name }: AddUserIfNewArgs) {
+  async function addUserIfNew(userMetadata: AddUserIfNewArgs) {
     // Check if the user exists
     let userExists = true;
     try {
-      const { data: supabase_user_exists_response_data } = await axios.get<{
-        user_exists: boolean;
-      }>(
-        `${process.env
-          .NEXT_PUBLIC_SUPABASE_URL!}/api/supabase/user/exists/${userId}`
-      );
+      const user = await getUserByEmail(userMetadata.email)
 
-      userExists = supabase_user_exists_response_data.user_exists;
+      userExists = user.length > 0;
     } catch (error) {
       // TODO: Error handler
       console.error(`Error: ${error}`);
@@ -117,10 +110,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     if (userExists) return;
 
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_ORIGIN!}/api/supabase/user/create`,
-        { user_id: userId, name }
-      );
+      await createUser(userMetadata);
     } catch (error) {
       // TODO: error handler
       console.error(`Error: ${error}`);

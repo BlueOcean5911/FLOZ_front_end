@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-
+import { getUsers } from "../../service/user.service";
 import { getCookie } from "cookies-next";
 import LoginScreen from "./LoginScreen";
 
@@ -27,8 +27,7 @@ function Login() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-y-5">
-      <LoginScreen onClick={onGoogleClick}/>
-      
+      <LoginScreen onClick={onGoogleClick} />
     </div>
   );
 }

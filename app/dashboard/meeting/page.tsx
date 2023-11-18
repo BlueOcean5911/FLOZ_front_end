@@ -9,8 +9,10 @@ import Members from "@components/Meeting/Members";
 import MeetingSummary from "@components/Meeting/MeetingSummary";
 import Record from "@components/Record/Record";
 import axios from 'axios';
-import { getUsers } from "@service/user.service";
+import { getUser, getUsers } from "@service/user.service";
 import { toast } from 'react-toastify';
+
+import api from 'api/api'
 
 export default function Page() {
 
@@ -25,16 +27,20 @@ export default function Page() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMemeber, setSelectedMember] = useState(-1);
+  const [meetingId, setMeetingId] = useState("655874ca8324c16a160df393");
+  const [email, setEmail] = useState("")
 
   useEffect(() => {
     getUsersFromDatabase();
-    getSummaryData();
+    // getSummaryData();
     // getConnectWithOpenAI();
   }, [])
 
   // get userdata from supabase
   const getUsersFromDatabase = async () => {
-    const data = await getUsers();
+    // const data = await getUsers();
+    const data:any = await getUsers();
+    console.log(data, "users")
     setPeople(data.data);
   }
 
@@ -42,7 +48,7 @@ export default function Page() {
   const getSummaryData = async () => {
     try {
       setIsLoading(true);
-      const { data } = await axios.get('http://localhost:3000/getMeetingData');
+      const { data } = await api.get('/getMeetingData');
       setDataByFloz({ ...data });
       setIsLoading(false);
       return data;
@@ -54,7 +60,7 @@ export default function Page() {
   }
 
   const getConnectWithOpenAI = async () => {
-    const response = await axios.get('http://localhost:3000/auth');
+    const response = await api.get('/auth');
     if (response.data.success === true) {
       toast.success('Successfully connected with OpenAI');
     } else {
@@ -82,9 +88,9 @@ export default function Page() {
           </div>
           <div className="beside-layout flex flex-col h-full mr-[20px] ml-[27px] w-[28%] overflow-auto">
             <div className="grow flex flex-col overflow-auto justify-between">
-              <TodoList todoVal={dataByFloz?.todos} />
-              <Members users={people} />
-              <MeetingSummary meetingsummary={dataByFloz?.emailPrompt} people={people} selMemId={selectedMemeber} />
+              <TodoList todoVal={dataByFloz?.todos} id={meetingId} />
+              <Members users={people} meetingsummary={dataByFloz?.meetingSummary} selMem={selectedMemeber} setEmailPrompt={setEmail} />
+              <MeetingSummary meetingsummary={email} people={people} selMemId={selectedMemeber} />
             </div>
           </div>
         </>

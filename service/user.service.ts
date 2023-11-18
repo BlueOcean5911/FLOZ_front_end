@@ -14,9 +14,16 @@ export const getUser = async (id: string) => {
 
 }
 
-export const createUser = async (user: User) => {
+export const getUserByEmail = async (email: string): Promise<User[] | []> => {
+    const resp = await api.get(`/users?email=${email}`);
+    const user = resp.data?.data || [];
+    return user;
+
+}
+
+export const createUser = async (user: User): Promise<User> => {
     const resp = await api.post('/users', user);
-    const newUser = resp.data;
+    const newUser = resp.data?.data as User;
     return newUser;
 }
 

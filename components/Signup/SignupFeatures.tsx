@@ -1,10 +1,21 @@
+import { useState} from 'react'
 
-const SignupFeatures = ({ isShow = true }) => {
+const SignupFeatures = ({ isShow = true, setShow }) => {
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('user');
+  const [comments, setComments] = useState('');
+
+  const clear =  () => {
+    
+  }
+
   return (
     <>
       {
         isShow ?
-          <div className="signupfeatures  fixed w-screen h-screen flex flex-col items-center justify-center bg-[rgba(0,0,0,0.1)]">
+          <div className="signupfeaturesfixed fixed z-10000 w-screen h-screen flex flex-col top-0 left-0 items-center justify-center bg-[rgba(0,0,0,0.4)]" onClick={() => {clear();setShow(false)}}>
             <div className="w-[640px] h-[456px] flex flex-col bg-transparent">
               <div className="closeButton flex justify-end mb-[15px]">
                 <svg width="26" height="26" viewBox="0 0 26 26" fill="none" >
@@ -19,16 +30,16 @@ const SignupFeatures = ({ isShow = true }) => {
                 </div>
                 <div className="flex flex-col justify-items-center mx-[196px] gap-1">
                   <div className="name text-xs font-bold text-gray-500">Name*</div>
-                  <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="First Last"></input>
+                  <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="First Last" value={name} onChange={(e)=>setName(e.target.value)}></input>
                   <div className="email text-xs font-bold text-gray-500">Email*</div>
-                  <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="floz@flozdesign.com"></input>
+                  <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="floz@flozdesign.com"  value={email} onChange={(e)=>setEmail(e.target.value)}></input>
                   <div className="password text-xs font-bold text-gray-500">Role in project</div>
-                  <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="Architect/PM/Contructor/Client"></input>
+                  <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="Architect/PM/Contructor/Client"  value={role} onChange={(e)=>setRole(e.target.value)}></input>
                   <div className="confirm-password text-xs font-bold text-gray-500">Comments</div>
-                  <textarea className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="Any thoughts for us better understand your needs?"></textarea>
+                  <textarea className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="Any thoughts for us better understand your needs?"  value={comments} onChange={(e)=>setComments(e.target.value)}></textarea>
                 </div>
                 <div className="footer h-[56px] flex items-center justify-center rounded-bmd border-t-[1px] rounded-b-md border-gray-400 bg-gray-100" >
-                  <button className="w-[73px] h-[32px] rounded-md text-white text-[13px] bg-[#349989]">Submit</button>
+                  <button className="w-[73px] h-[32px] rounded-md text-white text-[13px] bg-[#349989]" onClick={() => setShow(false)}>Submit</button>
                 </div>
               </div>
             </div>

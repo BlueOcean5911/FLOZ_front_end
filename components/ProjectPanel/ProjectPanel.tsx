@@ -48,7 +48,7 @@ export default function ProjectPanel({
 }: {
   data: {
     projects: Project[] | null;
-    meetings: Meeting[] | null;
+    meetings?: Meeting[] | null;
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);

@@ -14,7 +14,7 @@ export default async function Page() {
   const userId = cookieStore.get("user_id").value;
 
   // Get projects from backend api
-  const projects = await getProjects();
+  const projects = await getProjects({});
 
   // Get meetings from backend api
   const meetings = await getMeetings();

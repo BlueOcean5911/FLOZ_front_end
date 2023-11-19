@@ -1,3 +1,4 @@
+import Footer from "@components/Footer";
 import Header from "@components/Header";
 
 export const metadata = {
@@ -11,11 +12,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main>
+    <main className="h-screen flex flex-col">
       <Header />
-      <div className="p-6 bg-slate-300 bg-opacity-20">
-        {children}  
+      <div className="p-6 grow overflow-auto bg-slate-300 bg-opacity-20">
+        {children} 
       </div>
+      <Footer />
     </main>
   );
 }

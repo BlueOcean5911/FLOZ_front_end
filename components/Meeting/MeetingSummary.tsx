@@ -9,19 +9,10 @@ import api from 'api/api'
 import { getCookie } from 'cookies-next';
 
 
-const MeetingSummary = ({ meetingsummary, people, selMemId }) => {
+const MeetingSummary = () => {
 
   const [emailPrompt, setEmailPrompt] = useState("Hania is working on a project in Berkeley Downtown. She needs to get a cost estimation for adding a new window to the bathroom. Joseph is helping her out and will be sending her different window types with different prices tonight. The estimated cost for adding a new window with the current design is approximately $300.   Some options include Sierra Pacific, which is a more affordable choice ranging from $100 to $200 depending on the size, and Marvin, a higher quality option priced between $300 to $350. The Marvin window is recommended due to the high salt content in the air near the project location.");
-
-  useEffect(() => {
-    // for the test
-    // setEmailPrompt(meetingsummary)
-  }, [])
-
-  useEffect(() => {
-    setEmailPrompt(meetingsummary);
-  }, [meetingsummary])
-  // send email to server for sending email to receptionist
+  const oAuthToken = getCookie('p_token');
 
   // polish the email
   const polish = async () => {
@@ -33,10 +24,10 @@ const MeetingSummary = ({ meetingsummary, people, selMemId }) => {
     setEmailPrompt(data.emailPrompt);
   }
 
-  const providerToken = getCookie('p_token');
-
+  // send emial to selected person
   const sendEmail = async () => {
-    const resq = await api.get('/sendEmail', { params: { man:people[selMemId], email:"jason.baker.infor@gmail.com", emailPrompt: emailPrompt } });
+    const { data } = await api.get('/sendEmail', { params: { man: "Russell Johnson", email: "russell.johnson.navy@gmail.com", content: emailPrompt, oAuthToken: oAuthToken } });
+    setEmailPrompt(data.result);
   }
 
   return (

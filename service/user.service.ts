@@ -34,7 +34,6 @@ export const createUser = async (user: IUser): Promise<IUser> => {
     const resp: IResponse = await api.post('/users', user);
     const newUser: IUser = resp?.data?.data as IUser && resp.data.data as IUser;
     return newUser;
-
 }
 
 export const getUsers = async () => {

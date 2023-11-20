@@ -11,9 +11,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main>
+    <main className="h-screen flex flex-col">
       <Header />
-      <div className="px-8">
+      <div className="grow overflow-auto">
         {children}  
       </div>
     </main>

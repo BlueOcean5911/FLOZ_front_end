@@ -11,6 +11,8 @@ import supabase from "@/utils/supabase";
 import Project from "@models/project.model";
 import Todo from "@models/todo.model";
 import Meeting from "@models/meeting.model";
+import SingupFeatures from '@components/Signup/SignupFeatures'
+import SignupFeatures from "@components/Signup/SignupFeatures";
 
 export default function ProjectView({
   data
@@ -23,7 +25,7 @@ export default function ProjectView({
 }) {
   const [todoList, setTodoList] = useState(data.todolist);
   const [meetings, setMeetings] = useState(data.meetings);
-
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const truncateSummary = (summary, maxWords) => {
     const words = summary.split(' ');
     const truncatedSummary = words.slice(0, maxWords).join(' ');
@@ -378,7 +380,8 @@ export default function ProjectView({
                       </svg>
                     </div>
                     <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
-                      <h3 className="card-title-font">Upload meeting audios</h3>
+                      <h3 className="card-title-font" onClick={() => setIsOpenModal(true)}>Upload meeting audios</h3>
+                      
                       <p className="card-desc-font" >Get summary for your meetings</p>
                     </div>
                   </div>
@@ -618,6 +621,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
+      {isOpenModal ? <SignupFeatures isShow={isOpenModal} setShow={setIsOpenModal}/> : <></>}
     </div>
   );
 }

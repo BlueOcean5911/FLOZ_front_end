@@ -50,9 +50,12 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [router]);
 
+  useEffect(() => {
+    checkSession();
+  }, [])
+
   async function checkSession() {
     const { data, error } = await supabase.auth.getSession();
-
     if (data.session === null) {
       deleteCookie("user_id");
       router.push("/");
@@ -66,10 +69,11 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function handleSessionChange(session: Session | null) {
     setUserSession(session);
-
-    if (!session) {
+    if (!session || session.provider_token === null || session.provider_token === undefined || session.provider_token === "") {
+      setCookie("AUTH_STATUS", "SIGNED_OUT");
       setIsSignedIn(false);
       setProviderToken(null);
+      router.push("/");
       return;
     }
     setProviderToken(session.provider_token);

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { Fragment, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Dialog, Transition } from "@headlessui/react";
 import { IProject } from "@./models/project.model";
@@ -13,6 +13,7 @@ export default function ProjectItems({
 }: {
   projects: IProject[] | null;
 }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<IProject>({});
   const [allProjects, setAllProjects] = useState<IProject[] | null>(projects);
@@ -21,7 +22,7 @@ export default function ProjectItems({
     setIsOpen(false);
   }
 
-  function openModal(project: Record<string, string>) {
+  function openModal(project: IProject) {
     setSelectedProject(project);
     setIsOpen(true);
   }
@@ -49,9 +50,9 @@ export default function ProjectItems({
   return (
     <div>
       <div className="flex flex-col space-y-6">
-        {allProjects?.map((project: { id: string; name: string }) => (
-          <div key={project.id}>
-            <div className="flex items-center justify-between rounded-md border border-neutral-300 p-6 shadow-sm">
+        {allProjects?.map((project) => (
+          <div key={project._id}>
+            <div onClick={() => router.push(`/dashboard/project/${project._id}`)} className="flex items-center justify-between rounded-md border border-neutral-300 p-6 shadow-sm bg-white cursor-pointer">
               <h4 className="text-4xl">{project.name}</h4>
               <div className="flex items-center gap-x-4">
                 <TrashIcon

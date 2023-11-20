@@ -334,7 +334,7 @@ export default function ProjectPanel({
             </div>
 
             <div className="title_color view-all">
-              <Link href="/home/projects">
+              <Link href="/dashboard/projects">
                 <h4 className="f-small text-sm">View All</h4>
               </Link>
             </div>
@@ -465,7 +465,7 @@ export default function ProjectPanel({
               <p>{""}</p>
             ) : (
               <div className="title_color view-all">
-                <Link href="/home/projects">
+                <Link href="/dashboard/meeting">
                   <h4 className="f-small text-sm">View All</h4>
                 </Link>
               </div>

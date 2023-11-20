@@ -303,7 +303,7 @@ export default function ProjectView({
                 <div>
                   <h3 className="todo-card-content-title">{item.description}</h3>
                   <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{item.meetingId["summary"]}</p>
+                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p>
                   </div>
                 </div>
                 <div className="align-right relative">
@@ -327,7 +327,7 @@ export default function ProjectView({
                 <div>
                   <h3 className="todo-card-content-title">{item.description}</h3>
                   <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{item.meetingId["summary"]}</p>
+                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p>
                   </div>
                 </div>
                 <div className="align-right relative">

@@ -40,7 +40,7 @@ export default function UserCard({
           <div key={todo._id} className="flex justify-between border rounded border-stone-300 px-3 py-3 bg-white" >
             <div>
               <h3 className="font-bold text-sm">{todo.description}</h3>
-              <p className="text-sm" >{todo.meetingId["summary"]}</p>
+              <p className="text-sm" >{typeof todo.meetingId === 'string' ? "" : todo.meetingId?.summary || ""}</p>
             </div>
             <div>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

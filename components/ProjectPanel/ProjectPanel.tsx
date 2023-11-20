@@ -7,9 +7,7 @@ import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { IProject } from "@models";
 import moment from "moment";
-import { get, post } from "../../httpService/http-service";
-import { createProject } from "@./service/project.service";
-import Project from "@models/project.model";
+import { createProject, getProjects } from "@./service/project.service";
 import Meeting from "@models/meeting.model";
 
 function setMeetingsDay(meetingsList) {
@@ -47,19 +45,19 @@ export default function ProjectPanel({
   data,
 }: {
   data: {
-    projects: Project[] | null;
+    projects: IProject[] | null;
     meetings?: Meeting[] | null;
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<Project[] | null>(
+  const [allProjects, setAllProjects] = useState<IProject[] | null>(
     data.projects
   );
   const [thisMonthProjects, setThisMonthProjects] = useState<
-    Project[] | null
+    IProject[] | null
   >();
   const [nextMonthProjects, setNextMonthProjects] = useState<
-    Project[] | null
+    IProject[] | null
   >();
   const [meetings, setMeetings] = useState<Meeting[] | null>(data.meetings);
   const [meetingsByDays, setMeetingsByDays] = useState(
@@ -104,17 +102,11 @@ export default function ProjectPanel({
     const projectName = form.get("name"); // Assuming your form input has a name attribute
 
     if (projectName) {
-      const tempId = Math.floor(Math.random() * (999 - 8)) + 8;
-      await createProject({ name: projectName.toString() });
-      const newEntry = {
-        id: "1",
-        name: projectName.toString(),
-        userId: "6555b669fdaccb0218c8695e",
-      };
-      const savedProject = await post("projects", newEntry);
+      const savedProject = await createProject({ name: projectName.toString() });
+     
       if (savedProject) {
-        const getProject = await get("projects");
-        if (getProject.data) setAllProjects(getProject.data);
+        const projects = await getProjects({});
+        if (projects) setAllProjects(projects);
       }
 
       setIsOpen(false);
@@ -225,7 +217,7 @@ export default function ProjectPanel({
                                   <span className="title_color">
                                     {" "}
                                     <Link
-                                      href={`/project/${project._id}`}
+                                      href={`/dashboard/project/${project._id}`}
                                       key={project._id}
                                     >
                                       <h4 className="f-small text-sm">
@@ -342,7 +334,7 @@ export default function ProjectPanel({
             </div>
 
             <div className="title_color view-all">
-              <Link href="/home/projects">
+              <Link href="/dashboard/projects">
                 <h4 className="f-small text-sm">View All</h4>
               </Link>
             </div>
@@ -473,7 +465,7 @@ export default function ProjectPanel({
               <p>{""}</p>
             ) : (
               <div className="title_color view-all">
-                <Link href="/home/projects">
+                <Link href="/dashboard/meeting">
                   <h4 className="f-small text-sm">View All</h4>
                 </Link>
               </div>

@@ -17,9 +17,9 @@ export const getUser = async (id: string) => {
 
 }
 
-export const getUserByEmail = async (email: string): Promise<IUser | null> => {
+export const getUserByEmail = async (email: string): Promise<IUser[] | null> => {
     const resp: IResponse = await api.get(`/users?email=${email}`);
-    const user: IUser = resp?.data && resp.data.data as IUser;
+    const user = resp?.data && resp.data.data as IUser[];
     return user;
 
 }
@@ -34,7 +34,6 @@ export const createUser = async (user: IUser): Promise<IUser> => {
     const resp: IResponse = await api.post('/users', user);
     const newUser: IUser = resp?.data?.data as IUser && resp.data.data as IUser;
     return newUser;
-
 }
 
 export const getUsers = async () => {

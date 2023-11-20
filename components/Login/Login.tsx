@@ -12,9 +12,12 @@ function Login() {
 
   const status = authStatus ? authStatus : "";
 
+
   useEffect(() => {
     const status = authStatus;
-    if (status === "SIGNED_IN") router.push("/home");
+    if (status === "SIGNED_IN") {
+      router.push("/dashboard/home");
+    }
   }, [status]);
 
   const onGoogleClick = () => {

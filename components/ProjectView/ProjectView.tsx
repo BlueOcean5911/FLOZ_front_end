@@ -6,24 +6,24 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import moment from 'moment';
-import { get, post } from "../../httpService/http-service";
-import supabase from "@/utils/supabase";
-import Project from "@models/project.model";
+import { IProject } from "@models/project.model";
 import Todo from "@models/todo.model";
 import Meeting from "@models/meeting.model";
+import SignupFeatures from "@components/Signup/SignupFeatures";
+import Sidebar from "@components/sidebar/Sidebar";
 
 export default function ProjectView({
   data
 }: {
   data: {
-    projects: Project[] | null;
+    projects: IProject[] | null;
     todolist: Todo[] | null;
     meetings: Meeting[] | null;
   }
 }) {
   const [todoList, setTodoList] = useState(data.todolist);
   const [meetings, setMeetings] = useState(data.meetings);
-
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const truncateSummary = (summary, maxWords) => {
     const words = summary.split(' ');
     const truncatedSummary = words.slice(0, maxWords).join(' ');
@@ -69,287 +69,9 @@ export default function ProjectView({
   return (
     <div className="w-full items-center justify-between">
       <div className="grid grid-cols-5 gap-4">
-        <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow" >
-          <h3 className="my-auto pr-2 pb-3 font-bold text-sm">Main workplace</h3>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            placeholder="Search for the project"
-            className={`w-full rounded-md border p-2 px-4 outline-none `}
-          />
-          <h3 className="my-auto pr-2 pl-2 font-bold text-sm">Project Terms</h3>
-          <div className="project-terms-items">
-
-
-            <ul>
-              <li className="px-4 py-1 hover:bg-secondary-100">Dashboard</li>
-              <li className="px-4 py-1 hover:bg-secondary-100">News</li>
-              <li className="py-1">
-                <a
-                  data-te-collapse-init
-                  href="#collapseThree"
-                  role="button"
-                  aria-expanded="false"
-                  aria-controls="collapseThree"
-                  className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                    stroke="currentColor"
-                    className="h-4 w-4">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                  Architects
-                </a>
-                <ul
-                  className="!visible hidden"
-                  id="collapseThree"
-                  data-te-collapse-item>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Architects-one</li>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Architects-two</li>
-                  <li className="ml-4">
-                    <a
-                      data-te-collapse-init
-                      href="#collapseSecondThree"
-                      role="button"
-                      aria-expanded="false"
-                      aria-controls="collapseSecondThree"
-                      className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="2.5"
-                        stroke="currentColor"
-                        className="h-4 w-4">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                      </svg>
-                      Second-three
-                    </a>
-                    <ul
-                      className="!visible hidden"
-                      id="collapseSecondThree"
-                      data-te-collapse-item>
-                      <li className="ml-4 px-2">
-                        <a
-                          data-te-collapse-init
-                          href="#collapseThirdOne"
-                          role="button"
-                          aria-expanded="false"
-                          aria-controls="collapseThirdOne"
-                          className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2.5"
-                            stroke="currentColor"
-                            className="h-4 w-4">
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg
-                          >Third-one
-                        </a>
-                        <ul
-                          className="!visible hidden"
-                          id="collapseThirdOne"
-                          data-te-collapse-item>
-                          <li className="ml-4 px-2 hover:bg-secondary-100">
-                            Fourth-one
-                          </li>
-                          <li className="ml-4 px-2 hover:bg-secondary-100">
-                            Fourth-two
-                          </li>
-                          <li className="ml-4 px-2 hover:bg-secondary-100">
-                            Fourth-three
-                          </li>
-                        </ul>
-                      </li>
-                      <li className="ml-4 px-2 hover:bg-secondary-100">Third-two</li>
-                      <li className="ml-4">
-                        <a
-                          data-te-collapse-init
-                          href="#collapseThirdThree"
-                          role="button"
-                          aria-expanded="false"
-                          aria-controls="collapseThirdThree"
-                          className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2.5"
-                            stroke="currentColor"
-                            className="h-4 w-4">
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg
-                          >Third-three
-                        </a>
-                        <ul
-                          className="!visible hidden"
-                          id="collapseThirdThree"
-                          data-te-collapse-item>
-                          <li className="ml-4 px-2 hover:bg-secondary-100">
-                            Fourth-one
-                          </li>
-                          <li className="ml-4 px-2 hover:bg-secondary-100">
-                            Fourth-two
-                          </li>
-                          <li className="ml-4 px-2 hover:bg-secondary-100">
-                            Fourth-three
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-              <li className="py-1">
-                <a
-                  data-te-collapse-init
-                  href="#collapseThree"
-                  role="button"
-                  aria-expanded="false"
-                  aria-controls="collapseThree"
-                  className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                    stroke="currentColor"
-                    className="h-4 w-4">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                  Electrics
-                </a>
-                <ul
-                  className="!visible hidden"
-                  id="collapseThree"
-                  data-te-collapse-item>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Electrics-one</li>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Electrics-two</li>
-
-                </ul>
-              </li>
-
-              <li className="py-1">
-                <a
-                  data-te-collapse-init
-                  href="#collapseThree"
-                  role="button"
-                  aria-expanded="false"
-                  aria-controls="collapseThree"
-                  className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                    stroke="currentColor"
-                    className="h-4 w-4">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                  MEP
-                </a>
-                <ul
-                  className="!visible hidden"
-                  id="collapseThree"
-                  data-te-collapse-item>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">MEP-one</li>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">MEP-two</li>
-
-                </ul>
-              </li>
-
-              <li className="py-1">
-                <a
-                  data-te-collapse-init
-                  href="#collapseThree"
-                  role="button"
-                  aria-expanded="false"
-                  aria-controls="collapseThree"
-                  className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                    stroke="currentColor"
-                    className="h-4 w-4">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                  Structure
-                </a>
-                <ul
-                  className="!visible hidden"
-                  id="collapseThree"
-                  data-te-collapse-item>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Structure-one</li>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Structure-two</li>
-
-                </ul>
-              </li>
-
-              <li className="py-1">
-                <a
-                  data-te-collapse-init
-                  href="#collapseThree"
-                  role="button"
-                  aria-expanded="false"
-                  aria-controls="collapseThree"
-                  className="flex items-center px-2 hover:bg-secondary-100 focus:text-primary active:text-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                    stroke="currentColor"
-                    className="h-4 w-4">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                  Client reps
-                </a>
-                <ul
-                  className="!visible hidden"
-                  id="collapseThree"
-                  data-te-collapse-item>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Client reps-one</li>
-                  <li className="ml-4 px-2 hover:bg-secondary-100">Client reps-two</li>
-
-                </ul>
-              </li>
-            </ul>
-          </div>
-
-
+        <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
+          <Sidebar />
         </div>
-
 
 
         <div className="col-span-3">
@@ -378,7 +100,8 @@ export default function ProjectView({
                       </svg>
                     </div>
                     <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
-                      <h3 className="card-title-font">Upload meeting audios</h3>
+                      <h3 className="card-title-font" onClick={() => setIsOpenModal(true)}>Upload meeting audios</h3>
+                      
                       <p className="card-desc-font" >Get summary for your meetings</p>
                     </div>
                   </div>
@@ -580,7 +303,7 @@ export default function ProjectView({
                 <div>
                   <h3 className="todo-card-content-title">{item.description}</h3>
                   <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{item.meetingId["summary"]}</p>
+                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p>
                   </div>
                 </div>
                 <div className="align-right relative">
@@ -604,7 +327,7 @@ export default function ProjectView({
                 <div>
                   <h3 className="todo-card-content-title">{item.description}</h3>
                   <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{item.meetingId["summary"]}</p>
+                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p>
                   </div>
                 </div>
                 <div className="align-right relative">
@@ -618,6 +341,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
+      {isOpenModal ? <SignupFeatures isShow={isOpenModal} setShow={setIsOpenModal}/> : <></>}
     </div>
   );
 }

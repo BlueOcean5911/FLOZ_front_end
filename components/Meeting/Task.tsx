@@ -14,7 +14,7 @@ const DateConverter: React.FC<{ dateString: string }> = ({ dateString }) => {
 };
 
 // Task component
-const Task = ({ id: taskId, title, content, date }) => {
+const Task = ({ id: taskId, title, content, date, handleRemove, handleClick, ...children }) => {
   // state value
   const [id, setId] = useState(taskId);
   // initial state
@@ -23,20 +23,24 @@ const Task = ({ id: taskId, title, content, date }) => {
   }, [])
 
   return (
-    <div
-      key={id}
-      className="p-1 text-xs m-1 border-2 rounded-md
-                  border-[#C9C9C9] border-solid flex flex-col hover:bg-[#FBF3E0]">
-      <div className='flex justify-between font-md'>
-        <p className='text-xs text-gray-500'>{title}</p>
-        <div className='cursor-pointer' onClick={() => { }}>X</div>
-      </div>
-      <div className='flex justify-between gap-2'>
-        <div className='text-[13px]'>{content}</div>
-        <div className='date h-full flex flex-col m-w-[150px] justify-center items-center text-left'>
-          <DateConverter dateString={date} />
+    <div className='relative'>
+
+      <div
+        key={id}
+        {...children}
+        className="p-1 text-xs m-1 border-2 rounded-md
+                    border-[#C9C9C9] border-solid flex flex-col hover:bg-[#FBF3E0]">
+        <div className='flex justify-between font-md'>
+          <p className='text-xs text-gray-500'>{title}</p>
         </div>
-      </div>
+        <div className='flex justify-between gap-2'>
+          <div className='text-[13px]'>{content}</div>
+          <div className='date h-full flex flex-col m-w-[150px] justify-center items-center text-left'>
+            <DateConverter dateString={date} />
+          </div>
+        </div>
+      </div> 
+      <button className='absolute top-1 right-4 w-4 hover:bg-gray-200' onClick={() => {handleRemove(id)}} >X</button>
     </div>
 
   )

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import ToggleButton from "@components/button/ToogleButton";
 import Member from "./Member"
+import {getUsers} from 'service/user.service'
+import { opendaiApi } from '@api/api';
 
 // rendering the members list
 const testData = [
@@ -20,7 +22,7 @@ const testData = [
 const testSummary = "test summary"
 
 // members component
-const MemberList = () => {
+const MemberList = ({setGenerateEmail}) => {
 
   // state value
   const [persons, setPersons] = useState([])
@@ -28,11 +30,18 @@ const MemberList = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("")
   const [selectedPersonId, setSelectedPersonId] = useState(-1)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   // initial state
   useEffect(() => {
-    setPersons(testData);
+    // setPersons(testData);
+    initialize();
   }, [])
+
+  const initialize = async () => {
+    const {data:users} = await getUsers();
+    setPersons(users)
+  }
 
   // add the user into the database
   const addMember = async () => {
@@ -42,7 +51,7 @@ const MemberList = () => {
       // const providerToken = getCookie('p_token')
       // const newUser = await createUser({ name: name, email: email, oAuthToken: providerToken});
       // console.log(newUser);
-      persons.push({ name: name, email: email, role: 'admin' });
+      persons.push({ name: name, email: email, role: 'Project Manager' });
       setPersons([...persons])
     }
   }
@@ -58,8 +67,21 @@ const MemberList = () => {
   }
 
   // TODO generate a email using summary
-  const generateEmail = async (name, email) => {
+  const generateEmail = async (id) => {
+    try {
+      console.log("generating")
+      console.log("generateEmail", id);
+      setIsGenerating(true);
+      const { data } = await opendaiApi.get(`${process.env.NEXT_PUBLIC_OPENAI_URL}/generateEmail`, { params: {} })
+      console.log('ressult  ')
+      console.log(data.result);
+      setGenerateEmail(data.result);
 
+    } catch (error) {
+
+    }
+    console.log("end");
+    setIsGenerating(false)
   }
 
   return (
@@ -72,11 +94,15 @@ const MemberList = () => {
         </div>
       </div>
       <div className="grow flex flex-col overflow-auto">
-        <div>
-          {persons && persons.map((member, index) => (
-            <Member key={index} index={index} name={member.name} email={member.email} role={member.role} setSelectedPersonId={setSelectedPersonId} />
-          ))}
-        </div>
+        {
+          isGenerating ? <div className='grow flex flex-col items-center justify-center'>Generating</div> :
+
+            <div>
+              {persons && persons.map((member, index) => (
+                <Member key={index} index={index} name={member.name} email={member.email} role={member.role} setSelectedPersonId={setSelectedPersonId} generate={generateEmail} />
+              ))}
+            </div>
+        }
       </div>
       <div className="members-footer flex justify-between px-6 mb-4">
         <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => setIsOpen(true)}>Add members</button>

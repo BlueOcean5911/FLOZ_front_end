@@ -6,19 +6,16 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import moment from 'moment';
-import { get, post } from "../../httpService/http-service";
-import supabase from "@/utils/supabase";
-import Project from "@models/project.model";
+import { IProject } from "@models/project.model";
 import Todo from "@models/todo.model";
 import Meeting from "@models/meeting.model";
-import SingupFeatures from '@components/Signup/SignupFeatures'
 import SignupFeatures from "@components/Signup/SignupFeatures";
 
 export default function ProjectView({
   data
 }: {
   data: {
-    projects: Project[] | null;
+    projects: IProject[] | null;
     todolist: Todo[] | null;
     meetings: Meeting[] | null;
   }

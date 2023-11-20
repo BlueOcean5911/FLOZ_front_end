@@ -119,22 +119,22 @@ export default function Header() {
 
       <nav className="bg-white border-b-2 border-green">
         <div className="flex flex-wrap items-center justify-left mx-auto px-4">
-          <Link href={`/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
+          <Link href={`/dashboard/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
             FLOZ
           </Link>
 
           <div className="w-full md:block md:w-auto" id="navbar-default">
             <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 md:flex-row md:mt-0">
               <li>
-                <Link href={`/home`} className={pathname === '/home' ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'}>Home</Link>
+                <Link href={`/dashboard/home`} className={pathname.search("/home") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'}>Home</Link>
               </li>
 
               <li>
-                <a href="#" className={pathname.search("/project") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Project</a>
+                <a href={`/dashboard/project`} className={pathname.search("/project") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Project</a>
               </li>
 
               <li>
-                <Link href={'/calender'} className={pathname === '/calender' ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Calender</Link>
+                <Link href={'/dashboard/calendar'} className={pathname.search("/calendar") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Calender</Link>
               </li>
 
               {/* <li>

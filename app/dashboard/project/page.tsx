@@ -1,20 +1,18 @@
 import ProjectItems from "@components/ProjectItems/ProjectItems";
-import React from "react";
 import { cookies } from "next/headers";
-import supabase from "@/utils/supabase";
+import { getProjects } from "@service/project.service";
+
+export const revalidate = 0;
 
 export default async function Page() {
   const cookieStore = cookies();
   const user = cookieStore.get("user_id");
 
-  const { data: projects } = await supabase
-    .from("project")
-    .select("id, name")
-    .eq("user_id", user?.value)
-    .order("created_at", { ascending: false });
-  
+  // Get projects from backend api
+  const projects = await getProjects({});
+
   return (
-    <div className="m-20">
+    <div className="flex flex-col">
       <ProjectItems projects={projects} />
     </div>
   );

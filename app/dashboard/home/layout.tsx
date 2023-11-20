@@ -12,7 +12,6 @@ export default function RootLayout({
 }) {
   return (
     <main>
-      <Header />
       <div className="p-6 bg-slate-300 bg-opacity-20">
         {children}  
       </div>

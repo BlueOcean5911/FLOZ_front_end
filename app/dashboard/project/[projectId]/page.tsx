@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: pageProps }) {
   const cookieStore = cookies();
   const user = cookieStore.get("user_id");
 
-  const projects = await getProjects();
+  const projects = await getProjects({});
   const todolist = await getTodos();
   const meetings = await getMeetings();
  

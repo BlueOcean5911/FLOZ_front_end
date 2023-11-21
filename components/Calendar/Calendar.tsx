@@ -426,9 +426,17 @@ export default function Calendar() {
   //   );
   // };
 
-  const EditEventComponent = ({ info }) => {
+  const EditEventComponent = ({ info:infoEvent, x:posX, y:posY }) => {
+    const [info, setInfo] = useState(infoEvent);
+
+    useEffect(() => {
+      setX(infoEvent.jsEvent.screenX)
+      setY(infoEvent.jsEvent.screenY)
+    })
+    const [x, setX] = useState(posX);
+    const [y, setY] = useState(posY);
     return (
-      <div className={`fixed w-10 h-6 bg-white shadow-lg z-100 top-[200px] left-[200px]`}>
+      <div className={`fixed w-100 h-50 bg-white shadow-lg z-100000 top-[100px] left-[1000px]`}>
         <div className="flex justify-end">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -772,7 +780,7 @@ export default function Calendar() {
         </LocalizationProvider>
         <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => { setCurrentDateTime(dayjs(new Date())); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>
       </div>
-      {/* {isEditCompShow ? <EditEventComponent info={selectedEvent} /> : <></>} */}
+      {isEditCompShow ? <EditEventComponent info={selectedEvent} x={positionX} y={positionY} /> : <></>}
     </div>
   );
 }

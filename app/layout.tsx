@@ -1,5 +1,5 @@
 import AuthProvider from "@middlewares/AuthProvider";
-
+import NextAuthProvider from "../contexts/NextAuthContext";
 import "./globals.css";
 import "./index.css"
 
@@ -16,8 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
-        {/* {children} */}
+        <NextAuthProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

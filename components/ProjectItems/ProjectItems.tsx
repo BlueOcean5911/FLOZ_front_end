@@ -2,48 +2,47 @@
 "use client";
 
 import React, { Fragment, useState } from "react";
-import supabase from "@/utils/supabase";
-
+import { useRouter } from "next/navigation";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Dialog, Transition } from "@headlessui/react";
+import { IProject } from "@./models/project.model";
+import { updateProject, deleteProject } from "@./service/project.service";
 
 export default function ProjectItems({
   projects,
 }: {
-  projects: { id: any; name: any }[] | null;
+  projects: IProject[] | null;
 }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [selectedProject, setSelectedProject] = useState<
-    Record<string, string>
-  >({});
-  const [allProjects, setAllProjects] = useState<
-    { id: any; name: any }[] | null
-  >(projects);
+  const [selectedProject, setSelectedProject] = useState<IProject>({});
+  const [allProjects, setAllProjects] = useState<IProject[] | null>(projects);
 
   function closeModal() {
     setIsOpen(false);
   }
 
-  function openModal(project: Record<string, string>) {
+  function openModal(project: IProject) {
     setSelectedProject(project);
     setIsOpen(true);
   }
 
   async function updateProjectName(name: string) {
-    const project = { ...selectedProject };
+    const project: IProject = { ...selectedProject };
     const totalProjects = allProjects && [...allProjects];
-    const p = totalProjects?.find((pjt) => pjt.id === project.id);
+    const p = totalProjects?.find((pjt) => pjt._id === project._id);
     p.name = name;
     project.name = name;
     setSelectedProject(project);
-    await supabase.from("project").update({ name: name }).eq("id", project.id);
+    await updateProject(project._id, { name: name });
     return totalProjects;
   }
 
-  async function deleteProject(project: { id: string; name: string }) {
-    await supabase.from("project").delete().eq("id", project.id);
+  async function handleDeleteProject(project: IProject) {
+    const id = project._id;
+    await deleteProject(id);
     const remainingProjects =
-      allProjects && [...allProjects].filter((p) => p.id !== project.id);
+      allProjects && [...allProjects].filter((p) => p._id !== id);
     setAllProjects(remainingProjects);
     return remainingProjects;
   }
@@ -51,13 +50,13 @@ export default function ProjectItems({
   return (
     <div>
       <div className="flex flex-col space-y-6">
-        {allProjects?.map((project: { id: string; name: string }) => (
-          <div key={project.id}>
-            <div className="flex items-center justify-between rounded-md border border-neutral-300 p-6 shadow-sm">
+        {allProjects?.map((project) => (
+          <div key={project._id}>
+            <div onClick={() => router.push(`/dashboard/project/${project._id}`)} className="flex items-center justify-between rounded-md border border-neutral-300 p-6 shadow-sm bg-white cursor-pointer">
               <h4 className="text-4xl">{project.name}</h4>
               <div className="flex items-center gap-x-4">
                 <TrashIcon
-                  onClick={() => deleteProject(project)}
+                  onClick={() => handleDeleteProject(project)}
                   className="h-5 w-5 cursor-pointer"
                 />
                 <PencilSquareIcon

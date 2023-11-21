@@ -1,4 +1,4 @@
-import Header from "@components/Header";
+import Header from "@components/Header/Header";
 
 export const metadata = {
   title: "FLOZ Cost",
@@ -11,9 +11,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="h-screen flex flex-col">
-      <Header />
-      <div className="grow overflow-auto">
+    <main>
+      <div className="p-6 bg-slate-300 bg-opacity-20">
         {children}  
       </div>
     </main>

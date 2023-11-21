@@ -3,8 +3,8 @@
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState, useEffect } from "react";
-import { get, post } from 'httpService/http-service'
 import {opendaiApi} from 'api/api'
+import api from 'api/api'
 import { getCookie } from 'cookies-next';
 import { getProviderToken } from '@providerVar';
 import { useAuthContext } from '@contexts/AuthContext';

@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { getUsers } from "../../service/user.service";
 import { getCookie } from "cookies-next";
 import LoginScreen from "./LoginScreen";
 

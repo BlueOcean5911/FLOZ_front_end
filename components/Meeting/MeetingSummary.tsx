@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { get, post } from 'httpService/http-service'
 import {opendaiApi} from 'api/api'
 import { getCookie } from 'cookies-next';
+import { getProviderToken } from '@providerVar';
+import { useAuthContext } from '@contexts/AuthContext';
 
 
 const MeetingSummary = ({ email }) => {
@@ -13,6 +15,7 @@ const MeetingSummary = ({ email }) => {
   const [emailPrompt, setEmailPrompt] = useState("");
   const [isPolishing, setIsPolishing] = useState(false)
   const oAuthToken = getCookie('p_token');
+  const { userSession } = useAuthContext();
 
   useEffect(() => {
     setEmailPrompt(email || "Hania is working on a project in Berkeley Downtown. She needs to get a cost estimation for adding a new window to the bathroom. Joseph is helping her out and will be sending her different window types with different prices tonight. The estimated cost for adding a new window with the current design is approximately $300.   Some options include Sierra Pacific, which is a more affordable choice ranging from $100 to $200 depending on the size, and Marvin, a higher quality option priced between $300 to $350. The Marvin window is recommended due to the high salt content in the air near the project location.");
@@ -41,7 +44,7 @@ const MeetingSummary = ({ email }) => {
   // send emial to selected person
   const sendEmail = async () => {
 
-    const { data } = await opendaiApi.get('/sendEmail', { params: { email: "russell.johnson.navy@gmail.com", content: emailPrompt, oAuthToken: oAuthToken } });
+    const { data } = await opendaiApi.get('/sendEmail', { params: { email: "russell.johnson.navy@gmail.com", content: emailPrompt, oAuthToken:userSession} });
     setEmailPrompt(data.result);
   }
 

@@ -184,7 +184,6 @@ export default function Calendar() {
   };
 
   async function fetchEvents() {
-    console.log("providerToken", providerToken);
     const allEvents: Response = await fetch(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
       {

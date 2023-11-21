@@ -12,12 +12,12 @@ import { log } from 'console';
 const testData = [
   {
     title: 'Joseph',
-    content: '- Work on cost estimation for adding a new window to the bathroomn- Send different window types with prices to Hanian- Make a note to send a follow-up email to Hania',
+    content: '- Work on cost estimation for adding a new window to the bathroomn\n- Send different window types with prices to Hanian\n- Make a note to send a follow-up email to Hania',
     date: '2023-11-17T11:41:25.267Z'
   },
   {
     title: 'Hania',
-    content: '- Receive cost estimation for new windown- Receive different window types with pricesn- Receive follow-up email from Joseph',
+    content: '- Receive cost estimation for new windown\n- Receive different window types with pricesn\n- Receive follow-up email from Joseph',
     date: '2023-11-17T11:41:25.267Z'
   }
 ]

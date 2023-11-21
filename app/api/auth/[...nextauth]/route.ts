@@ -8,7 +8,7 @@ const handler = NextAuth({
             clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
             authorization: {
                 params: {
-                    redirect_uri: "http://localhost:3001/api/auth/callback/google",
+                    redirect_uri: "http://localhost:3000/api/auth/callback/google",
                 }
             }
         }),

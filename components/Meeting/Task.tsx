@@ -22,6 +22,7 @@ const Task = ({ id: taskId, title, content, date, handleRemove, handleClick, ...
     setId(taskId);
   }, [])
 
+  console.log(typeof content, "===")
   return (
     <div className='relative'>
 
@@ -34,10 +35,18 @@ const Task = ({ id: taskId, title, content, date, handleRemove, handleClick, ...
           <p className='text-xs text-gray-500'>{title}</p>
         </div>
         <div className='flex justify-between gap-2'>
-          <div className='ml-2 text-[13px] flex flex-col gap-1'>{
-            content.split('\n').map((item, index) => 
-              item ? <div className='bg-gray-100 border-[1px] rounded-md border-gray-500 p-1'>{item}</div>:<></>
-            )
+          <div className='ml-2 text-[13px] flex flex-col gap-2'>{
+            content.map((item, index) => (
+              item ? 
+                <div className='bg-gray-100 border-[1px] rounded-md border-gray-100 shadow-sm p-1'>
+                  <div>TASK {index+1}:</div>
+                  <div className='ml-2'>{item.task}</div>
+                  {/* <div>COST:</div>
+                  <div className='ml-2'>{item.cost}</div>
+                  <div>DEADLINE:</div>
+                  <div className='ml-2'>{item.deadline}</div> */}
+                </div>:<></>
+            ))
           }</div>
           <div className='date h-full flex flex-col m-w-[150px] justify-center items-center text-left'>
             <DateConverter dateString={date} />

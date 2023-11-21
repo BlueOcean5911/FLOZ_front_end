@@ -48,40 +48,34 @@ const TodoList = ({ todoListString, meetingid }) => {
   const [todoList, setTodoList] = useState([]);
   const [selectedId, setSelectedPersonId] = useState(-1);
 
-  console.log("here is TodoList");
 
   useEffect(() => {
     processTodoListString();
-    console.log("todoListStringCalledHere");
   }, [todoListString]);
 
   const processTodoListString = async () => {
-    console.log("processTodoListString");
-    const tempTodoListString = todoListString || 'Todolist for Speaker A:\n1. Follow up with Joseph via email to provide all necessary information for the cost estimation of adding a new window to the bathroom.\n2. Research and compare different window types and prices, specifically Sierra Pacific and Marvin, for the residential project in Berkeley Downtown.\n\nTodolist for Speaker B:\n1. Gather cost estimates from subcontractors for adding a new window in the bathroom.\n2. Prepare a quote for Speaker A regarding the cost of adding a new window, which should be ready in about a week.\n3. Send Speaker A multiple window options with different prices and types, including Sierra Pacific and Marvin windows.\n4. Make a note to send Speaker A the requested window options tonight.';
+    const tempTodoListString = todoListString || '{"Speaker A":{"todoList":[{"task":"Get cost estimation for adding a new window to the bathroom","cost":"$300","deadline":"1 week"},{"task":"Receive multiple window options with different prices and types","cost":"N/A","deadline":"N/A"},{"task":"Send a follow-up email with all the necessary information","cost":"N/A","deadline":"N/A"}]},"Speaker B":{"todoList":[{"task":"Provide a cost estimation for adding a new window to the bathroom","cost":"$300","deadline":"1 week"},{"task":"Send multiple window options with different prices and types","cost":"N/A","deadline":"Tonight"}]}}';
     const todoListArr = [];
-    tempTodoListString.split('\n\n').forEach((todoForEach) => {
-      const items = todoForEach.split(':');
-      if (items.length > 1) {
-        todoListArr.push({
-          id: '',
-          title: items[0],
-          content: items[1],
-          date: new Date().toISOString(),
-        })
-      }
-    })
+
+    const todoListData = JSON.parse(tempTodoListString);
+    for(const data in todoListData) {
+      todoListArr.push({
+        id: '',
+        title: data,
+        content: todoListData[data].todoList,
+        date: new Date().toISOString(),
+      })
+    }
+
     try {
-      console.log("todoListArr>>>>", todoListArr);
       await addTodoListToDatabase(todoListArr);
     } catch (error) {
       console.error(error);
     }
     setTodoList([...todoListArr]);
-    console.log("todoListArr", todoListArr);
   }
 
   const addTodoListToDatabase = async (todoListArr) => {
-    console.log("adddatabase", todoListArr);
     for (const [index, todo] of todoListArr.entries()) {
       const newTodo = await createTodo({
         description: todo.content,
@@ -92,7 +86,6 @@ const TodoList = ({ todoListString, meetingid }) => {
         createdAt: new Date(),
       });
       todoListArr[index].id = newTodo._id;
-      console.log("newTodo", newTodo);
     }
   }
   // useMemo(() => {
@@ -142,7 +135,6 @@ const TodoList = ({ todoListString, meetingid }) => {
 
   const handleRemove = async (id) => {
     try {
-      console.log("remove id ", id, todoList[id].id);
       await deleteTodo(todoList[id].id);
     } catch (error) {
       console.error(error);
@@ -151,7 +143,6 @@ const TodoList = ({ todoListString, meetingid }) => {
   }
 
   const handleClickedTodo = (id) => {
-    console.log(id);
     setSelectedPersonId(id);
     setTitle(todoList[id].title);
     setContent(todoList[id].content);

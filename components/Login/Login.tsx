@@ -16,7 +16,7 @@ function Login() {
   useEffect(() => {
     const status = authStatus;
     if (status === "SIGNED_IN") {
-      router.push("/home");
+      router.push("/dashboard/home");
     }
   }, [status]);
 

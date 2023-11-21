@@ -18,6 +18,10 @@ const Record = () => {
   }, [playing])
 
   useEffect(() => {
+    handleTimeUpdate();
+  }, [audioRef])
+
+  useEffect(() => {
     setDuration(audioRef.current?.duration);
   }, [audioRef])
 
@@ -56,7 +60,9 @@ const Record = () => {
       <div className="grow flex">
         <audio 
           ref={audioRef}
-          onTimeUpdate={handleTimeUpdate}>
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleTimeUpdate}
+          >
           <source
             src={`${process.env.NEXT_PUBLIC_OPENAI_URL}/audio/audio1`}
             type="audio/wav"

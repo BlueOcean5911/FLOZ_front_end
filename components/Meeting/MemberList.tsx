@@ -39,8 +39,8 @@ const MemberList = ({setGenerateEmail}) => {
   }, [])
 
   const initialize = async () => {
-    const {data:users} = await getUsers();
-    setPersons(users)
+    const users = await getUsers();
+    setPersons(users);
   }
 
   // add the user into the database

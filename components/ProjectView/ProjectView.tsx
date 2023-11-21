@@ -341,7 +341,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
-      {isOpenModal ? <SignupFeatures isShow={isOpenModal} setShow={setIsOpenModal}/> : <></>}
+      {isOpenModal ? <SignupFeatures setShow={setIsOpenModal}/> : <></>}
     </div>
   );
 }

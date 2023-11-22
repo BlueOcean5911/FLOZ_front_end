@@ -40,7 +40,7 @@ const TaskList = ({ data: todoList, handleClick, handleRemove }) => {
   );
 };
 
-const TodoList = ({ todoListString, meetingid }) => {
+const TodoList = ({ todoListData, meetingid }) => {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -51,27 +51,25 @@ const TodoList = ({ todoListString, meetingid }) => {
 
   useEffect(() => {
     processTodoListString();
-  }, [todoListString]);
+  }, [todoListData]);
 
   const processTodoListString = async () => {
-    const tempTodoListString = todoListString || '{"Speaker A":{"todoList":[{"task":"Get cost estimation for adding a new window to the bathroom","cost":"$300","deadline":"1 week"},{"task":"Receive multiple window options with different prices and types","cost":"N/A","deadline":"N/A"},{"task":"Send a follow-up email with all the necessary information","cost":"N/A","deadline":"N/A"}]},"Speaker B":{"todoList":[{"task":"Provide a cost estimation for adding a new window to the bathroom","cost":"$300","deadline":"1 week"},{"task":"Send multiple window options with different prices and types","cost":"N/A","deadline":"Tonight"}]}}';
     const todoListArr = [];
-
-    const todoListData = JSON.parse(tempTodoListString);
     for(const data in todoListData) {
       todoListArr.push({
         id: '',
         title: data,
-        content: todoListData[data].todoList,
+        content: todoListData[data].TodoList,
         date: new Date().toISOString(),
       })
     }
 
-    try {
-      await addTodoListToDatabase(todoListArr);
-    } catch (error) {
-      console.error(error);
-    }
+    console.log(todoListArr)
+    // try {
+    //   await addTodoListToDatabase(todoListArr);
+    // } catch (error) {
+    //   console.error(error);
+    // }
     setTodoList([...todoListArr]);
   }
 

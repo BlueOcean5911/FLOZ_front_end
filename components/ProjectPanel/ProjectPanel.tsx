@@ -88,7 +88,7 @@ export default function ProjectPanel({
 
   //get time from date using moment js
   const getTime = (date: string) => {
-    return moment(date).format("HH:mm:ss");
+    return moment(date).format("hh:mm A");
   };
   // get month name with date using moment js
   const getMonth = (date: any) => {

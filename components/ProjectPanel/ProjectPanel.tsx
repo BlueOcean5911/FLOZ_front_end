@@ -9,6 +9,8 @@ import { IProject } from "@models";
 import moment from "moment";
 import { createProject, getProjects } from "@./service/project.service";
 import Meeting from "@models/meeting.model";
+import { getCookie } from 'cookies-next';
+import supabase from "@utils/supabase";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -96,14 +98,16 @@ export default function ProjectPanel({
   };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log(session.user.identities[0].id, 'oAuthToken', session.user);
     const form = new FormData(event.currentTarget);
 
     // Access the form element by name
     const projectName = form.get("name"); // Assuming your form input has a name attribute
 
     if (projectName) {
-      const savedProject = await createProject({ name: projectName.toString() });
-     
+      const savedProject = await createProject({ name: projectName.toString(), userId: session?.user?.identities[0].id });
+
       if (savedProject) {
         const projects = await getProjects({});
         if (projects) setAllProjects(projects);

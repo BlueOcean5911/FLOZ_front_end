@@ -9,8 +9,9 @@
 
 .fc-media-screen {
   height: 100%;
-  font-size:12px;
+  font-size: 12px;
 }
+
 .fc-view-harness {
   height: 100% !important;
 }
@@ -21,8 +22,10 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .fc-scroller {
--ms-overflow-style: none;  /* IE and Edge */
-scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .fc .fc-timegrid-slot-minor {
@@ -348,6 +351,7 @@ scrollbar-width: none;  /* Firefox */
     line-height: 18px;
     /* 150% */
   }
+
   .todo-card-content-desc {
     color: black;
     font-feature-settings: 'clig' off, 'liga' off;
@@ -356,6 +360,12 @@ scrollbar-width: none;  /* Firefox */
     font-size: 11px;
     font-style: normal;
     font-weight: 400;
-    line-height: 20px; /* 153.846% */
+    line-height: 20px;
+    /* 153.846% */
+  }
+
+  .audio-upload-boder {
+    border-radius: 4px;
+    border: 1px dashed var(--foundation-gray-neutral-80, #C9C9C9);
   }
 }

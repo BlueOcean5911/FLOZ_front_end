@@ -13,7 +13,13 @@ export const getMeeting = async (id: string) => {
     return meeting;
 
 }
-
+export const getAllMeetings = async (id:string) => {
+    const resp = await api.get(`/meetings/all_meetings/${id}`);
+    console.log(resp.data?.data);
+    
+    const meetings = resp.data?.data || [];
+    return meetings;
+}
 export const createMeeting = async (meeting: Meeting) => {
     const resp = await api.post('/meetings', meeting);
     const newMeeting = resp.data?.data;

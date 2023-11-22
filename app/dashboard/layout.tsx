@@ -1,4 +1,5 @@
 import Header from "@components/Header";
+import { Footer } from "rsuite";
 
 export default function RootLayout({
   children,
@@ -11,6 +12,7 @@ export default function RootLayout({
       <div className="grow overflow-auto">
         {children}
       </div>
+      <Footer />
     </main>
   );
 }

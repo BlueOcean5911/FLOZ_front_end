@@ -75,7 +75,7 @@ const MeetingSummary = ({ email }) => {
           }
         }
       } else {
-        oAuthTokenForEmail = JSON.parse(oAuthTokenForEmail);
+        // oAuthTokenForEmail = JSON.parse(oAuthTokenForEmail);
         // console.log(35345)
         // if (new Date().getSeconds() > parseInt(oAuthTokenForEmail["expires_in"] + oAuthTokenForEmail["expires_at"])) {
         //   console.log(1244555555)
@@ -85,7 +85,12 @@ const MeetingSummary = ({ email }) => {
         //   setEmailPrompt(data.result);
         // } else {
         // console.log(122222)
-        const { data } = await opendaiApi.get('/sendEmail', { params: { email: "russell.johnson.navy@gmail.com", content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
+        for(let i = 0; i < selectedPeopleList.length; i++) {
+          if(selectedPeopleList[i]) {
+            console.log(typeof oAuthTokenForEmail, oAuthTokenForEmail);
+            const { data } = await opendaiApi.get('/sendEmail', { params: { email: peopleList[i].email, content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
+          }
+        }
         // setEmailPrompt(data.result);
         // console.log(data.result);
         // }

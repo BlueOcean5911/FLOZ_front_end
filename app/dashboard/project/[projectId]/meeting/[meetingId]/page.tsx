@@ -61,7 +61,7 @@ const Page = () => {
           <div className="beside-layout flex flex-col h-full mr-[20px] ml-[27px] w-[28%] overflow-auto">
             <div className="grow flex flex-col overflow-auto justify-between">
               <TodoList  todoListString={todoListString} meetingid={meetingid}/>
-              <MemberList  setGenerateEmail={setGeneratedEmail}/>
+              <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={todoListString}/>
               <MeetingSummary email={generatedEmail}/>
             </div>
           </div>

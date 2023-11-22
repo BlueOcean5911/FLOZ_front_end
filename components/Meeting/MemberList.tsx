@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import ToggleButton from "@components/button/ToogleButton";
 import Member from "./Member"
-import {getUsers} from 'service/user.service'
+import { getUsers } from 'service/user.service'
 import { opendaiApi } from '@api/api';
 
 // rendering the members list
@@ -22,7 +22,7 @@ const testData = [
 const testSummary = "test summary"
 
 // members component
-const MemberList = ({setGenerateEmail}) => {
+const MemberList = ({ setGenerateEmail, todolistStr }) => {
 
   // state value
   const [persons, setPersons] = useState([])
@@ -69,10 +69,14 @@ const MemberList = ({setGenerateEmail}) => {
   // TODO generate a email using summary
   const generateEmail = async (id) => {
     try {
-      console.log("generating")
-      console.log("generateEmail", id);
       setIsGenerating(true);
-      const { data } = await opendaiApi.get(`${process.env.NEXT_PUBLIC_OPENAI_URL}/generateEmail`, { params: {} })
+      const { data } = await opendaiApi.get(`/generateEmail`, {
+        params: {
+          role: persons[id].role,
+          name: persons[id].name,
+          summary: todolistStr,
+        }
+      })
       console.log('ressult  ')
       console.log(data.result);
       setGenerateEmail(data.result);

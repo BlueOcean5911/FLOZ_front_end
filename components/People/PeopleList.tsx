@@ -6,6 +6,8 @@ import { getPersons } from '@service/person.service'
 import { IPerson } from '@models/index'
 import NewContact from "./NewContact";
 
+import dynamic from 'next/dynamic';
+
 const PeopleList = () => {
 
   const [people, setpeople] = useState<IPerson[]>([])
@@ -35,35 +37,20 @@ const PeopleList = () => {
     return `${month} ${day}, ${year}`;
   };
 
-  const ShowingCurrentTime = () => {
-    const [curTime, setCurTime] = useState(new Date().toLocaleTimeString());
-
-    useEffect(() => {
-      const timer = setInterval(() => {
-        setCurTime(new Date().toLocaleTimeString());
-      }, 1000);
-
-      return () => {
-        clearInterval(timer);
-      };
-    }, []);
-
-    return (
-      <>
-        {`${new Date().toLocaleTimeString()}`}
-      </>
-    )
-  }
+  const CurrentTimeDynamic = dynamic(
+    () => import('./ShowingCurrentTime'),
+    { ssr: false }
+  );
 
   return (<>
     <div className="action-list bg-emerald-300 bg-opacity-20 p-6">
       <div className="flex justify-start items-center gap-3">
-        <button className="flex items-center text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1">
+        <button className="flex  text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1">
           <img src="/import-icon.png" alt="Export" className="w-6 h-6" />
           Import
         </button>
 
-        <button className="flex items-center text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1" onClick={() => {setIsNewContactModalOpen(true)}}>
+        <button className="flex  text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1" onClick={() => {setIsNewContactModalOpen(true)}}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
@@ -78,7 +65,7 @@ const PeopleList = () => {
           <div className="flex justify-between items-center flex-col sm:flex-row p-3">
             <div className="flex gap-3 my-5 sm:my-0">
               <h3 className="font-bold">All People</h3>
-              <h4>As of today at <ShowingCurrentTime /> </h4>
+              <h4>As of today at <CurrentTimeDynamic /> </h4>
               <a href="#" className="text-blue-500 underline">refresh</a>
             </div>
             <div className="gap-3 flex items-center">

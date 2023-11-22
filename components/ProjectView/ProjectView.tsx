@@ -10,6 +10,7 @@ import { IProject } from "@models/project.model";
 import Todo from "@models/todo.model";
 import Meeting from "@models/meeting.model";
 import SignupFeatures from "@components/Signup/SignupFeatures";
+import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
 import Sidebar from "@components/sidebar/Sidebar";
 
 export default function ProjectView({
@@ -24,6 +25,7 @@ export default function ProjectView({
   const [todoList, setTodoList] = useState(data.todolist);
   const [meetings, setMeetings] = useState(data.meetings);
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   const truncateSummary = (summary, maxWords) => {
     const words = summary.split(' ');
     const truncatedSummary = words.slice(0, maxWords).join(' ');
@@ -59,6 +61,7 @@ export default function ProjectView({
   const uploadMeetingAudio = (): void => {
     //TODO: Add login to uplaod files to backend
     console.log('uploading audio...');
+    setIsUploadAudioModal(true);
   }
 
   const startMeetingNow = () => {
@@ -100,7 +103,7 @@ export default function ProjectView({
                       </svg>
                     </div>
                     <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
-                      <h3 className="card-title-font" onClick={() => setIsOpenModal(true)}>Upload meeting audios</h3>
+                      <h3 className="card-title-font" onClick={() => setIsUploadAudioModal(true)}>Upload meeting audios</h3>
                       
                       <p className="card-desc-font" >Get summary for your meetings</p>
                     </div>
@@ -212,10 +215,6 @@ export default function ProjectView({
               </div>
             </div>
           </div>
-
-
-
-
 
 
           <div className=" manage-project-box border rounded border-stone-300 p-3 my-4 bg-white" >
@@ -341,6 +340,8 @@ export default function ProjectView({
           </div>
         </div>
       </div>
+      {isUploadAudioModal ? <UploadAudioModal isShow={isUploadAudioModal} setShow={setIsUploadAudioModal}/> : <></>}
+
       {isOpenModal ? <SignupFeatures isShow={isOpenModal} setShow={setIsOpenModal}/> : <></>}
     </div>
   );

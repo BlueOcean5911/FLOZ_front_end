@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: pageProps }) {
   const projects = await getProjects({});
   const todolist = await getTodos();
   const meetings = await getMeetings();
- 
+  
   return (
     <>
       <ProjectView data={{ projects, todolist, meetings} } />

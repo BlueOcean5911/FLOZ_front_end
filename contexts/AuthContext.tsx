@@ -56,6 +56,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function checkSession() {
     const { data, error } = await supabase.auth.getSession();
+    console.log(data);
     if (data.session === null) {
       deleteCookie("user_id");
       router.push("/");
@@ -163,7 +164,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       provider: "google",
       options: {
         redirectTo: window.origin,
-        scopes: "https://www.googleapis.com/auth/calendar",
+        scopes: "https://www.googleapis.com/auth/calendar https://mail.google.com https://www.googleapis.com/auth/gmail.send"
       },
     });
 

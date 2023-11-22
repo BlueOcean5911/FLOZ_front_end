@@ -342,7 +342,7 @@ export default function ProjectView({
       </div>
       {isUploadAudioModal ? <UploadAudioModal isShow={isUploadAudioModal} setShow={setIsUploadAudioModal}/> : <></>}
 
-      {isOpenModal ? <SignupFeatures isShow={isOpenModal} setShow={setIsOpenModal}/> : <></>}
+      {isOpenModal ? <SignupFeatures setShow={setIsOpenModal}/> : <></>}
     </div>
   );
 }

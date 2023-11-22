@@ -131,10 +131,14 @@ export default function Calendar() {
   const [currentDateTime, setCurrentDateTime] = useState<Dayjs | null>(dayjs((new Date()).toISOString()));
   // Determine if the calendar is open or closed
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditCompShow, setIsEditCompShow] = useState(false);
+  const [positionX, setPositionX] = useState(0);
+  const [positionY, setPositionY] = useState(0);
   // Attributes for the calendar
   const [initialEvents, setInitialEvents] = useState([]);
 
   const [users, setUsers] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   //////////////////////////////////////////////////////////////////////////
   const calendarRef: any = useRef();
   const providerToken = getCookie("p_token");
@@ -151,6 +155,30 @@ export default function Calendar() {
   useEffect(() => {
     fetchAllProjects();
   }, [isOpen]);
+
+  const handleKeyDown = async (event) => {
+    // Get the key code
+    const keyCode = event.keyCode || event.which;
+
+    // Perform actions based on the key code
+    if (keyCode === 46) {
+      const url = new URL(
+        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
+      );
+      console.log(selectedEvent.event.id, "---------id");
+      try {
+        await fetch(url, {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + providerToken, // Access token for google
+          }
+        });
+        selectedEvent.remove();
+      } catch (error) {
+        console.log("Delete Event Error", error);
+      }
+    }
+  };
 
   const handleSelected = (event: SelectChangeEvent<typeof personName>) => {
     const {
@@ -171,7 +199,6 @@ export default function Calendar() {
   };
 
   async function fetchEvents() {
-    console.log("providerToken", providerToken);
     const allEvents: Response = await fetch(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
       {
@@ -202,9 +229,9 @@ export default function Calendar() {
           id: eventId,
           title: title,
           start: start,
-          end: end, 
-          backgroundColor:eventBackColor[title],
-          borderColor:"transparent",
+          end: end,
+          backgroundColor: eventBackColor[title],
+          borderColor: "transparent",
           // ...googleEvent
         });
       }
@@ -344,13 +371,13 @@ export default function Calendar() {
     const updatedEvent = {
       summary: info.event.title,
       description: description ?? "",
-      start : {
-        dateTime : info.event.start
+      start: {
+        dateTime: info.event.start
       },
-      end : {
-        dateTime : info.event.end,
+      end: {
+        dateTime: info.event.end,
       },
-      attendees:info.event.attedeees,
+      attendees: info.event.attedeees,
       conferenceData: info.event.conferenceData,
     };
     const eventCreationRes = await fetch(url, {
@@ -360,8 +387,8 @@ export default function Calendar() {
       },
       body: JSON.stringify(updatedEvent),
     });
-    
-  } 
+
+  }
 
   const clearData = () => {
     setSummary("");
@@ -398,6 +425,44 @@ export default function Calendar() {
   //     </>
   //   );
   // };
+
+  const EditEventComponent = ({ info }) => {
+    return (
+      <div className={`fixed w-10 h-6 bg-white shadow-lg z-100 top-[200px] left-[200px]`}>
+        <div className="flex justify-end">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6"
+            onClick={() => { calendarRef.current.getEventById(info.event.id) }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24"
+            strokeWidth={1.5} stroke="currentColor"
+            className="w-6 h-6"
+            onClick={() => setIsEditCompShow(false)}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+
+        </div>
+        <div className="title text-lg text-gray-600">eventInfo.current.title</div>
+        <div className="title text-lg text-gray-600">eventInfo.current.description</div>
+      </div>
+    );
+  }
 
   const handleSelectChange = (id: string) => {
     setSelectedProject(id);
@@ -450,21 +515,17 @@ export default function Calendar() {
     ],
   };
 
-  let previousClickedElement = null;
 
   const handleClickedEvent = ((info) => {
-    info.el.style.borderColor = 'red' 
-    if(previousClickedElement) {
-      previousClickedElement.style.borderColor = "transparent"
-    }
-    previousClickedElement = info.el;
+    setSelectedEvent(info)
   })
+
   const getCalendarTitle = () => {
     return calendarRef.current?.getApi().view.title;
   }
 
   return (
-    <div className="h-full flex flex-row">
+    <div className="h-full flex flex-row" onKeyDown={(e) => { handleKeyDown(e); console.log("clicked") }}>
       <div className="flex-[85%] h-full flex flex-col">
         <div className="flex items-center my-[14px] m-[30px] text-[13px]">
           <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
@@ -519,7 +580,8 @@ export default function Calendar() {
               select={addEvent}
               eventResize={(info) => handleChangeEvent(info)}
               eventDrop={(info) => handleChangeEvent(info)}
-              eventClick={(info) => {handleClickedEvent(info)}}
+              eventClick={(info) => { handleClickedEvent(info); setIsEditCompShow(true) }}
+              onKeyDown={(e) => { handleKeyDown(e) }}
             />
           </div>
         </div>
@@ -710,6 +772,7 @@ export default function Calendar() {
         </LocalizationProvider>
         <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => { setCurrentDateTime(dayjs(new Date())); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>
       </div>
+      {/* {isEditCompShow ? <EditEventComponent info={selectedEvent} /> : <></>} */}
     </div>
   );
 }

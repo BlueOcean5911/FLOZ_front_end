@@ -145,10 +145,11 @@ const AddMeeting = ({
             projectId: selectedProject
         };
 
-        createMeeting(meeting);
+        createMeeting(meeting).then(() => {
+            onNewMeeting();
+        });
         setIsOpen(false);
         clearData();
-        onNewMeeting();
     };
 
     return (

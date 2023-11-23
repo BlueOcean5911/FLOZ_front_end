@@ -2,17 +2,19 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
+import { ThreeDots } from 'react-loader-spinner'
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { IProject } from "@models";
 import { uploadAudio } from "@./service/project.service";
-import Meeting from "@models/meeting.model";
+import { Meeting } from "@models/meeting.model";
 import { useCallback } from 'react';
 // import { useDropzone } from 'react-dropzone';
 import UploadComponent from "./UploadComponent";
 import moment from 'moment';
 import { useRouter } from 'next/navigation'
+import { toast } from "react-toastify";
 export default function UploadAudioModal({
   meetings,
   projectId,
@@ -23,6 +25,7 @@ export default function UploadAudioModal({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState('');
   const [uploadedFileData, setUploadedFileData] = useState<any | ArrayBuffer | null>(null);
 
@@ -37,29 +40,41 @@ export default function UploadAudioModal({
   function openModal() {
     setIsOpen(true);
   }
-
+  function back() {
+    setIsAdded(false);
+    setSelectedMeetingId('');
+    setUploadedFileData(null)
+  }
   function setUploaded(data: any) {
-    if (data.file) {
-      setIsAdded(data.file == null ? false : true);
-      const fileName = data.file?.name.split('.')[0];
-      data.file.fileName = fileName;
+    if (data.fileData) {
+      setIsAdded(data.fileData == null ? false : true);
+      const fileName = data.fileData?.name.split('.')[0];
+      data.fileData.fileName = fileName;
       setUploadedFileData(data);
     }
 
   }
 
   function onUploadAudio(data: any) {
+    if (selectedMeetingId == '') {
+      toast.error('Please select meeting');
+      return;
+    }
     const formData = new FormData();
     if (!selectedMeetingId) { console.log('Meeting is required'); return };
 
     formData.append('meetingId', selectedMeetingId);
-    formData.append('meetingAudio', data.imgeData);
-
+    formData.append('meetingAudio', data.fileData);
+    setLoader(true);
     uploadAudio({ projectId: projectId, formData }).then((res) => {
-
+      
+      setLoader(true);
       if (res.meetingId) {
         router.push('/dashboard/project/' + projectId + '/meeting/' + res.meetingId);
       }
+    }).catch((err) => {
+      setLoader(false);
+      toast.error(err.message);
     })
   }
   return (
@@ -67,6 +82,12 @@ export default function UploadAudioModal({
       {
         isShow ?
           <div className="signupfeaturesfixed fixed z-10000 w-screen h-screen flex flex-col top-0 left-0 items-center justify-center bg-[rgba(0,0,0,0.4)]">
+            {loader &&
+              <div className='loader-shadow'>
+                <div className='mx-auto loader'>
+                  <ThreeDots height="80" width="80" radius="9" color='green' ariaLabel='three-dots-loading' />
+                </div>
+              </div>}
             <div className="w-[640px]   flex flex-col bg-transparent">
               <div className="main grow rounded-md bg-white  flex-col justify-between">
                 <div className="header-title text-center rounded-t-md border-b-[1px] text-[20px] border-gray-400">
@@ -82,9 +103,9 @@ export default function UploadAudioModal({
                 <div className="p-4">
                   <div>
                     <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this recording to</p>
-
-                    <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" onChange={(event) => { setSelectedMeetingId(event.target.value) }}>
-                      <option disabled selected>Meeting</option>
+                    <select id="countries" className={`bg-gray-50 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedMeetingId == '' && uploadedFileData != null ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
+                      defaultValue={'Select Meeting'} onChange={(event) => { setSelectedMeetingId(event.target.value) }} value={selectedMeetingId}>
+                      <option selected>Select Meeting</option>
                       {meetings.map((meeting: Meeting) => (
                         <option value={meeting?._id}>{meeting?.summary}</option>
                       ))}
@@ -97,9 +118,9 @@ export default function UploadAudioModal({
                     <div className="h-[227px] w-[100%] text-center">
                       <div className="w-[100%] mt-[20px] mb-[20px] flex ">
                         <div className="w-[100%] grid grid-cols-5 text-left my-2 border-t-[1px] border-b-[1px] border-[#C3C3C3] ">
-                          <div className="col-span-2">{uploadedFileData?.file.fileName} #1</div>
-                          <div className="col-span-2">{uploadedFileData?.file.size}byts</div>
-                          <div className="col-span-1">{getTime(uploadedFileData?.file.lastModifiedDate)}</div>
+                          <div className="col-span-2">{uploadedFileData?.fileData.fileName} #1</div>
+                          <div className="col-span-2">{uploadedFileData?.fileData.size}byts</div>
+                          <div className="col-span-1">{getTime(uploadedFileData?.fileData.lastModifiedDate)}</div>
                           {/* <div className="col-span-1">1000 Harrison St</div> */}
 
                         </div>
@@ -107,7 +128,7 @@ export default function UploadAudioModal({
                     </div>}
                 </div>
                 {isAdded && <div className="footer h-[56px] flex items-center justify-end rounded-bmd border-t-[1px] rounded-b-md border-[#C3C3C3] " >
-                  <button className="w-[73px] h-[32px] mr-2 rounded-md text-white text-[13px] bg-[#349989]" onClick={() => setShow(false)}>Back</button>
+                  <button className="w-[73px] h-[32px] mr-2 rounded-md text-white text-[13px] bg-[#349989]" onClick={() => back()}>Back</button>
                   <button className="w-[73px] h-[32px] mr-4 rounded-md text-white text-[13px] bg-[#349989]" onClick={() => onUploadAudio(uploadedFileData)}>Upload</button>
                 </div>}
               </div>

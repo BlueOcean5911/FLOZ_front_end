@@ -72,6 +72,15 @@
     text-decoration: underline;
   }
 
+  .loader-shadow {
+    z-index: 2147483647;
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    background: #80808069;
+  }
 
 
   /* Accoudian */

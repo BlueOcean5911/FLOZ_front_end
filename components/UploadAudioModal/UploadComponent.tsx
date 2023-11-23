@@ -28,7 +28,7 @@ const UploadComponent = ({ isUpload, setUpload }) => {
     reader.readAsDataURL(files[0]);
     reader.onloadend = function () {
       setIsUploaded(true);
-      setUpload({ file: files[0], imgeData: reader.result });
+      setUpload({ fileData: files[0]  });
     };
   };
 
@@ -72,21 +72,18 @@ const UploadComponent = ({ isUpload, setUpload }) => {
   };
 
   const handleChange = event => {
-    const fileUploaded = event.target.files;
     let reader = new FileReader();
     reader.readAsDataURL(event.target.files[0]);
     reader.onloadend = function () {
       setIsUploaded(true);
-      setUpload({ file: event.target.files[0], imgeData: event.target.files[0] });
+      setUpload({ fileData: event.target.files[0] });
     };
-    // handleFile(fileUploaded);                   // ADDED
   };
   return (
 
     <div className="h-[227px] w-[100%] mt-[20px] mb-[20px] flex audio-upload-boder" id="drop-area">
       <div className="flex w-[100%] items-center justify-center rounded-bmd rounded-b-md border-gray-400 " >
         <div>
-          {/* <UploadComponent isUpload={isAdded} setUpload={(data) => {setUploaded(data)}} /> */}
           <div >
             <label htmlFor="fileElem" className="custom-button" />
             <button className="px-[16px] py-[6px] flex items-center rounded-md text-white text-[13px] bg-[#349989]" onClick={handleClick}>

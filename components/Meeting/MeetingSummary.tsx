@@ -108,7 +108,7 @@ const MeetingSummary = ({ email }) => {
   }
 
   return (
-    <div className="meeting-summary relative  h-[34%] m-2 px-1 flex flex-col justify-between gap-1 rounded-md bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
+    <div className="meeting-summary relative h-[34%] m-2 px-1 flex flex-col justify-between gap-1 rounded-md bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
 
       <div className="grow summary-content p-2 flex flex-col overflow-auto" >
         <div className='flex justify-between'>
@@ -123,8 +123,8 @@ const MeetingSummary = ({ email }) => {
         </div>
         {isPolishing ? <div className="flex flex-col justify-center items-center"><div className='text-xl text-gray-600'>Polishing...</div></div> :
           <div className='grow flex flex-col overflow-auto' onClick={() => setIsPeopleListOpen(false)}>
-            <p className="font-sm leading-5">{emailPrompt}
-            </p>
+            <textarea className="font-sm leading-5 h-full border-0 focus:border-none focus:outline-none p-1" value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)}>
+            </textarea>
           </div>}
       </div>
       <div className="summary-search flex justify-center">
@@ -155,6 +155,7 @@ const MeetingSummary = ({ email }) => {
             : <></>
         }
       </>
+      
     </div>
   )
 }

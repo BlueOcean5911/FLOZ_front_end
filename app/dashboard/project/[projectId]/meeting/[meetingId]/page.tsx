@@ -8,6 +8,7 @@ import TodoList from "@components/Meeting/TodoList";
 import MemberList from "@components/Meeting/MemberList";
 import MeetingSummary from "@components/Meeting/MeetingSummary";
 import Record from "@components/Record/Record";
+import AddMemberLayout from '@components/Meeting/AddMember';
 
 import api from 'api/api'
 import axios from 'axios'
@@ -21,9 +22,6 @@ const Page = () => {
   const [generatedEmail, setGeneratedEmail] = useState('');
   // const path = useRouter();
   const meetingid = '655874ca8324c16a160df393';
-
-  
-  
 
   const getMeetingData = async () => {
     try{

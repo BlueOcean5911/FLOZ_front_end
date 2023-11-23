@@ -1,10 +1,12 @@
 interface Meeting {
     _id?: string;
-    date: Date;
-    summary: string;
-    projectId: string;
-    updatedAt: Date;
-    createdAt: Date;
+    date?: Date;
+    audioURL?: string;
+    summary?: string;
+    members?: Array<string>;
+    projectId?: string;
+    updatedAt?: Date;
+    createdAt?: Date;
 }
 
-export default Meeting;
+export type {Meeting}

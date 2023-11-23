@@ -1,4 +1,4 @@
-import Meeting from "./meeting.model";
+import { Meeting } from "./meeting.model";
 
 interface Todo {
     _id?: string;

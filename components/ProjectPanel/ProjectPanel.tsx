@@ -8,9 +8,11 @@ import Link from "next/link";
 import { IProject } from "@models";
 import moment from "moment";
 import { createProject, getProjects } from "@./service/project.service";
-import Meeting from "@models/meeting.model";
+import { Meeting } from "@models/meeting.model";
 import { getCookie } from 'cookies-next';
 import supabase from "@utils/supabase";
+import AddMeeting from "@components/Meeting/AddMeeting";
+import { getMeetings } from "@service/meeting.service";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -50,6 +52,7 @@ export default function ProjectPanel({
     projects: IProject[] | null;
     meetings?: Meeting[] | null;
     userId?: string;
+    providerToken?: string;
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,6 +100,12 @@ export default function ProjectPanel({
   const getMonth = (date: any) => {
     return moment(date).format("MMM Do");
   };
+
+  const refreshMeetings = async () => {
+    const updatedMeetings = await getMeetings();
+    setMeetings(updatedMeetings);
+    setMeetingsByDays(setMeetingsDay(updatedMeetings))
+  }
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -360,19 +369,21 @@ export default function ProjectPanel({
                     placeholder="Search Meetings"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
                   />
-                  <button
-                    style={{
-                      color: "#349989",
-                      borderRadius: "4px",
-                      border: "1px solid var(--Tone, #349989)",
-                      background: "var(--foundation-gray-neutral-100, #FFF)",
-                    }}
-                    type="button"
-                    onClick={openModal}
-                    className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
-                  >
-                    New
-                  </button>
+
+                  <AddMeeting providerToken={data.providerToken} userId={data.userId} onNewMeeting={refreshMeetings}>
+                    <button
+                      style={{
+                        color: "#349989",
+                        borderRadius: "4px",
+                        border: "1px solid var(--Tone, #349989)",
+                        background: "var(--foundation-gray-neutral-100, #FFF)",
+                      }}
+                      type="button"
+                      className="h-full px-3 ml-3 rounded-md border border-neutral-300 bg-gray-700 text-lg font-bold text-white"
+                    >
+                      New
+                    </button>
+                  </AddMeeting>
                 </div>
               </div>
 

@@ -13,6 +13,8 @@ interface pageProps {
   meetingId: string;
 }
 const Page = ({ params }: { params: pageProps }) => {
+  const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+  const [isTodosLoading, setIsTodosLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [transcript, setTranscript] = useState('');
   const [todoList, setTodoList] = useState({});
@@ -24,13 +26,21 @@ const Page = ({ params }: { params: pageProps }) => {
     try{
       setIsLoading(true);
       const meetingData = await getMeetingData(params.meetingId);
-      if (meetingData.transcriptSummary && meetingData.todos) {
-        setTranscript(meetingData.transcriptSummary);
-        setTodoList(meetingData.todos);
-        setAudioUrl(meetingData.audioFileUrl)
+      if (meetingData.transcriptSummary || meetingData.todos) {
+        if (meetingData.transcriptSummary) {
+          setTranscript(meetingData.transcriptSummary);
+          setAudioUrl(meetingData.audioFileUrl)
+          setIsSummaryLoading(false);
+        }
 
-        clearInterval(pollingInterval);
-        setIsLoading(false);
+        if (meetingData.todos) {
+          setTodoList(meetingData.todos);
+          setIsTodosLoading(false);
+        }
+
+        if (meetingData.transcriptSummary && meetingData.todos) {
+          clearInterval(pollingInterval);
+        }
         return;
       }
     } catch (error) {
@@ -61,7 +71,11 @@ const Page = ({ params }: { params: pageProps }) => {
       <div className="main-layout shadow-md rounded-md w-[52%]  flex flex-col  bg-white">
         <div className="flex w-full h-full flex-col pt-[46px] gap-4 p-4 mb-[26px] shadow-md px-[43px] 2xl:px-[80px]">
           {
-            isLoading ? <div className="flex flex-col justify-center items-center"><div className='text-[40px] text-bold text-gray-500'>Loading</div></div>
+            isSummaryLoading ? (
+              <div className="flex flex-col justify-center items-center">
+                <div className='text-[20px] text-bold text-gray-500 text-center'>Processing your audio for transcription...</div>
+              </div>
+            )
             :
             (
               <>
@@ -76,12 +90,16 @@ const Page = ({ params }: { params: pageProps }) => {
       <div className="beside-layout flex flex-col h-full mr-[20px] ml-[27px] w-[28%] overflow-auto">
         <div className="grow flex flex-col overflow-auto justify-between">
           {
-            isLoading ? <div className="flex flex-col justify-center items-center"><div className='text-[40px] text-bold text-gray-500'>Loading</div></div>
+            isTodosLoading ? (
+              <div className="flex flex-col justify-center items-center">
+                <div className='text-[20px] text-bold text-gray-500 text-center'>Loading tasks from meeting...</div>
+              </div>
+            )
             :
             (
               <>
                 <TodoList  todoListData={todoList} meetingid={params.meetingId}/>
-                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={todoList}/>
+                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} meetingId={params.meetingId} />
                 <MeetingSummary email={generatedEmail}/>
               </>
             )

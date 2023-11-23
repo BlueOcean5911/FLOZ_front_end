@@ -4,7 +4,7 @@ import ToggleButton from "@components/button/ToogleButton";
 import Member from "./Member"
 import { opendaiApi } from '@api/api';
 import AddMemberLayout from './AddMember';
-import { getMeeting } from '@service/meeting.service';
+import { getMeeting, generateEmail } from '@service/meeting.service';
 import { IPerson, Meeting } from '@models';
 import { getPerson } from '@service/person.service';
 
@@ -25,7 +25,7 @@ const testData = [
 const testSummary = "test summary"
 
 // members component
-const MemberList = ({ setGenerateEmail, todolistStr }) => {
+const MemberList = ({ setGenerateEmail, todolistStr, meetingId }) => {
 
   // state value
   const [persons, setPersons] = useState<IPerson[]>([])
@@ -41,17 +41,10 @@ const MemberList = ({ setGenerateEmail, todolistStr }) => {
 
     const initialize = async () => {
       try {
-        const meeting: Meeting = await getMeeting('655d242b2128b99ad7088381');
-        const tempPersons = [];
-        let member: IPerson = null;
-        for(let i = 0; i < meeting.members.length; i ++) {
-          member = await getPerson(meeting.members[i]);
-          tempPersons.push(member);
-          if(i === meeting.members.length - 1) {
-            setPersons(tempPersons);
-            setMemberIds([...meeting.members]);
-          }
-        }        
+        const meeting: Meeting = await getMeeting(meetingId);
+        
+        setPersons(meeting.members);
+        setMemberIds(meeting.members.map(member => member._id));
       } catch (error) {
         console.error('MemberList initialize-getMeetingMember error', error)
       }
@@ -106,32 +99,30 @@ const MemberList = ({ setGenerateEmail, todolistStr }) => {
   }
 
   // TODO generate a email using summary
-  const generateEmail = async (id) => {
+  const generateMemberEmail = async (id) => {
     try {
       setIsGenerating(true);
-      const { data } = await opendaiApi.get(`/generateEmail`, {
-        params: {
-          role: persons[id].role,
-          name: persons[id].name,
-          summary: todolistStr,
-        }
+      const email = await generateEmail(meetingId, {
+        role: persons[id].role,
+        name: persons[id].name,
+        summary: todolistStr,
       })
-      console.log('ressult  ')
-      console.log(data.result);
-      setGenerateEmail(data.result);
-
+      console.log('Generated email-->')
+      console.log(email);
+      setGenerateEmail(email);
     } catch (error) {
-
+      console.error('MemberList generateMemberEmail error', error)
+      setIsGenerating(false)
+    } finally {
+      setIsGenerating(false)
     }
-    console.log("end");
-    setIsGenerating(false)
   }
 
   const Members = () => {
     return (
       <div>
         {persons && persons.map((member, index) => (
-          <Member key={index} index={index} name={member.name} email={member.email} role={member.role} setSelectedPersonId={setSelectedPersonId} generate={generateEmail} />
+          <Member key={index} index={index} name={member.name} email={member.email} role={member.role} setSelectedPersonId={setSelectedPersonId} generate={generateMemberEmail} />
         ))}
       </div>
     )

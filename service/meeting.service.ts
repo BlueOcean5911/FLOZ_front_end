@@ -40,3 +40,9 @@ export const getMeetingData = async (meetingId: string): Promise<ITranscript> =>
     const meetingData = resp.data?.data || { transcriptSummary: "", todos: {} };
     return meetingData;
 }
+
+export const generateEmail = async (meetingId: string, body: any) => {
+    const resp = await api.post(`/meetings/${meetingId}/generateEmail`, body);
+    const email = resp.data?.data || "";
+    return email;
+}

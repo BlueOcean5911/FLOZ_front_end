@@ -8,11 +8,14 @@ import MemberList from "@components/Meeting/MemberList";
 import MeetingSummary from "@components/Meeting/MeetingSummary";
 import Record from "@components/Record/Record";
 import { getMeetingData } from '@service/meeting.service';
+import { useRouter } from "next/navigation";
 
 interface pageProps {
+  projectId: string;
   meetingId: string;
 }
 const Page = ({ params }: { params: pageProps }) => {
+  const router = useRouter();
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [isTodosLoading, setIsTodosLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +47,12 @@ const Page = ({ params }: { params: pageProps }) => {
         return;
       }
     } catch (error) {
-      console.log("getMeetingData error", error);
+      if (error?.response?.status === 404 && (error?.response?.data?.message == "Document not found" || error?.response?.data?.message == "Transcript not found") ) {
+        clearInterval(pollingInterval);
+        router.push(`/dashboard/project/${params.projectId}`);
+        return;
+      }
+      console.log("getMeetingData error", error?.response?.data);
     }
   }
 

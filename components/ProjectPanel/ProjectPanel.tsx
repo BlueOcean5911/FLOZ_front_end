@@ -399,12 +399,7 @@ export default function ProjectPanel({
                             (
                               day: {
                                 label: string;
-                                meetings: {
-                                  _id: string;
-                                  summary: string;
-                                  date: string;
-                                  createdAt: string;
-                                }[];
+                                meetings: Meeting[];
                               },
                               index: number
                             ) => (
@@ -426,19 +421,14 @@ export default function ProjectPanel({
                                   />
                                   <div className="tab__content">
                                     {day.meetings?.map(
-                                      (meetings: {
-                                        _id: string;
-                                        summary: string;
-                                        date: string;
-                                        createdAt: string;
-                                      }) => (
+                                      (meetings: Meeting) => (
                                         <div
                                           key={meetings._id}
                                           className="font-small grid grid-cols-4 space-x-4 border-b px-2 py-4 text-sm"
                                         >
                                           <div className="m0-important f-small col-span-1">
                                             <span>
-                                              {getTime(meetings.date)}
+                                              {getTime(meetings.date.toString())}
                                             </span>
                                           </div>
                                           <div className="m0-important col-span-2 text-sm">
@@ -450,7 +440,7 @@ export default function ProjectPanel({
                                             <span className="title_color">
                                               {" "}
                                               <Link
-                                                href={`/home/${meetings._id}`}
+                                                href={`/dashboard/project/${meetings.projectId}/meeting/${meetings._id}`}
                                                 key={meetings._id}
                                               >
                                                 <h4 className="f-small text-sm">
@@ -475,7 +465,7 @@ export default function ProjectPanel({
               </div>
             </div>
 
-            {meetings?.length === 0 ? (
+            {/* {meetings?.length === 0 ? (
               <p>{""}</p>
             ) : (
               <div className="title_color view-all">
@@ -483,7 +473,7 @@ export default function ProjectPanel({
                   <h4 className="f-small text-sm">View All</h4>
                 </Link>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

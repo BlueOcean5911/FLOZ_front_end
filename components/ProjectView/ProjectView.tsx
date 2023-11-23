@@ -8,28 +8,35 @@ import Link from "next/link";
 import moment from 'moment';
 import { IProject } from "@models/project.model";
 import Todo from "@models/todo.model";
-import Meeting from "@models/meeting.model";
+import { Meeting } from "@models/meeting.model";
 import SignupFeatures from "@components/Signup/SignupFeatures";
+import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
 import Sidebar from "@components/sidebar/Sidebar";
+import AddMeeting from "@components/Meeting/AddMeeting";
+import { getAllMeetings } from "@service/meeting.service";
 
 export default function ProjectView({
   data
 }: {
   data: {
-    projects: IProject[] | null;
+    project: IProject | null;
     todolist: Todo[] | null;
     meetings: Meeting[] | null;
+    userId?: string;
+    providerToken?: string;
   }
 }) {
   const [todoList, setTodoList] = useState(data.todolist);
   const [meetings, setMeetings] = useState(data.meetings);
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   const truncateSummary = (summary, maxWords) => {
     const words = summary.split(' ');
     const truncatedSummary = words.slice(0, maxWords).join(' ');
 
     return words.length > maxWords ? truncatedSummary + '...' : truncatedSummary;
   };
+
   //get time from date using moment js
   const getTime = (date: string) => {
     return moment(date).format('HH:mm:ss');
@@ -59,11 +66,12 @@ export default function ProjectView({
   const uploadMeetingAudio = (): void => {
     //TODO: Add login to uplaod files to backend
     console.log('uploading audio...');
+    setIsUploadAudioModal(true);
   }
 
-  const startMeetingNow = () => {
-    //TODO: Add login to start meeting
-    console.log('starting meeting...');
+  const refreshMeetings = async () => {
+    const updatedMeetings = await getAllMeetings({ projectId: data.project._id });
+    setMeetings(updatedMeetings);
   }
 
   return (
@@ -86,21 +94,24 @@ export default function ProjectView({
                         <path fillRule="evenodd" clipRule="evenodd" d="M29.0809 23.2L25.2823 20.0307C24.4105 19.3193 23.1651 19.2546 22.2933 19.9661L19.0551 22.4239C18.6815 22.7473 18.1211 22.6826 17.7474 22.2945L12.8902 17.767L8.53122 12.722C8.15759 12.3339 8.15759 11.8164 8.40668 11.3637L10.773 8.00034C11.458 7.09483 11.3957 5.80123 10.7107 4.89572L7.65942 0.950262C6.72534 -0.213971 5.04401 -0.343331 3.98539 0.756223L0.74726 4.11956C0.249087 4.637 0 5.34848 0 6.05995C0.311358 12.6573 3.17586 18.9312 7.41033 23.3294C11.6448 27.7276 17.6852 30.7029 24.0369 31.0263C24.7219 31.091 25.4068 30.7676 25.905 30.2501L29.1432 26.8868C30.3263 25.9166 30.264 24.1056 29.0809 23.2Z" fill="#349989" />
                       </svg>
                     </div>
-                    <div className="pl-4 cursor-pointer" onClick={startMeetingNow}>
-                      <h3 className="card-title-font">Start a meeting now</h3>
-                      <p className="card-desc-font" >New meeting /New task</p>
-                    </div>
+                    <AddMeeting providerToken={data.providerToken} userId={data.userId} projectId={data.project._id} onNewMeeting={refreshMeetings}>
+                      <div className="pl-4 cursor-pointer">
+                        <h3 className="card-title-font">Start a meeting now</h3>
+                        <p className="card-desc-font" >New meeting /New task</p>
+                      </div>
+                    </AddMeeting>
                   </div>
                 </div>
                 <div className="grid grid-cols px-3 pt-3">
                   <div className="flex border rounded border-stone-300 px-3 py-4 bg-white card_shadow" >
                     <div className="flex meeting-card">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 30 32" fill="none">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M29.0809 23.2L25.2823 20.0307C24.4105 19.3193 23.1651 19.2546 22.2933 19.9661L19.0551 22.4239C18.6815 22.7473 18.1211 22.6826 17.7474 22.2945L12.8902 17.767L8.53122 12.722C8.15759 12.3339 8.15759 11.8164 8.40668 11.3637L10.773 8.00034C11.458 7.09483 11.3957 5.80123 10.7107 4.89572L7.65942 0.950262C6.72534 -0.213971 5.04401 -0.343331 3.98539 0.756223L0.74726 4.11956C0.249087 4.637 0 5.34848 0 6.05995C0.311358 12.6573 3.17586 18.9312 7.41033 23.3294C11.6448 27.7276 17.6852 30.7029 24.0369 31.0263C24.7219 31.091 25.4068 30.7676 25.905 30.2501L29.1432 26.8868C30.3263 25.9166 30.264 24.1056 29.0809 23.2Z" fill="#349989" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M29.8459 19.0771H27.9997C27.5074 19.0771 27.0766 19.5079 27.0766 20.0002V26.1542C27.0766 26.6465 26.6459 27.0773 26.1535 27.0773H5.84585C5.35355 27.0773 4.92278 26.6465 4.92278 26.1542V20.0002C4.92278 19.5079 4.49201 19.0771 3.9997 19.0771H2.15355C1.66124 19.0771 1.23047 19.5079 1.23047 20.0002V28.3081C1.23047 29.6619 2.33816 30.7696 3.69201 30.7696H28.3074C29.6612 30.7696 30.7689 29.6619 30.7689 28.3081V20.0002C30.7689 19.5079 30.3382 19.0771 29.8459 19.0771Z" fill="#349989" />
+                        <path fillRule="evenodd" clipRule="evenodd" d="M16.6771 1.50701C16.3079 1.13777 15.754 1.13777 15.3848 1.50701L7.0771 9.81483C6.70787 10.1841 6.70787 10.7379 7.0771 11.1072L8.36941 12.3995C8.73864 12.7687 9.29249 12.7687 9.66172 12.3995L13.1079 8.95328C13.4771 8.58404 14.154 8.8302 14.154 9.38406L14.154 22.4919C14.2156 22.9843 14.7079 23.415 15.1386 23.415L16.9848 23.415C17.4771 23.415 17.9079 22.9843 17.9079 22.4919L17.9079 9.44559C17.9079 8.89174 18.5848 8.64558 18.954 9.01482L22.4002 12.461C22.7694 12.8303 23.3233 12.8303 23.6925 12.461L24.9848 11.1072C25.354 10.7379 25.354 10.1841 24.9848 9.81483L16.6771 1.50701Z" fill="#349989" />
                       </svg>
                     </div>
                     <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
-                      <h3 className="card-title-font" onClick={() => setIsOpenModal(true)}>Upload meeting audios</h3>
+                      <h3 className="card-title-font" onClick={() => setIsUploadAudioModal(true)}>Upload meeting audios</h3>
                       
                       <p className="card-desc-font" >Get summary for your meetings</p>
                     </div>
@@ -114,7 +125,9 @@ export default function ProjectView({
                     {
                       meetings.map((meeting) => {
                         return (
-                          <div className="prev-meetings-items"><p>{truncateSummary(meeting.summary, 5)}</p></div>
+                          <Link href={`/dashboard/project/${data.project._id}/meeting/${meeting._id}`}>
+                            <div className="prev-meetings-items"><p>{truncateSummary(meeting.summary, 4)}</p></div>
+                          </Link>
                         )
                       })
                     }
@@ -214,10 +227,6 @@ export default function ProjectView({
           </div>
 
 
-
-
-
-
           <div className=" manage-project-box border rounded border-stone-300 p-3 my-4 bg-white" >
             <h3 className="my-auto pr-2 pb-3 font-bold text-sm">Documentation</h3>
             <div className="grid grid-cols-2">
@@ -229,7 +238,7 @@ export default function ProjectView({
                         <path fillRule="evenodd" clipRule="evenodd" d="M5.4807 20.1934H12.9807C13.4422 20.1934 13.8461 19.7895 13.8461 19.328V5.76988C13.8461 4.78908 12.8076 4.03906 11.9999 4.03906H5.4807C5.01916 4.03906 4.61532 4.44292 4.61532 4.90447V19.328C4.61532 19.7895 5.01916 20.1934 5.4807 20.1934ZM28.3846 6.6923C28.0385 6.57691 27.6923 6.86538 27.6923 7.26924V21.635C27.6923 22.0966 27.2885 22.5004 26.8269 22.5004H3.17308C2.71154 22.5004 2.30769 22.0966 2.30769 21.635V7.32693C2.30769 6.92307 1.84615 6.6346 1.5 6.80769C0.634615 7.21154 0 8.13465 0 9.23083V22.5004C0 23.7697 1.03846 24.8082 2.30769 24.8082H11.8269C12.2885 24.8082 12.6923 25.2121 12.6923 25.6736C12.6923 26.1352 13.0962 26.539 13.5577 26.539H16.4423C16.9038 26.539 17.3077 26.1352 17.3077 25.6736C17.3077 25.2121 17.7115 24.8082 18.1731 24.8082H27.6923C28.9615 24.8082 30 23.7697 30 22.5004V9.23083C30 8.01926 29.5962 6.98077 28.3846 6.6923ZM17.0196 20.1934H24.5195C24.9811 20.1934 25.3849 19.7895 25.3849 19.328V4.90447C25.3849 4.44292 24.9811 4.03906 24.5195 4.03906H18.0003C17.1349 4.03906 16.1542 4.78908 16.1542 5.76988V19.328C16.1542 19.7895 16.558 20.1934 17.0196 20.1934Z" fill="#349989" />
                       </svg>
                     </div>
-                    <div className="pl-4 cursor-pointer" onClick={startMeetingNow}>
+                    <div className="pl-4 cursor-pointer">
                       <h3 className="card-title-font">Create a submittal</h3>
                       <p className="card-desc-font" >Prepare for your issuance</p>
                     </div>
@@ -341,6 +350,8 @@ export default function ProjectView({
           </div>
         </div>
       </div>
+      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal}/> : <></>}
+
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal}/> : <></>}
     </div>
   );

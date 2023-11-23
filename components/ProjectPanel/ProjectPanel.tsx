@@ -8,7 +8,11 @@ import Link from "next/link";
 import { IProject } from "@models";
 import moment from "moment";
 import { createProject, getProjects } from "@./service/project.service";
-import Meeting from "@models/meeting.model";
+import { Meeting } from "@models/meeting.model";
+import { getCookie } from 'cookies-next';
+import supabase from "@utils/supabase";
+import AddMeeting from "@components/Meeting/AddMeeting";
+import { getMeetings } from "@service/meeting.service";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -19,7 +23,7 @@ function setMeetingsDay(meetingsList) {
       (date.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000);
     let dayLabel = "";
 
-    if (dayDiff < 0.5) {
+    if (dayDiff < 0.5 && dayDiff > -0.5) {
       dayLabel = "Today";
     } else if (dayDiff < 1 && dayDiff > 0.5) {
       dayLabel = "Tomorrow";
@@ -37,7 +41,7 @@ function setMeetingsDay(meetingsList) {
 
     return acc;
   }, []);
-  console.log(meetingsByDay);
+
   return meetingsByDay;
 }
 
@@ -47,6 +51,8 @@ export default function ProjectPanel({
   data: {
     projects: IProject[] | null;
     meetings?: Meeting[] | null;
+    userId?: string;
+    providerToken?: string;
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,12 +94,18 @@ export default function ProjectPanel({
 
   //get time from date using moment js
   const getTime = (date: string) => {
-    return moment(date).format("HH:mm:ss");
+    return moment(date).format("hh:mm A");
   };
   // get month name with date using moment js
   const getMonth = (date: any) => {
     return moment(date).format("MMM Do");
   };
+
+  const refreshMeetings = async () => {
+    const updatedMeetings = await getMeetings();
+    setMeetings(updatedMeetings);
+    setMeetingsByDays(setMeetingsDay(updatedMeetings))
+  }
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -102,8 +114,8 @@ export default function ProjectPanel({
     const projectName = form.get("name"); // Assuming your form input has a name attribute
 
     if (projectName) {
-      const savedProject = await createProject({ name: projectName.toString() });
-     
+      const savedProject = await createProject({ name: projectName.toString(), userId: data.userId });
+
       if (savedProject) {
         const projects = await getProjects({});
         if (projects) setAllProjects(projects);
@@ -357,19 +369,21 @@ export default function ProjectPanel({
                     placeholder="Search Meetings"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
                   />
-                  <button
-                    style={{
-                      color: "#349989",
-                      borderRadius: "4px",
-                      border: "1px solid var(--Tone, #349989)",
-                      background: "var(--foundation-gray-neutral-100, #FFF)",
-                    }}
-                    type="button"
-                    onClick={openModal}
-                    className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
-                  >
-                    New
-                  </button>
+
+                  <AddMeeting providerToken={data.providerToken} userId={data.userId} onNewMeeting={refreshMeetings}>
+                    <button
+                      style={{
+                        color: "#349989",
+                        borderRadius: "4px",
+                        border: "1px solid var(--Tone, #349989)",
+                        background: "var(--foundation-gray-neutral-100, #FFF)",
+                      }}
+                      type="button"
+                      className="h-full px-3 ml-3 rounded-md border border-neutral-300 bg-gray-700 text-lg font-bold text-white"
+                    >
+                      New
+                    </button>
+                  </AddMeeting>
                 </div>
               </div>
 

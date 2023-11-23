@@ -3,7 +3,7 @@ interface Meeting {
     date?: Date;
     audioURL?: string;
     summary?: string;
-    members?: Array<string>;
+    members?: Array<any>;
     projectId?: string;
     updatedAt?: Date;
     createdAt?: Date;

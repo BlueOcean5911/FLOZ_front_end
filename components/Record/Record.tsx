@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 // import Audio from 'react-audio'
 
-const Record = () => {
+const Record = ({ audioUrl }) => {
 
   const [playing, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -64,7 +64,7 @@ const Record = () => {
           onLoadedMetadata={handleTimeUpdate}
           >
           <source
-            src={`${process.env.NEXT_PUBLIC_OPENAI_URL}/audio/audio1`}
+            src={audioUrl || `${process.env.NEXT_PUBLIC_OPENAI_URL}/audio/audio1`}
             type="audio/wav"
           ></source>
         </audio>

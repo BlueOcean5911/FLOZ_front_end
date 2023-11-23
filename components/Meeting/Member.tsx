@@ -1,10 +1,10 @@
 import UserIcon from "@components/icons/iconUser"
 import { useState } from "react";
 
-const Member = ({ index:id, name, email, role, setSelectedPersonId:setId, generate  }) => {
+const Member = ({ index: id, name, email, role, setSelectedPersonId: setId, generate }) => {
 
   return (
-    <div key={id} className="p-1" onClick={() => {setId(id) }}>
+    <div key={id} className="p-1" onClick={() => { setId(id) }}>
       <div className="member px-1 flex justify-between gap-1 overflow-hidden">
         <div className="flex w-1/2 gap-1 overflow-hidden">
           <div className="flex items-center">
@@ -16,12 +16,7 @@ const Member = ({ index:id, name, email, role, setSelectedPersonId:setId, genera
           </div>
         </div>
         <div className="flex w-1/2 max-h-[60px] gap-1 justify-between">
-          <select data-te-select-init defaultValue={role || 1} className="border-2 border-solid min-h-[40px] text-gray-500 w-1/2 border-[#C9C9C9] rounded-xl text-[13px] font-bold" >
-            <option value="0" className="font-bold text-gray-500">Role</option>
-            <option value="1" className="font-bold text-gray-500" >Project Manager</option>
-            <option value="2" className="font-bold text-gray-500" >Software Engineer</option>
-            <option value="3" className="font-bold  text-gray-500">Web Developer</option>
-          </select>
+          <div className="border-2 border-solid min-h-[40px] flex flex-col justify-center items-center text-gray-500 w-1/2 border-[#C9C9C9] rounded-xl text-[13px] font-bold">{role}</div>
           <button className="bg-[#06A59A] rounded-md text-[10px] w-1/2 text-white " onClick={() => { generate(id) }}>Generate<br />Email</button>
         </div>
       </div>

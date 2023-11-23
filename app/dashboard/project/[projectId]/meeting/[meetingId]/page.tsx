@@ -81,7 +81,7 @@ const Page = ({ params }: { params: pageProps }) => {
             (
               <>
                 <TodoList  todoListData={todoList} meetingid={params.meetingId}/>
-                <MemberList  setGenerateEmail={setGeneratedEmail}/>
+                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={todoList}/>
                 <MeetingSummary email={generatedEmail}/>
               </>
             )

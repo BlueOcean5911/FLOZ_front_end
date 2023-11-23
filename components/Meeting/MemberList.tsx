@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 
 import ToggleButton from "@components/button/ToogleButton";
 import Member from "./Member"
-import {getUsers} from 'service/user.service'
 import { opendaiApi } from '@api/api';
+import AddMemberLayout from './AddMember';
+import { getMeeting } from '@service/meeting.service';
+import { IPerson, Meeting } from '@models';
+import { getPerson } from '@service/person.service';
 
 // rendering the members list
 const testData = [
@@ -22,26 +25,62 @@ const testData = [
 const testSummary = "test summary"
 
 // members component
-const MemberList = ({setGenerateEmail}) => {
+const MemberList = ({ setGenerateEmail, todolistStr }) => {
 
   // state value
-  const [persons, setPersons] = useState([])
+  const [persons, setPersons] = useState<IPerson[]>([])
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("")
   const [selectedPersonId, setSelectedPersonId] = useState(-1)
   const [isGenerating, setIsGenerating] = useState(false)
-
+  const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [update, setUpdate] = useState()
   // initial state
   useEffect(() => {
-    // setPersons(testData);
+
+    const initialize = async () => {
+      try {
+        const meeting: Meeting = await getMeeting('655d242b2128b99ad7088381');
+        const tempPersons = [];
+        let member: IPerson = null;
+        for(let i = 0; i < meeting.members.length; i ++) {
+          member = await getPerson(meeting.members[i]);
+          tempPersons.push(member);
+          if(i === meeting.members.length - 1) {
+            setPersons(tempPersons);
+            setMemberIds([...meeting.members]);
+          }
+        }        
+      } catch (error) {
+        console.error('MemberList initialize-getMeetingMember error', error)
+      }
+    }
+
     initialize();
   }, [])
 
-  const initialize = async () => {
-    const users = await getUsers();
-    setPersons(users);
+  const updateMembers = async() => {
+    try {
+      let member:IPerson = null;
+      const tempPersons = [];
+      for(let i = 0; i < memberIds.length; i ++) {
+        member = await getPerson(memberIds[i]);
+        tempPersons.push(member);
+        if(i === memberIds.length - 1) {
+          setPersons(tempPersons);
+        }
+      }
+    } catch (error) {
+      console.error('MemberList initialize-getMeetingMember error', error)
+    }
   }
+
+  useEffect(() => {
+    updateMembers();
+  }, [memberIds]);
+
+  
 
   // add the user into the database
   const addMember = async () => {
@@ -51,8 +90,8 @@ const MemberList = ({setGenerateEmail}) => {
       // const providerToken = getCookie('p_token')
       // const newUser = await createUser({ name: name, email: email, oAuthToken: providerToken});
       // console.log(newUser);
-      persons.push({ name: name, email: email, role: 'Project Manager' });
-      setPersons([...persons])
+      // persons.push({ name: name, email: email, role: 'Project Manager' });
+      // setPersons([...persons])
     }
   }
   // clear the Input data in the input form
@@ -69,10 +108,14 @@ const MemberList = ({setGenerateEmail}) => {
   // TODO generate a email using summary
   const generateEmail = async (id) => {
     try {
-      console.log("generating")
-      console.log("generateEmail", id);
       setIsGenerating(true);
-      const { data } = await opendaiApi.get(`${process.env.NEXT_PUBLIC_OPENAI_URL}/generateEmail`, { params: {} })
+      const { data } = await opendaiApi.get(`/generateEmail`, {
+        params: {
+          role: persons[id].role,
+          name: persons[id].name,
+          summary: todolistStr,
+        }
+      })
       console.log('ressult  ')
       console.log(data.result);
       setGenerateEmail(data.result);
@@ -84,46 +127,39 @@ const MemberList = ({setGenerateEmail}) => {
     setIsGenerating(false)
   }
 
+  const Members = () => {
+    return (
+      <div>
+        {persons && persons.map((member, index) => (
+          <Member key={index} index={index} name={member.name} email={member.email} role={member.role} setSelectedPersonId={setSelectedPersonId} generate={generateEmail} />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="projects-members TodoList rounded-md mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
-      <div className="todolist-header flex justify-between w-full p-4 items-center">
-        <h2 className="font-bold text-[21px]">Members:</h2>
-        <div className="flex items-center gap-4">
-          <p className="text-[12px]">Matching by AI</p>
-          <ToggleButton />
+    <>
+      <AddMemberLayout show={isOpen} setShow={setIsOpen} selectedlMemberIds={memberIds} setSelectedMembersIds={setMemberIds} />
+      <div className="projects-members TodoList rounded-md mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
+        <div className="todolist-header flex justify-between w-full p-4 items-center">
+          <h2 className="font-bold text-[21px]">Meeting related:</h2>
+          <div className="flex items-center gap-4">
+            <p className="text-[12px]">Matching by AI</p>
+            <ToggleButton />
+          </div>
+        </div>
+        <div className="grow flex flex-col overflow-auto">
+          {
+            isGenerating ? <div className='grow flex flex-col items-center justify-center'>Generating</div> :
+            <Members />
+          }
+        </div>
+        <div className="members-footer flex justify-between px-6 mb-4">
+          <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => { setIsOpen(true); }}>Add members</button>
+          <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => removeAllUsers()}>Remove All</button>
         </div>
       </div>
-      <div className="grow flex flex-col overflow-auto">
-        {
-          isGenerating ? <div className='grow flex flex-col items-center justify-center'>Generating</div> :
-
-            <div>
-              {persons && persons.map((member, index) => (
-                <Member key={index} index={index} name={member.name} email={member.email} role={member.role} setSelectedPersonId={setSelectedPersonId} generate={generateEmail} />
-              ))}
-            </div>
-        }
-      </div>
-      <div className="members-footer flex justify-between px-6 mb-4">
-        <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => setIsOpen(true)}>Add members</button>
-        <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => removeAllUsers()}>Remove All</button>
-      </div>
-      {
-        isOpen ?
-          <div className='fixed h-screen w-screen top-0 left-0 flex justify-center items-center  bg-[rgba(0,0,0,0.6)]'>
-            <div className='p-20 flex flex-col gap-2 rounded-lg bg-white shadow-md '>
-              <div className='text-center text-xl text-gray-600'>Add Todo</div>
-              <div className="text-gray-500 text-md">Name:</div>
-              <input required className="pl-2 rounded-md border-2 border-[#1B96FF]" value={name} onChange={(e) => { setName(e.target.value) }}></input>
-              <div className="text-gray-500 text-md">Email:</div>
-              <input required className="pl-2 rounded-md border-2 border-[#1B96FF]" value={email} onChange={(e) => { setEmail(e.target.value) }}></input>
-              <button className="bg-[#06A59A] text-white p-1 rounded-md" onClick={() => { addMember() }}>Add</button>
-              <button className="bg-[#06A59A] text-white p-1 rounded-md" onClick={() => { setIsOpen(false); clearInputData() }}>Cancel</button>
-            </div>
-          </div>
-          : <></>
-      }
-    </div>
+    </>
   )
 }
 

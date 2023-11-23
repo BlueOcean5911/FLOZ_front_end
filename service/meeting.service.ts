@@ -1,6 +1,6 @@
 import api from '../api/api';
-import Meeting from '../models/meeting.model';
 import { ITranscript } from '../models';
+import { Meeting } from '../models/meeting.model';
 
 export const updateMeeting = async (id: string, meeting: Meeting) => {
     const resp = await api.patch(`/meetings/${id}`, meeting);

@@ -1,25 +1,45 @@
 // import Calendar from "@components/Calendar/Calendar";
+"use client"
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import UserCard from "@components/UserCard/UserCard";
-import { cookies } from "next/headers";
 import { getProjects } from "@service/project.service";
 import { getMeetings } from "@service/meeting.service";
 import { getTodos } from "@service/todo.service";
+import React from 'react'
+import { getCookie } from "cookies-next";
 
 export const revalidate = 0;
 
 export default async function Page() {
-  const cookieStore = cookies();
-  const userId = cookieStore.get("user_id")?.value;
+  
+  const userId = getCookie("user_id");
+  const [projects, setProjects] = React.useState([]);
+  const [meetings, setMeetings] = React.useState([]);
+  const [todos, setTodos] = React.useState([]);
 
-  // Get projects from backend api
-  const projects = await getProjects({ userId });
+  React.useEffect(() => {
+    initialize();
+  }, [])
 
-  // Get meetings from backend api
-  const meetings = await getMeetings();
+  const initialize = async () => {
+    try {
 
-  // Get todos from backend api
-  const todos = await getTodos();
+      // Get projects from backend api
+      const projects = await getProjects({ userId });
+
+      // Get meetings from backend api
+      const meetings = await getMeetings();
+
+      // Get todos from backend api
+      const todos = await getTodos();
+
+      setTodos(todos);
+      setMeetings(meetings);
+      setProjects(projects);
+    } catch (error) {
+      console.log(error); 
+    }
+  }
 
   return (
     <div className="flex flex-col">

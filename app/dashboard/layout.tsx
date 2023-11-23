@@ -1,12 +1,5 @@
-import Header from '@components/Header';
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata = {
-  title: 'Floz',
-  description: 'FLoz',
-}
+import Header from "@components/Header";
+import { Footer } from "rsuite";
 
 export default function RootLayout({
   children,
@@ -14,11 +7,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className='h-screen flex flex-col'>
+    <main className="h-screen flex flex-col">
       <Header />
-      <div className='grow overflow-auto'>
+      <div className="grow overflow-auto">
         {children}
       </div>
-    </div>
+      <Footer />
+    </main>
   );
 }

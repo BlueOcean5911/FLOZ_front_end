@@ -1,17 +1,16 @@
-// import Calendar from "@components/Calendar/Calendar";
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import UserCard from "@components/UserCard/UserCard";
-import { cookies } from "next/headers";
-import supabase from "@/utils/supabase";
 import { getProjects } from "@service/project.service";
 import { getMeetings } from "@service/meeting.service";
 import { getTodos } from "@service/todo.service";
+import { cookies } from "next/headers";
 
 export const revalidate = 0;
 
 export default async function Page() {
   const cookieStore = cookies();
   const userId = cookieStore.get("user_id")?.value;
+  const providerToken = cookieStore.get("p_token")?.value;
 
   // Get projects from backend api
   const projects = await getProjects({});
@@ -25,7 +24,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col">
       <UserCard data={{ todos }} />
-      <ProjectPanel data={{ projects, meetings }} />
+      <ProjectPanel data={{ projects, meetings, userId, providerToken }} />
     </div>
   );
 }

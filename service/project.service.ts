@@ -32,3 +32,12 @@ export const deleteProject = async (id: string) => {
     const resp: IResponse = await api.delete(`/projects/${id}`);
     return resp;
 }
+
+
+export const uploadAudio = async (data: any) => {
+    const resp = await api.post(`/projects/${data.projectId}/uploadAudio`, data.formData);
+    console.log(resp.data?.data,'response from upload audio');
+    
+    const newTodo = resp.data?.data;
+    return newTodo;
+}

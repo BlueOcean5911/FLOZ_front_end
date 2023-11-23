@@ -1,9 +1,9 @@
 import ProjectView from "@components/ProjectView/ProjectView";
 
 import { cookies } from "next/headers";
-import { getProjects } from "@service/project.service";
-import { getTodos } from "@service/todo.service";
-import { getMeetings } from "@service/meeting.service";
+import { getProject } from "@service/project.service";
+import { getTodos, getAllTodos} from "@service/todo.service";
+import { getMeetings,getAllMeetings } from "@service/meeting.service";
 
 interface pageProps {
   projectId: string;
@@ -11,15 +11,17 @@ interface pageProps {
 
 export default async function Page({ params }: { params: pageProps }) {
   const cookieStore = cookies();
-  const user = cookieStore.get("user_id");
+  const userId = cookieStore.get("user_id")?.value;
+  const providerToken = cookieStore.get("p_token")?.value;
+  const project = await getProject(params.projectId);
+  const meetings = await getAllMeetings({ projectId: params.projectId });
+  const todolist = await getAllTodos(params.projectId);
 
-  const projects = await getProjects({});
-  const todolist = await getTodos();
-  const meetings = await getMeetings();
- 
   return (
     <>
-      <ProjectView data={{ projects, todolist, meetings} } />
+      <ProjectView data={{ project, todolist, meetings, userId, providerToken }} />
     </>
   );
 }
+
+

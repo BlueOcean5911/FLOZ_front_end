@@ -27,9 +27,14 @@ export const getTodos = async (): Promise<Todo[]> => {
     return todos;
 }
 
+export const getAllTodos = async (projectId: string) => {    
+    const resp = await api.get(`/todos/all/${projectId}`);
+    const todos = resp.data?.data || [];
+    return todos;
+}
 export const deleteTodo = async (id: string) => {
     const resp = await api.delete(`/todos/${id}`);
-    if(resp.data.message === "Deleted") {
+    if (resp.data.message === "Deleted") {
         return true;
     } else {
         return false;
@@ -38,14 +43,14 @@ export const deleteTodo = async (id: string) => {
 
 export const deleteTodosByMeetingId = async (id: string) => {
     const resp = await api.delete(`/todos/meeting/${id}`);
-    if(resp.data.message === "Deleted") {
+    if (resp.data.message === "Deleted") {
         return true;
     } else {
         return false;
     }
 }
 
-export const getTodosByMeetingId = async (meetingId:string) => {
+export const getTodosByMeetingId = async (meetingId: string) => {
     const resq = await api.get(`/todos?meetingId=${meetingId}`);
     const todos = resq.data?.data || [];
     return todos;

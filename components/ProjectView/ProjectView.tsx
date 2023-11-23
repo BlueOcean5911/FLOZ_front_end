@@ -17,7 +17,7 @@ export default function ProjectView({
   data
 }: {
   data: {
-    projects: IProject[] | null;
+    project: IProject | null;
     todolist: Todo[] | null;
     meetings: Meeting[] | null;
   }
@@ -119,7 +119,9 @@ export default function ProjectView({
                     {
                       meetings.map((meeting) => {
                         return (
-                          <div className="prev-meetings-items"><p>{truncateSummary(meeting.summary, 5)}</p></div>
+                          <Link href={`/dashboard/project/${data.project._id}/meeting/${meeting._id}`}>
+                            <div className="prev-meetings-items"><p>{truncateSummary(meeting.summary, 5)}</p></div>
+                          </Link>
                         )
                       })
                     }
@@ -342,7 +344,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
-      {isUploadAudioModal ? <UploadAudioModal projectId={data.projects[0]._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal}/> : <></>}
+      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal}/> : <></>}
 
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal}/> : <></>}
     </div>

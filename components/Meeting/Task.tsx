@@ -40,7 +40,7 @@ const Task = ({ id: taskId, title, content, date, handleRemove, handleClick, ...
               item ? 
                 <div className='bg-gray-100 border-[1px] rounded-md border-gray-100 shadow-sm p-1'>
                   <div>TASK {index+1}:</div>
-                  <div className='ml-2'>{item.Task}</div>
+                  <div className='ml-2'>{item.task}</div>
                   {/* <div>COST:</div>
                   <div className='ml-2'>{item.cost}</div>
                   <div>DEADLINE:</div>

@@ -2,7 +2,6 @@
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import UserCard from "@components/UserCard/UserCard";
 import { cookies } from "next/headers";
-import supabase from "@/utils/supabase";
 import { getProjects } from "@service/project.service";
 import { getMeetings } from "@service/meeting.service";
 import { getTodos } from "@service/todo.service";
@@ -25,7 +24,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col">
       <UserCard data={{ todos }} />
-      <ProjectPanel data={{ projects, meetings }} />
+      <ProjectPanel data={{ projects, meetings, userId }} />
     </div>
   );
 }

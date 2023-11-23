@@ -8,7 +8,8 @@ const handler = NextAuth({
             clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
             authorization: {
                 params: {
-                    redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/google`,
+                    scope: "https://www.googleapis.com/auth/calendar https://mail.google.com https://www.googleapis.com/auth/gmail.send",
+                    redirect_uri: `${process.env.NEXTAUTH_URL}/`
                 }
             }
         }),

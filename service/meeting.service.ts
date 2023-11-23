@@ -14,8 +14,9 @@ export const getMeeting = async (id: string) => {
     return meeting;
 
 }
-export const getAllMeetings = async (id:string) => {
-    const resp = await api.get(`/meetings/all_meetings/${id}`);
+export const getAllMeetings = async (query: any) => {
+    const queryParams = new URLSearchParams(query).toString();
+    const resp = await api.get(`/meetings?${queryParams}`);
     console.log(resp.data?.data);
     
     const meetings = resp.data?.data || [];

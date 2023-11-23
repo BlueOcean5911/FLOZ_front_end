@@ -27,12 +27,8 @@ export const getTodos = async (): Promise<Todo[]> => {
     return todos;
 }
 
-export const getAllTodos = async (projectId: string) => {
-    console.log('All to do function called----------------');
-    
+export const getAllTodos = async (projectId: string) => {    
     const resp = await api.get(`/todos/all/${projectId}`);
-    console.log('PPPPPPPPPPPPPP----------------',resp.data?.data);
-    
     const todos = resp.data?.data || [];
     return todos;
 }

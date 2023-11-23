@@ -59,7 +59,7 @@ const TodoList = ({ todoListData, meetingid }) => {
       todoListArr.push({
         id: '',
         title: data,
-        content: todoListData[data].TodoList,
+        content: todoListData[data].todolist,
         date: new Date().toISOString(),
       })
     }

@@ -56,7 +56,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   async function checkSession() {
     const { data, error } = await supabase.auth.getSession();
-    console.log(data);
+
     if (data.session === null) {
       deleteCookie("user_id");
       router.push("/");

@@ -21,7 +21,7 @@ function setMeetingsDay(meetingsList) {
       (date.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000);
     let dayLabel = "";
 
-    if (dayDiff < 0.5) {
+    if (dayDiff < 0.5 && dayDiff > -0.5) {
       dayLabel = "Today";
     } else if (dayDiff < 1 && dayDiff > 0.5) {
       dayLabel = "Tomorrow";
@@ -39,7 +39,7 @@ function setMeetingsDay(meetingsList) {
 
     return acc;
   }, []);
-  console.log(meetingsByDay);
+
   return meetingsByDay;
 }
 
@@ -49,6 +49,7 @@ export default function ProjectPanel({
   data: {
     projects: IProject[] | null;
     meetings?: Meeting[] | null;
+    userId?: string;
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -98,15 +99,13 @@ export default function ProjectPanel({
   };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log(session.user.identities[0].id, 'oAuthToken', session.user);
     const form = new FormData(event.currentTarget);
 
     // Access the form element by name
     const projectName = form.get("name"); // Assuming your form input has a name attribute
 
     if (projectName) {
-      const savedProject = await createProject({ name: projectName.toString(), userId: session?.user?.identities[0].id });
+      const savedProject = await createProject({ name: projectName.toString(), userId: data.userId });
 
       if (savedProject) {
         const projects = await getProjects({});

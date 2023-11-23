@@ -7,6 +7,7 @@ interface ITranscript {
     documentId: string;
     updatedAt: Date;
     createdAt: Date;
+    audioFileUrl?: string;
 }
 
 export type { ITranscript };

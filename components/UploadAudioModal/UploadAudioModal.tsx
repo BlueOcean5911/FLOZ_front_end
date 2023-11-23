@@ -83,7 +83,7 @@ export default function UploadAudioModal({
                   <div>
                     <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this recording to</p>
 
-                    <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" onChange={(event) => { setSelectedMeetingId(event.target.value) }}>
+                    <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" onChange={(event) => { setSelectedMeetingId(event.target.value) }}>
                       <option disabled selected>Meeting</option>
                       {meetings.map((meeting: Meeting) => (
                         <option value={meeting?._id}>{meeting?.summary}</option>

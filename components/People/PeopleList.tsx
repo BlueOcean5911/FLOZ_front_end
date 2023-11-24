@@ -2,9 +2,10 @@
 
 import IconSearch from "../icons/IconSearch";
 import { useEffect, useState } from 'react'
-import { getPersons } from '@service/person.service'
+import { getPersons, getPersonsByOrganization } from '@service/person.service'
 import { IPerson } from '@models/index'
 import NewContact from "./NewContact";
+import { useAuthContext } from '@contexts/AuthContext'
 
 import dynamic from 'next/dynamic';
 
@@ -12,6 +13,7 @@ const PeopleList = () => {
 
   const [people, setpeople] = useState<IPerson[]>([])
   const [isNewContactModalOpen, setIsNewContactModalOpen] = useState(false)
+  const user = useAuthContext().user;
   useEffect(() => {
     initialize();
   }, [])
@@ -21,7 +23,7 @@ const PeopleList = () => {
   }, [isNewContactModalOpen])
 
   const initialize = async () => {
-    setpeople(await getPersons())
+    setpeople( await getPersonsByOrganization(user.organization));
   }
 
   const formatDate = (dateString) => {

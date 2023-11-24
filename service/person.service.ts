@@ -28,3 +28,13 @@ export const getPersons = async () => {
     const users: IPerson[] = resp?.data && resp.data.data as IPerson[];
     return users;
 }
+
+export const getPersonsByOrganization = async (organization: string) => {
+    const resq: IResponse = await api.get('/persons', {
+        params: {
+            organization
+        }
+    });
+    const persons: IPerson[] = resq?.data && resq.data.data as IPerson[];
+    return persons;
+}

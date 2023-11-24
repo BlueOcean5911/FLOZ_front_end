@@ -300,9 +300,6 @@ export default function ProjectView({
           </div>
         </div>
 
-
-
-
         <div className="col-span-1 border rounded border-stone-300 p-3 bg-white card_shadow" >
           <h3 className="my-auto pr-2 pb-3 font-bold text-sm">To Do:</h3>
           <div className="grid grid-cols-1 ">
@@ -310,9 +307,10 @@ export default function ProjectView({
             {todoList.map((item, index) => (
               <div key={item._id} className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'success' ? 'white' : '#FBF3E0'}` }} >
                 <div>
-                  <h3 className="todo-card-content-title">{item.description}</h3>
+                  <h3 className="todo-card-content-title">{item.description.split(':')[0]}</h3>
                   <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p>
+                    {/* <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p> */}
+                    <p className="todo-car-content-desc" >{item.description.split(':')[1]}</p>
                   </div>
                 </div>
                 <div className="align-right relative">

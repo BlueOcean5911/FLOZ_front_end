@@ -25,6 +25,8 @@ interface AuthContextInterface {
   //   signInWithEmail: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   //   signInWithSlack: () => Promise<void>;
+  user: IUser;
+  setUser: React.Dispatch<React.SetStateAction<IUser>>;
 }
 
 const AuthContext = createContext<AuthContextInterface | undefined>(undefined);
@@ -33,7 +35,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const [userSession, setUserSession] = useState<Session | null>(null);
-
+  const [user, setUser] = useState<IUser | null>(null);
   useEffect(() => {
     checkSession();
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -91,9 +93,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       name: session.user.user_metadata.full_name as string,
       oAuthToken: session.provider_token,
     });
-    const user: IUser = resp;
-
-    setCookie("user_id", user._id);
+    
+    setUser(resp);
+    
+    setCookie("user_id", resp._id);
   }
 
   // Adds the user if they don't already exist
@@ -197,6 +200,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         // signInWithEmail,
         signInWithGoogle,
         // signInWithSlack,
+        user,
+        setUser,
       }}
     >
       {children}

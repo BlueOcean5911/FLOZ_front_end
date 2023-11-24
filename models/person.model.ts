@@ -4,6 +4,7 @@ interface IPerson {
   role: string; // what`s type of role?
   email: string;
   phone: string;
+  organization: string;
   projectId: string;
   updatedAt: Date;
   createdAt: Date;

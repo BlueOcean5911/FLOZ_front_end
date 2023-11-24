@@ -14,8 +14,10 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import IconSearch from "@components/icons/IconSearch";
 import { getProjects } from "@service/project.service";
-import { getPersons } from "@service/person.service";
+import { getPersons, getPersonsByOrganization } from "@service/person.service";
 import { createMeeting } from "@service/meeting.service";
+import { useAuthContext } from "@contexts/AuthContext";
+import { createEvent } from "@service/event.service";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -43,6 +45,7 @@ const AddMeeting = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [personName, setPersonName] = useState<string[]>([]);
+    const { user } = useAuthContext();
 
 
     // Start and End date that reflect to the calendar 
@@ -55,12 +58,12 @@ const AddMeeting = ({
     const [allProjects, setAllProjects] = useState([]);
 
     const fetchAllProjects = async () => {
-        const projects = await getProjects({ userId });
+        const projects = await getProjects({userId:user._id});
         setAllProjects(projects);
     }
 
     const fetchAllUsers = async () => {
-        const users = await getPersons();
+        const users = await getPersonsByOrganization(user?.organization);
         setUsers(users);
     }
     useEffect(() => {
@@ -68,7 +71,7 @@ const AddMeeting = ({
             fetchAllProjects();
             fetchAllUsers()
         }
-      }, [isOpen]);
+    }, [isOpen]);
 
     const closeModal = () => {
         setIsOpen(false);
@@ -148,9 +151,80 @@ const AddMeeting = ({
         createMeeting(meeting).then(() => {
             onNewMeeting();
         });
+        saveIntoGoogleCalendar();
         setIsOpen(false);
         clearData();
     };
+
+    const saveIntoGoogleCalendar = async () => {
+        let attendees = [];
+        for (const user of users) {
+            if (personName.indexOf(user.name) > -1) {
+                attendees.push(user._id);
+            }
+        }
+
+        const timestamp = Date.now().toString();
+        const requestId = "conference-" + timestamp;
+
+        const getLocalTime = (val) => {
+            const date = new Date(val);
+            const offset = date.getTimezoneOffset();
+            const localTime = new Date(date.getTime() + offset * 60 * 1000)
+            // return localTime.toISOString();
+            return date.toISOString();
+        }
+
+        const event = {
+            summary: summary,
+            description: description ?? "",
+            start: {
+                dateTime: getLocalTime(startDate.toISOString()), // Date.ISOString()
+                timeZone: Intl.DateTimeFormat().resolvedOptions, // Pakistan/Lahore
+            },
+            end: {
+                dateTime: getLocalTime(endDate.toISOString()),
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
+            },
+            ...(attendees?.length && { attendees: [attendees] }),
+            conferenceData: {
+                createRequest: {
+                    requestId: requestId,
+                    conferenceSolutionKey: {
+                        type: "hangoutsMeet",
+                    },
+                },
+            },
+        };
+
+        const url = new URL(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+        );
+        const params = { conferenceDataVersion: 1 };
+        Object.keys(params).forEach((key) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            url.searchParams.append(key, params[key])
+        );
+
+        const eventCreationRes = await fetch(url, {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + providerToken, // Access token for google
+            },
+            body: JSON.stringify(event),
+        });
+
+        const eventCreationResponse: { id: string } =
+            (await eventCreationRes.json()) as { id: string };
+
+        const eventId = eventCreationResponse.id;
+
+        await createEvent({
+            eventId: eventId,
+            projectId: selectedProject ? selectedProject : allProjects[0]?._id,
+        });
+
+    }
 
     return (
         <>

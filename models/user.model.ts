@@ -3,7 +3,7 @@ interface IUser {
     name?: string;
     email?: string;
     oAuthToken?: string;
-    OAuthTokenForEmail?: string;
+    organization?: string;
     lastLogin?: Date;
     updatedAt?: Date;
     createdAt?: Date;

@@ -30,6 +30,7 @@ export const getTodos = async (): Promise<Todo[]> => {
 export const getAllTodos = async (projectId: string) => {    
     const resp = await api.get(`/todos/all/${projectId}`);
     const todos = resp.data?.data || [];
+    console.log(todos, "todos");
     return todos;
 }
 export const deleteTodo = async (id: string) => {

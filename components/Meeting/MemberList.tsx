@@ -25,7 +25,7 @@ const testData = [
 const testSummary = "test summary"
 
 // members component
-const MemberList = ({ setGenerateEmail, todolistStr, meetingId }) => {
+const MemberList = ({ setGenerateEmail, todolistStr, params }) => {
 
   // state value
   const [persons, setPersons] = useState<IPerson[]>([])
@@ -41,7 +41,7 @@ const MemberList = ({ setGenerateEmail, todolistStr, meetingId }) => {
 
     const initialize = async () => {
       try {
-        const meeting: Meeting = await getMeeting(meetingId);
+        const meeting: Meeting = await getMeeting(params.meetingId);
         
         setPersons(meeting.members);
         setMemberIds(meeting.members.map(member => member._id));
@@ -102,7 +102,7 @@ const MemberList = ({ setGenerateEmail, todolistStr, meetingId }) => {
   const generateMemberEmail = async (id) => {
     try {
       setIsGenerating(true);
-      const email = await generateEmail(meetingId, {
+      const email = await generateEmail(params.meetingId, {
         role: persons[id].role,
         name: persons[id].name,
         summary: todolistStr,
@@ -130,7 +130,7 @@ const MemberList = ({ setGenerateEmail, todolistStr, meetingId }) => {
 
   return (
     <>
-      <AddMemberLayout show={isOpen} setShow={setIsOpen} selectedlMemberIds={memberIds} setSelectedMembersIds={setMemberIds} />
+      <AddMemberLayout show={isOpen} setShow={setIsOpen} selectedlMemberIds={memberIds} setSelectedMembersIds={setMemberIds} params={params} />
       <div className="projects-members TodoList rounded-md mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
         <div className="todolist-header flex justify-between w-full p-4 items-center">
           <h2 className="font-bold text-[21px]">Meeting related:</h2>

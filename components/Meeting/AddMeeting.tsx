@@ -160,33 +160,25 @@ const AddMeeting = ({
         let attendees = [];
         for (const user of users) {
             if (personName.indexOf(user.name) > -1) {
-                attendees.push(user._id);
+                attendees.push({email: user.email, displayName: user.name});
             }
         }
 
         const timestamp = Date.now().toString();
         const requestId = "conference-" + timestamp;
 
-        const getLocalTime = (val) => {
-            const date = new Date(val);
-            const offset = date.getTimezoneOffset();
-            const localTime = new Date(date.getTime() + offset * 60 * 1000)
-            // return localTime.toISOString();
-            return date.toISOString();
-        }
-
         const event = {
             summary: summary,
             description: description ?? "",
             start: {
-                dateTime: getLocalTime(startDate.toISOString()), // Date.ISOString()
-                timeZone: Intl.DateTimeFormat().resolvedOptions, // Pakistan/Lahore
+                dateTime: startDate.format(),
+                timeZone: startDate.format('Z')
             },
             end: {
-                dateTime: getLocalTime(endDate.toISOString()),
-                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
+                dateTime: endDate.format(),
+                timeZone: endDate.format('Z')
             },
-            ...(attendees?.length && { attendees: [attendees] }),
+            ...(attendees?.length && { attendees }),
             conferenceData: {
                 createRequest: {
                     requestId: requestId,
@@ -210,12 +202,12 @@ const AddMeeting = ({
             method: "POST",
             headers: {
                 Authorization: "Bearer " + providerToken, // Access token for google
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(event),
         });
 
-        const eventCreationResponse: { id: string } =
-            (await eventCreationRes.json()) as { id: string };
+        const eventCreationResponse: { id: string } = (await eventCreationRes.json()) as { id: string };
 
         const eventId = eventCreationResponse.id;
 
@@ -223,7 +215,6 @@ const AddMeeting = ({
             eventId: eventId,
             projectId: selectedProject ? selectedProject : allProjects[0]?._id,
         });
-
     }
 
     return (

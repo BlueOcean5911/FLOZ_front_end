@@ -106,8 +106,8 @@ const Page = ({ params }: { params: pageProps }) => {
             :
             (
               <>
-                <TodoList  todoListData={todoList} meetingid={params.meetingId}/>
-                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} meetingId={params.meetingId} />
+                <TodoList  todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} />
+                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
                 <MeetingSummary email={generatedEmail}/>
               </>
             )

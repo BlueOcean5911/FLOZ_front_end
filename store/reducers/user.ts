@@ -22,3 +22,9 @@
 
 // export const fetchUser = createAsyncThunk('', async () => {
 //   const 
+
+//Following line is just to remove build error. Remove once we have some actual exports
+export const user = {
+    name: '',
+    email: ''
+}

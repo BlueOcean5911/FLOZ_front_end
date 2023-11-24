@@ -61,39 +61,14 @@ const MeetingSummary = ({ email }) => {
 
   // send emial to selected person
   const sendEmail = async () => {
-    const id = getCookie('user_id');
-    let user = (await getUser(id));
-    console.log("user", user);
-    let oAuthTokenForEmail = user["oAuthTokenForEmail"]
+    const oAuthTokenForEmail = getCookie('p_token');
+
     try {
-      if (oAuthTokenForEmail === null) {
-        const resp = await opendaiApi.get('/auth');
-        updateUser(id, { OAuthTokenForEmail: resp["token"] });
-        for(let i = 0; i < selectedPeopleList.length; i++) {
-          if(selectedPeopleList[i]) {
-            const { data } = await opendaiApi.get('/sendEmail', { params: { email: peopleList[i].email, content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
-          }
+      for(let i = 0; i < selectedPeopleList.length; i++) {
+        if(selectedPeopleList[i]) {
+          console.log(typeof oAuthTokenForEmail, oAuthTokenForEmail);
+          const { data } = await opendaiApi.get('/sendEmail', { params: { email: peopleList[i].email, content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
         }
-      } else {
-        // oAuthTokenForEmail = JSON.parse(oAuthTokenForEmail);
-        // console.log(35345)
-        // if (new Date().getSeconds() > parseInt(oAuthTokenForEmail["expires_in"] + oAuthTokenForEmail["expires_at"])) {
-        //   console.log(1244555555)
-        //   const resp = await opendaiApi.get('/auth');
-        //   updateUser(id, { OAuthTokenForEmail: resp.data });
-        //   const { data } = await opendaiApi.get('/sendEmail', { params: { email: "russell.johnson.navy@gmail.com", content: emailPrompt, oAuthToken:oAuthTokenForEmail } });
-        //   setEmailPrompt(data.result);
-        // } else {
-        // console.log(122222)
-        for(let i = 0; i < selectedPeopleList.length; i++) {
-          if(selectedPeopleList[i]) {
-            console.log(typeof oAuthTokenForEmail, oAuthTokenForEmail);
-            const { data } = await opendaiApi.get('/sendEmail', { params: { email: peopleList[i].email, content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
-          }
-        }
-        // setEmailPrompt(data.result);
-        // console.log(data.result);
-        // }
       }
     } catch (error) {
       console.error(error);

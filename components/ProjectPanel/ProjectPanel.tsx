@@ -346,7 +346,7 @@ export default function ProjectPanel({
             </div>
 
             <div className="title_color view-all">
-              <Link href="/dashboard/projects">
+              <Link href="/dashboard/project">
                 <h4 className="f-small text-sm">View All</h4>
               </Link>
             </div>
@@ -465,15 +465,15 @@ export default function ProjectPanel({
               </div>
             </div>
 
-            {/* {meetings?.length === 0 ? (
+            {meetings?.length === 0 ? (
               <p>{""}</p>
             ) : (
               <div className="title_color view-all">
-                <Link href="/dashboard/meeting">
+                <Link href="/dashboard/calendar">
                   <h4 className="f-small text-sm">View All</h4>
                 </Link>
               </div>
-            )} */}
+            )}
           </div>
         </div>
       </div>

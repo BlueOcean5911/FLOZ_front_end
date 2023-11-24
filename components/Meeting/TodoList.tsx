@@ -40,7 +40,7 @@ const TaskList = ({ data: todoList, handleClick, handleRemove }) => {
   );
 };
 
-const TodoList = ({ todoListData, meetingid }) => {
+const TodoList = ({ todoListData, meetingId, projectId }) => {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -79,7 +79,8 @@ const TodoList = ({ todoListData, meetingid }) => {
         description: todo.content,
         dueDate: new Date(),
         status: 'pending',
-        meetingId: meetingid,
+        meetingId,
+        projectId,
         updatedAt: new Date(),
         createdAt: new Date(),
       });
@@ -103,7 +104,8 @@ const TodoList = ({ todoListData, meetingid }) => {
           description: content,
           dueDate: new Date(),
           status: 'pending',
-          meetingId: meetingid,
+          meetingId,
+          projectId,
           updatedAt: new Date(),
           createdAt: new Date(),
         })
@@ -120,7 +122,8 @@ const TodoList = ({ todoListData, meetingid }) => {
           description: content,
           dueDate: new Date(),
           status: 'pending',
-          meetingId: meetingid,
+          meetingId,
+          projectId,
           updatedAt: new Date(),
           createdAt: new Date(),
         })

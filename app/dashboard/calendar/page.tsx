@@ -1,6 +1,5 @@
 
 import Calendar from "@components/Calendar/Calendar";
-import Footer from "@components/Footer";
 
 export const revalidate = 0;
 

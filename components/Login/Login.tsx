@@ -9,14 +9,14 @@ function Login() {
   const { signInWithGoogle } = useAuthContext();
   const router = useRouter();
   const authStatus = getCookie("AUTH_STATUS");
-
+  console.log(authStatus)
   const status = authStatus ? authStatus : "";
 
 
   useEffect(() => {
     const status = authStatus;
     if (status === "SIGNED_IN") {
-      router.push("/organization");
+      router.push("/dashboard/home");
     }
   }, [status]);
 

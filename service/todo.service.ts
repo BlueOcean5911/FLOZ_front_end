@@ -56,3 +56,9 @@ export const getTodosByMeetingId = async (meetingId: string) => {
     const todos = resq.data?.data || [];
     return todos;
 }
+
+export const updateTodoStatus = async (id: string, data) => {
+    const resp = await api.patch(`/todos/${id}`, data);
+    const updatedTodo = resp.data?.data;
+    return updatedTodo;
+}

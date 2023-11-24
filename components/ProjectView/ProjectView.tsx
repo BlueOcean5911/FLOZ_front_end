@@ -14,6 +14,7 @@ import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
 import Sidebar from "@components/sidebar/Sidebar";
 import AddMeeting from "@components/Meeting/AddMeeting";
 import { getAllMeetings } from "@service/meeting.service";
+import { createTodo, getAllTodos, deleteTodo, updateTodoStatus } from "@service/todo.service";
 
 export default function ProjectView({
   data
@@ -27,45 +28,73 @@ export default function ProjectView({
   }
 }) {
   const [todoList, setTodoList] = useState(data.todolist);
+  const [pendingTodos, setPendingTodos] = useState(data.todolist.filter(todo => todo.status === 'pending'));
+  const [completedTodos, setCompletedTodos] = useState(data.todolist.filter(todo => todo.status === 'completed'));
+  const [isOpen, setIsOpen] = useState(false);
+  const [isEditTask, setIsEditTask] = useState(false);
   const [meetings, setMeetings] = useState(data.meetings);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   const truncateSummary = (summary, maxWords) => {
-    const words = summary.split(' ');
-    const truncatedSummary = words.slice(0, maxWords).join(' ');
+    const words = summary?.split(' ');
+    const truncatedSummary = words?.slice(0, maxWords).join(' ');
 
-    return words.length > maxWords ? truncatedSummary + '...' : truncatedSummary;
+    return words?.length > maxWords ? truncatedSummary + '...' : truncatedSummary;
   };
 
-  //get time from date using moment js
-  const getTime = (date: string) => {
-    return moment(date).format('HH:mm:ss');
+
+  function getTodosList(projectId) {
+    return getAllTodos(projectId).then((res) => {
+      setTodoList(res);
+      setPendingTodos(res.filter(todo => todo.status === 'pending'));
+      setCompletedTodos(res.filter(todo => todo.status === 'completed'));
+    });
   }
-  // get month name with date using moment js
-  const getMonth = (date: string) => {
-    return moment(date).format('MMM Do');
+
+  //DELETE TASK
+  function closeTask(value) {
+    deleteTodo(value._id).then(() => {
+      return getTodosList(data.project._id);
+    }).catch(console.log);
   }
+
+  function onSelectTask(taskId) {
+    updateTodoStatus(taskId, { status: 'completed' }).then((res) => {
+      if (res) {
+        getTodosList(data.project._id);
+      }
+    });
+  };
+
+  function closeModal() { setIsOpen(false); }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
 
     // Access the form element by name
-    const projectName = form.get("name"); // Assuming your form input has a name attribute
+    const title = form.get("title");
+    const description = form.get("description");
 
-    if (projectName) {
+    if (description && title) {
+      const projectReq = {
+        title: title.toString(),
+        description: description.toString(),
+        projectId: data.project._id,
+        status: 'pending',
+        meetingId: data.meetings[0]._id,
+      }
 
+      const savedProject = await createTodo(projectReq);
+      if (savedProject) {
+        getTodosList(data.project._id);
+      }
+
+      setIsOpen(false);
     }
   };
 
-  //DELETE TASK
-  function closeTask(value) {
-    todoList.splice(todoList.findIndex(item => item._id == value._id), 1);
-    setTodoList([...todoList]);
-  }
-
   const uploadMeetingAudio = (): void => {
-    //TODO: Add login to uplaod files to backend
-    console.log('uploading audio...');
     setIsUploadAudioModal(true);
   }
 
@@ -303,17 +332,19 @@ export default function ProjectView({
         <div className="col-span-1 border rounded border-stone-300 p-3 bg-white card_shadow" >
           <h3 className="my-auto pr-2 pb-3 font-bold text-sm">To Do:</h3>
           <div className="grid grid-cols-1 ">
+            {pendingTodos.map((item, index) => (
+              <div key={item._id} className="grid grid-cols-11 border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'pending' ? '#FBF3E0' : 'white'}` }} >
+                {isEditTask && <div className="col-span-1">
+                  <input type="checkbox" className="border-gray-300 rounded " onChange={() => { onSelectTask(item?._id) }} />
+                </div>}
+                <div className="col-span-9">
 
-            {todoList.map((item, index) => (
-              <div key={item._id} className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'success' ? 'white' : '#FBF3E0'}` }} >
-                <div>
-                  <h3 className="todo-card-content-title">{item.description.split(':')[0]}</h3>
+                  <h3 className="todo-card-content-title">{truncateSummary(item?.title, 5)}</h3>
                   <div className="flex justify-between">
-                    {/* <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p> */}
-                    <p className="todo-car-content-desc" >{item.description.split(':')[1]}</p>
+                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
                   </div>
                 </div>
-                <div className="align-right relative">
+                <div className="col-span-1 align-right relative">
                   <svg className="absolute top-0 right-0" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => closeTask(item)}>
                     <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
                   </svg>
@@ -323,18 +354,18 @@ export default function ProjectView({
             ))}
           </div>
           <div className="title_color flex justify-between px-2 mb-4">
-            <p>Edit</p>
-            <p>Add Task</p>
+            <p className="pointer" onClick={() => { setIsEditTask(!isEditTask) }}>Edit</p>
+            <p onClick={() => { setIsOpen(true) }}>Add Task</p>
           </div>
           <h3 className="my-auto pt-4 pr-2 pb-3 font-bold text-sm">Task done:</h3>
           <div className="grid grid-cols-1 ">
 
-            {todoList.map((item, index) => (
-              <div key={item._id} className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'success' ? '#DDF1EE' : '#DDF1EE'}` }} >
+            {completedTodos.map((item, index) => (
+              <div key={item._id} className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'completed' ? '#DDF1EE' : '#DDF1EE'}` }} >
                 <div>
-                  <h3 className="todo-card-content-title">{item.description}</h3>
+                  <h3 className="todo-card-content-title">{truncateSummary(item?.title, 10)}</h3>
                   <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : item.meetingId?.summary || ""}</p>
+                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
                   </div>
                 </div>
                 <div className="align-right relative">
@@ -351,6 +382,65 @@ export default function ProjectView({
       {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal}/> : <></>}
 
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal}/> : <></>}
+
+      <div className="z-20 flex gap-x-4">
+        <div className="z-20 flex gap-x-4">
+          <Transition appear show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={closeModal}>
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900"
+                      >
+                        Add new task
+                      </Dialog.Title>
+                      <div className="my-10">
+                        <form onSubmit={handleSubmit}>
+                          <label className="text-sm font-bold py-1"> Task title </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="title"
+                            required
+                            placeholder="Enter task title"
+                            className={`w-full rounded-md border p-2 px-4 outline-none `}
+                          />
+                          <label className="text-sm font-bold py-1"> Task description </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="description"
+                            required
+                            placeholder="Enter task description"
+                            className={`w-full rounded-md border p-2 px-4 mt-2 outline-none `}
+                          />
+                          <button
+                            type="submit"
+                            className="mt-3 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          >
+                            Submit
+                          </button>
+                        </form>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
+        </div>
+      </div>
     </div>
   );
 }

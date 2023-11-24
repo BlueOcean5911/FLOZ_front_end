@@ -7,12 +7,14 @@ import LoginScreen from "./LoginScreen";
 
 function Login() {
   const router = useRouter();
-  const { signInWithGoogle } = useAuthContext();
-  const authStatus = getCookie("AUTH_STATUS");
-  const status = authStatus ? authStatus : "";
+  const { signInWithGoogle, user, isSignedIn } = useAuthContext();
   
-  if (status === "SIGNED_IN") {
-    router.push("/organization");
+  if (isSignedIn) {
+    if (user && user.organization) {
+      router.push("/dashboard/home");
+    } else {
+      router.push("/organization");
+    }
   }
 
   const onGoogleClick = () => {

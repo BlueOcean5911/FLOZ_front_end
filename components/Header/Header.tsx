@@ -130,7 +130,7 @@ export default function Header() {
               </li>
 
               <li>
-                <a href={`/dashboard/project`} className={pathname.search("/project") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Project</a>
+                <Link href={`/dashboard/project`} className={pathname.search("/project") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Project</Link>
               </li>
 
               <li>

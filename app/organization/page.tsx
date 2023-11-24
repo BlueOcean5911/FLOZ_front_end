@@ -2,28 +2,25 @@
 import { useAuthContext } from "@contexts/AuthContext";
 import { updateUser } from "@service/user.service";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { isEmpty } from "@utils/func.utils";
 
 const Page = () => {
-
-
   const [value, setValue] = useState('');
   const router = useRouter();
-  const user = useAuthContext().user;
+  const { user, setUser } = useAuthContext();
   
-  useEffect(() => {
-    if(!isEmpty(user?.organization)) {
-      router.push('/dashboard/home');
-    }
-  } ,[])
+  if(!isEmpty(user?.organization)) {
+    router.push('/dashboard/home');
+  }
 
   const handleClicked = async (e) => {
     user.organization = value;
     await updateUser(user._id, {
       organization: value
     });
+    setUser(user);
     router.push('/dashboard/home')
   }
 

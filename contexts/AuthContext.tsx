@@ -53,7 +53,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
     // Add the user if this is the first time they are signing in
     await addUserIfNew({ ...session.user, oAuthToken: accessToken });
-    setIsSignedIn(true);
 
     const resp = await signInUser({
       email: session.user.email,
@@ -62,9 +61,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     });
     
     setUser(resp);
-    
     setCookie("user_id", resp._id);
     setCookie("AUTH_STATUS", "SIGNED_IN");
+    setIsSignedIn(true);
   }
 
   // Adds the user if they don't already exist
@@ -111,6 +110,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   async function handleSignOut() {
     await signOut();
 
+    setUser(null);
     setIsSignedIn(false);
     deleteCookie("AUTH_STATUS");
     deleteCookie("p_token");

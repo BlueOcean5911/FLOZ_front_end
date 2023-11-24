@@ -1,24 +1,19 @@
 "use client";
 import { useEffect } from "react";
+import { useRouter } from 'next/navigation'
 import { useAuthContext } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import LoginScreen from "./LoginScreen";
 
 function Login() {
-  const { signInWithGoogle } = useAuthContext();
   const router = useRouter();
+  const { signInWithGoogle } = useAuthContext();
   const authStatus = getCookie("AUTH_STATUS");
-  console.log(authStatus)
   const status = authStatus ? authStatus : "";
-
-
-  useEffect(() => {
-    const status = authStatus;
-    if (status === "SIGNED_IN") {
-      router.push("/dashboard/home");
-    }
-  }, [status]);
+  
+  if (status === "SIGNED_IN") {
+    router.push("/organization");
+  }
 
   const onGoogleClick = () => {
     signInWithGoogle();

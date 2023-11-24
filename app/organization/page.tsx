@@ -15,7 +15,7 @@ const Page = () => {
   
   useEffect(() => {
     if(!isEmpty(user?.organization)) {
-      // router.push('/dashboard/home');
+      router.push('/dashboard/home');
     }
   } ,[])
 

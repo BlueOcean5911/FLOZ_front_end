@@ -131,7 +131,7 @@ const PeopleList = () => {
           </div>
           <>
             {isNewContactModalOpen ?
-              <NewContact setShow={setIsNewContactModalOpen} /> : <></>}
+              <NewContact setShow={setIsNewContactModalOpen} organization={user.organization} /> : <></>}
           </>
         </div>
       </div>

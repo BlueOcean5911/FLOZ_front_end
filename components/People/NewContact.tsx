@@ -1,7 +1,7 @@
 import { createPerson } from '@service/person.service';
 import { useState } from 'react'
 
-const NewContact = ({ setShow }) => {
+const NewContact = ({ setShow, organization }) => {
 
   const [firstName, setFirstname] = useState('');
   const [lastName, setLastName] = useState('');
@@ -28,7 +28,8 @@ const NewContact = ({ setShow }) => {
         role: role, // what`s type of role?
         email: email,
         phone: phone,
-        projectId: '655d220b2128b99ad7088376',
+        organization,
+        // projectId: '655d220b2128b99ad7088376',
         updatedAt: new Date(),
         createdAt: new Date(),
       });

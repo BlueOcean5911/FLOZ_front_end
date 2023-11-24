@@ -5,6 +5,7 @@
 import { Fragment, useState, useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import Todo from "@models/todo.model";
+import { IUser } from "@models";
 
 export default function UserCard({
   data
@@ -13,22 +14,22 @@ export default function UserCard({
     todos: Todo[] | null,
   };
 }) {
-  const [currentUser, setCurrentUser] = useState<any>(false);
-  const { userSession } = useAuthContext();
+  const [currentUser, setCurrentUser] = useState<IUser>();
+  const { user } = useAuthContext();
   const [toDoList, setToDoList] = useState<Todo[] | null>(data.todos);
 
   useEffect(() => {
-    if (userSession?.user?.user_metadata) {
-      setCurrentUser(userSession.user?.user_metadata)
+    if (user) {
+      setCurrentUser(user)
     }
-  }, [userSession])
+  }, [user])
 
 
   return (
     <div className="w-full justify-around bg-emerald-300 bg-opacity-20 py-16 px-10 rounded shadow border border-stone-300 mb-5 grid grid-cols-2">
       <div className="flex items-center">
         <div className="flex flex-col">
-          <h1 className="font-bold text-3xl">Welcome{currentUser?.full_name ? `, ${currentUser?.full_name}` : ''}</h1>
+          <h1 className="font-bold text-3xl">Welcome{currentUser?.name ? `, ${currentUser?.name}` : ''}</h1>
           <p>Check out these suggestions to start your day!</p>
         </div>
       </div>

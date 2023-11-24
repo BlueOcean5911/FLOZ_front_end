@@ -1,9 +1,9 @@
 import ProjectPanel from "@components/ProjectPanel/ProjectPanel";
 import UserCard from "@components/UserCard/UserCard";
 import { getProjects } from "@service/project.service";
-import { getMeetings } from "@service/meeting.service";
-import { getTodos } from "@service/todo.service";
 import { cookies } from "next/headers";
+import { getUserMeetings, getUserTodos } from "@service/user.service";
+import { IProject, Meeting, Todo } from "@models";
 
 export const revalidate = 0;
 
@@ -12,14 +12,23 @@ export default async function Page() {
   const userId = cookieStore.get("user_id")?.value;
   const providerToken = cookieStore.get("p_token")?.value;
 
-  // Get projects from backend api
-  const projects = await getProjects({});
+  let projects: IProject[] = [];
+  let meetings: Meeting[] = [];
+  let todos: Todo[] = [];
 
-  // Get meetings from backend api
-  const meetings = await getMeetings();
+  try {
+    // Get projects from backend api
+    projects = await getProjects({ userId });
 
-  // Get todos from backend api
-  const todos = await getTodos();
+    // Get meetings from backend api
+    meetings = await getUserMeetings(userId);
+
+    // Get todos from backend api
+    todos = await getUserTodos(userId);
+  } catch (error) {
+    // Handle errors here, if needed
+    console.error("Could not load projects, meetings, or todos:", error);
+  }
 
   return (
     <div className="flex flex-col">

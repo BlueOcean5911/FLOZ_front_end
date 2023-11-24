@@ -1,5 +1,5 @@
 import api from '../api/api';
-import { IUser } from '../models';
+import { IUser, Meeting, Todo } from '../models';
 import { IResponse } from '@types';
 
 
@@ -14,7 +14,18 @@ export const getUser = async (id: string) => {
     const resp: IResponse = await api.get(`/users/${id}`);
     const user: IUser = resp?.data && resp.data.data as IUser;
     return user;
+}
 
+export const getUserMeetings = async (id: string) => {
+    const resp: IResponse = await api.get(`/users/${id}/meetings`);
+    const meetings: Meeting[] = resp?.data && resp.data.data as Meeting[];
+    return meetings;
+}
+
+export const getUserTodos = async (id: string) => {
+    const resp: IResponse = await api.get(`/users/${id}/todos`);
+    const todos: Todo[] = resp?.data && resp.data.data as Todo[];
+    return todos;
 }
 
 export const getUserByEmail = async (email: string): Promise<IUser[] | null> => {

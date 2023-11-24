@@ -5,7 +5,7 @@ interface IPerson {
   email: string;
   phone: string;
   organization?: string;
-  projectId: string;
+  projectId?: string;
   updatedAt: Date;
   createdAt: Date;
 }

@@ -377,4 +377,13 @@
     border-radius: 4px;
     border: 1px dashed var(--foundation-gray-neutral-80, #C9C9C9);
   }
+
+  .to-do-container{
+    height: 45%;
+    overflow-y: scroll;
+  }
+  /* Hide scrollbar for Chrome, Safari and Opera */
+.to-do-container::-webkit-scrollbar {
+  display: none;
+}
 }

@@ -19,6 +19,7 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
+import React from "react";
 
 export default function ProjectView({
   data
@@ -31,11 +32,9 @@ export default function ProjectView({
     providerToken?: string;
   }
 }) {
-  const [todoList, setTodoList] = useState(data.todolist);
   const [pendingTodos, setPendingTodos] = useState(data.todolist.filter(todo => todo.status === 'pending'));
   const [completedTodos, setCompletedTodos] = useState(data.todolist.filter(todo => todo.status === 'completed'));
   const [isOpenAddTask, setIsOpenAddTask] = useState({ modalType: 'add', isOpen: false });
-  const [isEditTask, setIsEditTask] = useState(false);
   const [meetings, setMeetings] = useState(data.meetings);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState('');
@@ -44,7 +43,6 @@ export default function ProjectView({
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
-
 
 
   const truncateSummary = (summary, maxWords) => {
@@ -56,7 +54,6 @@ export default function ProjectView({
   //Get to do list
   function getTodosList(projectId) {
     return getAllTodos(projectId).then((res) => {
-      setTodoList(res);
       setPendingTodos(res.filter(todo => todo.status === 'pending'));
       setCompletedTodos(res.filter(todo => todo.status === 'completed'));
     });
@@ -102,8 +99,6 @@ export default function ProjectView({
         meetingId: selectedMeetingId.toString(),
         dueDate: formData.dueDate
       }
-      console.log(formData.dueDate,'Due date');
-      
       if (projectReq.title === "" || projectReq.description === "" || projectReq.meetingId === "" || projectReq.dueDate === "") {
         alert("Please fill all the fields");
         setIsSubmit(false);
@@ -124,8 +119,15 @@ export default function ProjectView({
       }
     }
   };
-
+  function onAddTask() {
+    setDueDate(null);
+    setSelectedMeetingId('');
+    setIsOpenAddTask({ modalType: 'add', isOpen: true });
+    setFormData({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
+  }
   function onEditTaks(task) {
+    setDueDate(new Date(task.dueDate));
+    setSelectedMeetingId(task.meetingId._id);
     setIsOpenAddTask({ modalType: 'edit', isOpen: true });
     setFormData({ _id: task._id, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
   }
@@ -263,7 +265,7 @@ export default function ProjectView({
                           <label htmlFor="cb1" className="tab__label" style={{ background: "white" }} >
                             <div >
                               <p className="font-bold">$9800</p>
-                              <div className="flex justify-between">
+                              <div className="flex justify-between w-[150px]">
                                 <p className="text-sm">Lighting</p>
                                 <div className="switch">
                                   <input id="checkbox1" className="look" type="checkbox" />
@@ -292,7 +294,7 @@ export default function ProjectView({
           </div>
 
 
-          <div className=" manage-project-box border rounded border-stone-300 p-3 my-4 bg-white" >
+          <div className=" manage-project-box border rounded border-stone-300 p-3 mt-4 bg-white" >
             <h3 className="my-auto pr-2 pb-3 font-bold text-sm">Documentation</h3>
             <div className="grid grid-cols-2">
               <div className="col-span-1 mt-2">
@@ -365,53 +367,59 @@ export default function ProjectView({
           </div>
         </div>
 
-        <div className="col-span-1 border rounded border-stone-300 p-3 bg-white card_shadow" >
+        <div className="col-span-1 border rounded border-stone-300 p-3 bg-white card_shadow h-[785px]" >
           <h3 className="my-auto pr-2 pb-3 font-bold text-sm">To Do:</h3>
-          <div className="grid grid-cols-1 ">
-            {pendingTodos.map((item, index) => (
-              <div key={item._id} className="flex justify-right border rounded border-stone-300 px-2 py-3 my-1 bg-white" style={{ background: `${item.status == 'pending' ? '#FBF3E0' : 'white'}` }} >
-                <div className="pr-1">
-                  <input type="checkbox" className="border-gray-300 cursor-pointer rounded " onChange={() => { setIsOpenConfirmModal({ modalType: 'update', isOpen: true, _id: item._id }) }} />
-                </div>
-                <div className="w-[73%]">
+          <div className="grid grid-cols-1 to-do-container">
+            <div>
+              {pendingTodos.map((item, index) => (
+                <div key={item._id} className="max-h-[80px] min-h-[80px] flex justify-right border rounded border-stone-300 px-2 py-3 my-2 bg-white" style={{ background: `${item.status == 'pending' ? '#FBF3E0' : 'white'}` }} >
+                  <div className="pr-1">
+                    <input type="checkbox" checked={item._id==isOpenConfirmModal._id?true:false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
+                      console.log(e,'event');
+                     setIsOpenConfirmModal({ modalType: 'update', isOpen: true, _id: item._id }) }} />
+                  </div>
+                  <div className="w-[73%]">
 
-                  <h3 className="todo-card-content-title">{truncateSummary(item?.title, 5)}</h3>
-                  <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
+                    <h3 className="todo-card-content-title">{truncateSummary(item?.title, 5)}</h3>
+                    <div className="flex justify-between">
+                      <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
+                    </div>
+                  </div>
+                  <div className=" align-right relative">
+                    <svg className="absolute top-0 right-0 cursor-pointer" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => setIsOpenConfirmModal({ _id: item._id, modalType: 'delete', isOpen: true })}>
+                      <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
+                    </svg>
+                    <svg onClick={() => { onEditTaks(item) }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4 cursor-pointer"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z"></path><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" ></path></svg>
+                    <p className="todo-card-content-desc mt-1" >{moment(item.dueDate).format('MMM Do')}</p>
                   </div>
                 </div>
-                <div className=" align-right relative">
-                  <svg className="absolute top-0 right-0 cursor-pointer" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => setIsOpenConfirmModal({ _id: item._id, modalType: 'delete', isOpen: true })}>
-                    <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
-                  </svg>
-                  <svg onClick={() => { onEditTaks(item) }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4 cursor-pointer"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z"></path><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" ></path></svg>
-                  <p className="todo-card-content-desc mt-1" >{moment(item.dueDate).format('MMM Do')}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <div className="title_color float-right px-2 mb-4">
-            <p className="cursor-pointer" onClick={() => { setIsOpenAddTask({ modalType: 'add', isOpen: true }); setFormData({ _id: '', title: '', description: '', meetingId: '', dueDate: null }) }}>Add Task</p>
+            <p className="cursor-pointer" onClick={() => { onAddTask() }}>Add Task</p>
           </div>
           <h3 className="my-auto pt-4 pr-2 pb-3 font-bold text-sm">Task done:</h3>
-          <div className="grid grid-cols-1 ">
+          <div className="grid grid-cols-1 gap-0 to-do-container">
+            <div>
 
-            {completedTodos.map((item, index) => (
-              <div key={item._id} className=" flex justify-between border rounded border-stone-300 px-3 py-3 my-1 bg-white" style={{ background: `${item.status == 'completed' ? '#DDF1EE' : '#DDF1EE'}` }} >
-                <div>
-                  <h3 className="todo-card-content-title">{truncateSummary(item?.title, 10)}</h3>
-                  <div className="flex justify-between">
-                    <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
+              {completedTodos.map((item, index) => (
+                <div key={item._id} className="max-h-[80px] min-h-[80px] flex justify-between border rounded border-stone-300 px-3 py-3 my-2 bg-white" style={{ background: `${item.status == 'completed' ? '#DDF1EE' : '#DDF1EE'}` }} >
+                  <div>
+                    <h3 className="todo-card-content-title">{truncateSummary(item?.title, 10)}</h3>
+                    <div className="flex justify-between">
+                      <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
+                    </div>
+                  </div>
+                  <div className="align-right relative">
+                    <svg className="absolute top-0 right-0" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => setIsOpenConfirmModal({ _id: item._id, modalType: 'delete', isOpen: true })}>
+                      <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
+                    </svg>
+                    <p className="todo-card-content-desc mt-6" >Oct 16 {item.status == 'warning' ? 'EOD' : ''}</p>
                   </div>
                 </div>
-                <div className="align-right relative">
-                  <svg className="absolute top-0 right-0" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
-                  </svg>
-                  <p className="todo-card-content-desc mt-6" >Oct 16 {item.status == 'warning' ? 'EOD' : ''}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -461,14 +469,14 @@ export default function ProjectView({
                             className={`w-full rounded-md border p-2 px-4 my-2 outline-none `}
                           />
                           <div>
-
                             <select id="countries" className={`bg-gray-50 my-1 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedMeetingId == '' && isSubmit ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
                               // defaultValue={'Select Meeting'}
-                              value={formData.meetingId}
                               onChange={(event) => {
                                 setFormData({ ...formData, meetingId: event.target.value });
                                 setSelectedMeetingId(event.target.value)
-                              }} >
+                              }}
+                              value={meetings.findIndex((meeting) => meeting._id == selectedMeetingId) > -1 ? meetings[meetings.findIndex((meeting) => meeting._id == selectedMeetingId)]._id : ''}
+                            >
                               <option selected>Select Meeting</option>
                               {meetings.map((meeting: Meeting) => (<option value={meeting?._id}>{meeting?.summary}</option>))}
                             </select>
@@ -477,7 +485,7 @@ export default function ProjectView({
                               <DemoContainer components={['DatePicker']}>
                                 <div className="m-w-[100px]">
                                   <DatePicker
-                                    value={dueDate}
+                                    value={moment(dueDate)}
                                     slotProps={{ textField: { placeholder: 'Due Date' } }}
                                     onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
                                   />

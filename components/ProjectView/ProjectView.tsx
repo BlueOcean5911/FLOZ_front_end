@@ -46,15 +46,6 @@ export default function ProjectView({
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
-  const [projectsList, setProjectsList] = useState([]);
-  const [userId, setUserId] = useState(data.userId);
-  const [peoples, setPeoples] = useState([]);
-
-  useEffect(() => {
-    getProjects({ userId }).then((res) => { setProjectsList(res); }).catch(console.log);
-    getPersons().then((res) => { setPeoples(res); }).catch(console.log);
-
-  }, []);
   const router = useRouter();
 
   const truncateSummary = (summary, maxWords) => {
@@ -161,7 +152,7 @@ export default function ProjectView({
     <div className="w-full items-center justify-between">
       <div className="grid grid-cols-5 gap-4">
         <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
-          <Sidebar projects={projectsList} peoples={peoples} />
+          <Sidebar />
         </div>
 
 

@@ -1,9 +1,12 @@
 "use client"
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
+import { useAuthContext } from "@/contexts/AuthContext";
+import { getProjects } from '@service/project.service';
+import { getPersons } from '@service/person.service';
 
 type TreeNode = {
   label: string;
@@ -55,12 +58,23 @@ const TreeView: React.FC<TreeViewProps> = ({ nodes }) => {
   return <div>{renderTreeItems(nodes)}</div>;
 };
 
-type SidebarProps = {
-  projects: any; // Replace 'any' with the actual type of 'projects'
-  peoples: any; // Replace 'any' with the actual type of 'peoples'
-};
+const Sidebar: React.FC = () => {
+  const { user } = useAuthContext();
+  const [projects, setProjects] = useState<any>([]);
+  const [peoples, setPeoples] = useState<any>([]);
 
-const Sidebar: React.FC<SidebarProps> = ({ projects, peoples }) => {
+  useEffect(() => {
+    if (user?._id) {
+      getProjects({userId: user._id}).then((res) => {
+        setProjects(res);
+      }).catch(console.log);
+  
+      getPersons().then((res) => {
+        setPeoples(res);
+      }).catch(console.log)
+    }
+  }, [user])
+
   const treeData: TreeNode[] = [
     {
       label: 'Floz team',

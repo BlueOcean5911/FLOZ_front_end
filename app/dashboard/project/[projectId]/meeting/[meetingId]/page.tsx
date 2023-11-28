@@ -9,16 +9,13 @@ import MeetingSummary from "@components/Meeting/MeetingSummary";
 import Record from "@components/Record/Record";
 import { getMeetingData } from '@service/meeting.service';
 import { useRouter } from "next/navigation";
-import { cookies } from "next/headers";
-import { getProjects } from "@service/project.service";
-import { getPersons } from "@service/person.service";
 import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
 
 interface pageProps {
   projectId: string;
   meetingId: string;
 }
-const Page = async ({ params }: { params: pageProps }) => {
+const Page = ({ params }: { params: pageProps }) => {
   const router = useRouter();
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [isTodosLoading, setIsTodosLoading] = useState(true);
@@ -29,10 +26,7 @@ const Page = async ({ params }: { params: pageProps }) => {
   const [audioUrl, setAudioUrl] = useState('');
   const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   let pollingInterval;
-  const cookieStore = cookies();
-  const userId = cookieStore.get("user_id")?.value;
-  const projects = await getProjects({ userId });
-  const peoples = await getPersons();
+
   const getTrascriptData = async () => {
     try{
       const meetingData = await getMeetingData(params.meetingId);
@@ -96,7 +90,7 @@ const Page = async ({ params }: { params: pageProps }) => {
     <div className="projects-layout bg-gray-100 flex flex-row h-full">
       <div className="sidebar shadow-md w-[21%] rounded-md mx-[26px] flex flex-col  bg-white">
         <div className="grow ">
-          <Sidebar projects={projects || []} peoples={peoples || []} />
+          <Sidebar />
         </div>
       </div>
       <div className="main-layout shadow-md rounded-md w-[52%]  flex flex-col  bg-white">

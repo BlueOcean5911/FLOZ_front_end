@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import Link from 'next/link';
 
 type TreeNode = {
   label: string;
@@ -54,119 +55,40 @@ const TreeView: React.FC<TreeViewProps> = ({ nodes }) => {
   return <div>{renderTreeItems(nodes)}</div>;
 };
 
-const Sidebar: React.FC = () => {
+type SidebarProps = {
+  projects: any; // Replace 'any' with the actual type of 'projects'
+  peoples: any; // Replace 'any' with the actual type of 'peoples'
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ projects, peoples }) => {
   const treeData: TreeNode[] = [
     {
       label: 'Floz team',
       children: [
-        {
-          label: 'Dashboard',
-
-        },
-        {
-          label: 'News',
-        },
-        {
-          label: 'Hanyang',
-          children: [
-            {
-              label: 'profile',
-            },
-          ],
-
-        },
-        {
-          label: "Joseph",
-          children: [
-            {
-              label: 'profile',
-            },
-          ],
-        },
-        {
-          label: "Gang",
-          children: [
-            {
-              label: 'profile',
-            },
-          ],
-        },
-        {
-          label: "Vishesh",
-          children: [
-            {
-              label: 'profile',
-            },
-          ],
-        },
-        {
-          label: "Dahan",
-          children: [
-            {
-              label: 'profile',
-            },
-          ],
-        },
+        { label: 'Dashboard' },
+        { label: 'News' },
+        ...(peoples.length > 0
+          ? peoples.map((item) => {
+              item.label = item.name;
+              item.children = [{ label: 'profile' }];
+              return item;
+            })
+          : []),
       ],
     },
     {
       label: 'Projects',
-      children: [
-        {
-          label: "Unassigned Projects",
-          children: [
-            {
-              label: 'Hold Project'
-            },
-            {
-              label: "New Project"
-            },
-            {
-              label: "Item"
-            }
-          ]
-        },
-        {
-          label: "Team F",
-          children: [
-            {
-              label: 'Hold Project'
-            },
-            {
-              label: "New Project"
-            },
-            {
-              label: "Item"
-            }
-          ]
-        },
-        {
-          label: "Team L",
-          children: [
-            {
-              label: 'Wurster Hall Renovation',
-              children: [
-                {
-                  label: "data",
-                }
-              ]
-            },
-            {
-              label: "Digital Fab Shop DD",
-              children: [
-                {
-                  label: "data",
-                }
-              ]
-            },
-
-          ]
-        },
-
-      ]
+      children: projects.length > 0 ? projects.map((item) => ({
+        label: (
+          <Link key={item._id} href={`/dashboard/project/${item._id}`}>
+            {item.name}
+          </Link>
+        ),
+        children: [{ label: 'sub_project' }],
+      })) : [],
     },
-
   ];
+
 
   return (
     <div className='sidebar flex flex-col p-4 gap-4'>

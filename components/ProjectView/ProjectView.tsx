@@ -20,6 +20,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
 import React from "react";
+import { getProjects } from "@service/project.service";
+import { getPersons } from "@service/person.service";
 
 export default function ProjectView({
   data
@@ -43,7 +45,15 @@ export default function ProjectView({
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
+  const [projectsList, setProjectsList] = useState([]);
+  const [userId, setUserId] = useState(data.userId);
+  const [peoples, setPeoples] = useState([]);
 
+  useEffect(() => {
+    getProjects({ userId }).then((res) => { setProjectsList(res); }).catch(console.log);
+    getPersons().then((res) => { setPeoples(res); }).catch(console.log);
+
+  }, []);
 
   const truncateSummary = (summary, maxWords) => {
     const words = summary?.split(' ');
@@ -145,7 +155,7 @@ export default function ProjectView({
     <div className="w-full items-center justify-between">
       <div className="grid grid-cols-5 gap-4">
         <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
-          <Sidebar />
+          <Sidebar projects={projectsList} peoples={peoples} />
         </div>
 
 
@@ -369,14 +379,14 @@ export default function ProjectView({
 
         <div className="col-span-1 border rounded border-stone-300 p-3 bg-white card_shadow h-[785px]" >
           <h3 className="my-auto pr-2 pb-3 font-bold text-sm">To Do:</h3>
-          <div className="grid grid-cols-1 to-do-container">
+          {pendingTodos.length>0 && <div className="grid grid-cols-1 to-do-container">
             <div>
               {pendingTodos.map((item, index) => (
-                <div key={item._id} className="max-h-[80px] min-h-[80px] flex justify-right border rounded border-stone-300 px-2 py-3 my-2 bg-white" style={{ background: `${item.status == 'pending' ? '#FBF3E0' : 'white'}` }} >
+                <div key={item._id} className={`max-h-[80px] min-h-[80px] flex justify-right border rounded border-stone-300 px-2 py-3 my-2 bg-[#FBF3E0]`} >
                   <div className="pr-1">
-                    <input type="checkbox" checked={item._id==isOpenConfirmModal._id?true:false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
-                      console.log(e,'event');
-                     setIsOpenConfirmModal({ modalType: 'update', isOpen: true, _id: item._id }) }} />
+                    <input type="checkbox" checked={item._id == isOpenConfirmModal._id && isOpenConfirmModal.modalType != 'delete'? true : false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
+                      setIsOpenConfirmModal({ modalType: 'update', isOpen: true, _id: item._id })
+                    }} />
                   </div>
                   <div className="w-[73%]">
 
@@ -395,7 +405,7 @@ export default function ProjectView({
                 </div>
               ))}
             </div>
-          </div>
+          </div>}
           <div className="title_color float-right px-2 mb-4">
             <p className="cursor-pointer" onClick={() => { onAddTask() }}>Add Task</p>
           </div>
@@ -404,7 +414,7 @@ export default function ProjectView({
             <div>
 
               {completedTodos.map((item, index) => (
-                <div key={item._id} className="max-h-[80px] min-h-[80px] flex justify-between border rounded border-stone-300 px-3 py-3 my-2 bg-white" style={{ background: `${item.status == 'completed' ? '#DDF1EE' : '#DDF1EE'}` }} >
+                <div key={item._id} className="max-h-[80px] min-h-[80px] flex justify-between border rounded border-stone-300 px-3 py-3 my-2 bg-[#DDF1EE]">
                   <div>
                     <h3 className="todo-card-content-title">{truncateSummary(item?.title, 10)}</h3>
                     <div className="flex justify-between">

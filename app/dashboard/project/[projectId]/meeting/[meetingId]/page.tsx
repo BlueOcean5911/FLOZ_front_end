@@ -9,12 +9,14 @@ import MeetingSummary from "@components/Meeting/MeetingSummary";
 import Record from "@components/Record/Record";
 import { getMeetingData } from '@service/meeting.service';
 import { useRouter } from "next/navigation";
-
+import { cookies } from "next/headers";
+import { getProjects } from "@service/project.service";
+import { getPersons } from "@service/person.service";
 interface pageProps {
   projectId: string;
   meetingId: string;
 }
-const Page = ({ params }: { params: pageProps }) => {
+const Page = async ({ params }: { params: pageProps }) => {
   const router = useRouter();
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [isTodosLoading, setIsTodosLoading] = useState(true);
@@ -24,9 +26,12 @@ const Page = ({ params }: { params: pageProps }) => {
   const [generatedEmail, setGeneratedEmail] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   let pollingInterval;
-  
+  const cookieStore = cookies();
+  const userId = cookieStore.get("user_id")?.value;
+  const projects = await getProjects({ userId });
+  const peoples = await getPersons();
   const getTrascriptData = async () => {
-    try{
+    try {
       setIsLoading(true);
       const meetingData = await getMeetingData(params.meetingId);
       if (meetingData.transcriptSummary || meetingData.todos) {
@@ -47,7 +52,7 @@ const Page = ({ params }: { params: pageProps }) => {
         return;
       }
     } catch (error) {
-      if (error?.response?.status === 404 && (error?.response?.data?.message == "Document not found" || error?.response?.data?.message == "Transcript not found") ) {
+      if (error?.response?.status === 404 && (error?.response?.data?.message == "Document not found" || error?.response?.data?.message == "Transcript not found")) {
         clearInterval(pollingInterval);
         router.push(`/dashboard/project/${params.projectId}`);
         return;
@@ -73,7 +78,7 @@ const Page = ({ params }: { params: pageProps }) => {
     <div className="projects-layout bg-gray-100 flex flex-row h-full">
       <div className="sidebar shadow-md w-[21%] rounded-md mx-[26px] flex flex-col  bg-white">
         <div className="grow ">
-          <Sidebar />
+          <Sidebar projects={projects || []} peoples={peoples || []} />
         </div>
       </div>
       <div className="main-layout shadow-md rounded-md w-[52%]  flex flex-col  bg-white">
@@ -84,14 +89,14 @@ const Page = ({ params }: { params: pageProps }) => {
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Processing your audio for transcription...</div>
               </div>
             )
-            :
-            (
-              <>
-                <div className="text-2xl font-bold">Meeting summary by Floz:</div>
-                <Record audioUrl={audioUrl} />
-                <Transcript transcript={transcript}/>
-              </>
-            )
+              :
+              (
+                <>
+                  <div className="text-2xl font-bold">Meeting summary by Floz:</div>
+                  <Record audioUrl={audioUrl} />
+                  <Transcript transcript={transcript} />
+                </>
+              )
           }
         </div>
       </div>
@@ -103,14 +108,14 @@ const Page = ({ params }: { params: pageProps }) => {
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Loading tasks from meeting...</div>
               </div>
             )
-            :
-            (
-              <>
-                <TodoList  todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} />
-                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
-                <MeetingSummary email={generatedEmail}/>
-              </>
-            )
+              :
+              (
+                <>
+                  <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} />
+                  <MemberList setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
+                  <MeetingSummary email={generatedEmail} />
+                </>
+              )
           }
         </div>
       </div>

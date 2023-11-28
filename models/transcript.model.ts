@@ -1,8 +1,9 @@
 interface ITranscript {
     _id?: string;
     transcript: string;
-    transcriptSummary: string;
-    todos: Object;
+    transcriptSummary?: string;
+    emailSummary?: string;
+    todos?: Object;
     meetingId: string;
     documentId: string;
     updatedAt: Date;

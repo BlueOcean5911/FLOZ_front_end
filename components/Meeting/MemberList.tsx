@@ -107,8 +107,6 @@ const MemberList = ({ setGenerateEmail, todolistStr, params }) => {
         name: persons[id].name,
         summary: todolistStr,
       })
-      console.log('Generated email-->')
-      console.log(email);
       setGenerateEmail(email);
     } catch (error) {
       console.error('MemberList generateMemberEmail error', error)

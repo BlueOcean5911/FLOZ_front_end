@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import { cookies } from "next/headers";
 import { getProjects } from "@service/project.service";
 import { getPersons } from "@service/person.service";
+import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
+
 interface pageProps {
   projectId: string;
   meetingId: string;
@@ -20,21 +22,21 @@ const Page = async ({ params }: { params: pageProps }) => {
   const router = useRouter();
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [isTodosLoading, setIsTodosLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isEmailSummaryLoading, setIsEmailSummaryLoading] = useState(true);
   const [transcript, setTranscript] = useState('');
   const [todoList, setTodoList] = useState({});
   const [generatedEmail, setGeneratedEmail] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
+  const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   let pollingInterval;
   const cookieStore = cookies();
   const userId = cookieStore.get("user_id")?.value;
   const projects = await getProjects({ userId });
   const peoples = await getPersons();
   const getTrascriptData = async () => {
-    try {
-      setIsLoading(true);
+    try{
       const meetingData = await getMeetingData(params.meetingId);
-      if (meetingData.transcriptSummary || meetingData.todos) {
+      if (meetingData.transcriptSummary || meetingData.todos || meetingData.emailSummary) {
         if (meetingData.transcriptSummary) {
           setTranscript(meetingData.transcriptSummary);
           setAudioUrl(meetingData.audioFileUrl)
@@ -46,7 +48,12 @@ const Page = async ({ params }: { params: pageProps }) => {
           setIsTodosLoading(false);
         }
 
-        if (meetingData.transcriptSummary && meetingData.todos) {
+        if (meetingData.emailSummary) {
+          setGeneratedEmail(meetingData.emailSummary);
+          setIsEmailSummaryLoading(false);
+        }
+
+        if (meetingData.transcriptSummary && meetingData.todos && meetingData.emailSummary) {
           clearInterval(pollingInterval);
         }
         return;
@@ -63,16 +70,27 @@ const Page = async ({ params }: { params: pageProps }) => {
 
   useEffect(() => {
     getTrascriptData()
-    // Polling mechanism with a 10-second interval (adjust as needed)
+    // Polling mechanism with a 5-second interval
     pollingInterval = setInterval(() => {
       getTrascriptData();
-    }, 5000); // 10 seconds interval
+    }, 5000); // 5 seconds interval
 
     // Clean up the interval when the component unmounts
     return () => {
       clearInterval(pollingInterval);
     };
   }, [])
+
+  const onUploadComplete = () => {
+    setIsSummaryLoading(true);
+    setIsTodosLoading(true);
+    setIsEmailSummaryLoading(true);
+    getTrascriptData()
+    // Polling mechanism with a 5-second interval
+    pollingInterval = setInterval(() => {
+      getTrascriptData();
+    }, 5000);
+  }
 
   return (
     <div className="projects-layout bg-gray-100 flex flex-row h-full">
@@ -89,14 +107,19 @@ const Page = async ({ params }: { params: pageProps }) => {
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Processing your audio for transcription...</div>
               </div>
             )
-              :
-              (
-                <>
-                  <div className="text-2xl font-bold">Meeting summary by Floz:</div>
-                  <Record audioUrl={audioUrl} />
-                  <Transcript transcript={transcript} />
-                </>
-              )
+            :
+            (
+              <>
+                <div className="flex justify-between items-center">
+                  <div className='text-2xl font-bold'>Meeting summary by Floz:</div>
+                  <div>
+                    <button onClick={() => setIsUploadAudioModal(true)} className='bg-[#06A59A] hover:bg-[#28C3BB] text-white font-bold py-2 px-4 rounded'>Re-upload Audio</button>
+                  </div>
+                </div>
+                <Record audioUrl={audioUrl} />
+                <Transcript transcript={transcript}/>
+              </>
+            )
           }
         </div>
       </div>
@@ -108,17 +131,33 @@ const Page = async ({ params }: { params: pageProps }) => {
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Loading tasks from meeting...</div>
               </div>
             )
-              :
-              (
-                <>
-                  <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} />
-                  <MemberList setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
-                  <MeetingSummary email={generatedEmail} />
-                </>
-              )
+            :
+            (
+              <>
+                <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} />
+                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
+              </>
+            )
+          }
+          {
+            isEmailSummaryLoading ? (
+              <div className="flex flex-col justify-center items-center">
+                <div className='text-[20px] text-bold text-gray-500 text-center'>Loading meeting summary...</div>
+              </div>
+            )
+            :
+            (
+              <MeetingSummary email={generatedEmail}/>
+            )
           }
         </div>
       </div>
+      {
+        isUploadAudioModal ? 
+          <UploadAudioModal projectId={params.projectId} meetingId={params.meetingId} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> 
+        : 
+          <></>
+      }
     </div>
   );
 }

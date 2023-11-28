@@ -22,6 +22,7 @@ import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
 import React from "react";
 import { getProjects } from "@service/project.service";
 import { getPersons } from "@service/person.service";
+import { useRouter } from 'next/navigation'
 
 export default function ProjectView({
   data
@@ -54,6 +55,7 @@ export default function ProjectView({
     getPersons().then((res) => { setPeoples(res); }).catch(console.log);
 
   }, []);
+  const router = useRouter();
 
   const truncateSummary = (summary, maxWords) => {
     const words = summary?.split(' ');
@@ -149,6 +151,10 @@ export default function ProjectView({
   const refreshMeetings = async () => {
     const updatedMeetings = await getAllMeetings({ projectId: data.project._id });
     setMeetings(updatedMeetings);
+  }
+
+  const onUploadComplete = (meetingId: string) => {
+    router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
   }
 
   return (
@@ -433,7 +439,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
-      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} /> : <></>}
+      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
 
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal} /> : <></>}
 

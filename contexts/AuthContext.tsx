@@ -26,13 +26,15 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
-    checkSession();
+    if (session !== undefined) {
+      checkSession();
+    }
   }, [session]);
 
   async function checkSession() {
     if (!session) {
       deleteCookie('user_id');
-      router.push('/');
+      router.push("/");
     } else {
       await handleSessionChange(session);
     }
@@ -108,14 +110,13 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   async function handleSignOut() {
-    await signOut();
-
+    
     setUser(null);
     setIsSignedIn(false);
     deleteCookie("AUTH_STATUS");
     deleteCookie("p_token");
     deleteCookie("user_id");
-    router.push("/");
+    await signOut({redirect: false});
   }
 
   return (

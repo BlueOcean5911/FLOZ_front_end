@@ -105,7 +105,7 @@ export default function Header() {
                   {({ active }) => (
                     <a
                       onClick={signOut}
-                      className={classNames(active ? 'bg-gray-100 pointer' : '', 'block px-4 py-2 text-sm text-gray-700 pointer')}
+                      className={classNames(active ? 'bg-gray-100 cursor-pointer' : '', 'block px-4 py-2 text-sm text-gray-700 cursor-pointer')}
                     >
                       Sign out
                     </a>

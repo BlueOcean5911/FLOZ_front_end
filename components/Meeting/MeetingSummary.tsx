@@ -25,14 +25,6 @@ const MeetingSummary = ({ email }) => {
     setEmailPrompt(email || "Hania is working on a project in Berkeley Downtown. She needs to get a cost estimation for adding a new window to the bathroom. Joseph is helping her out and will be sending her different window types with different prices tonight. The estimated cost for adding a new window with the current design is approximately $300.   Some options include Sierra Pacific, which is a more affordable choice ranging from $100 to $200 depending on the size, and Marvin, a higher quality option priced between $300 to $350. The Marvin window is recommended due to the high salt content in the air near the project location.");
   }, [email]);
 
-  useEffect(() => {
-    console.log("peopleList", peopleList);
-  }, [peopleList])
-
-  useEffect(() => {
-    console.log('selPeopleList', selectedPeopleList);
-  }, [selectedPeopleList])
-
   const initialize = async () => {
     const persons = await getPersons();
     setPeopleList(persons);
@@ -66,7 +58,6 @@ const MeetingSummary = ({ email }) => {
     try {
       for(let i = 0; i < selectedPeopleList.length; i++) {
         if(selectedPeopleList[i]) {
-          console.log(typeof oAuthTokenForEmail, oAuthTokenForEmail);
           const { data } = await opendaiApi.get('/sendEmail', { params: { email: peopleList[i].email, content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
         }
       }

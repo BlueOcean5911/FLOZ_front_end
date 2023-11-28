@@ -65,11 +65,6 @@ const TodoList = ({ todoListData, meetingId, projectId }) => {
     }
 
     console.log(todoListArr)
-    // try {
-    //   await addTodoListToDatabase(todoListArr);
-    // } catch (error) {
-    //   console.error(error);
-    // }
     setTodoList([...todoListArr]);
   }
 

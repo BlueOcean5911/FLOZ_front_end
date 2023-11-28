@@ -20,6 +20,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
 import React from "react";
+import { useRouter } from 'next/navigation'
 
 export default function ProjectView({
   data
@@ -43,7 +44,7 @@ export default function ProjectView({
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
-
+  const router = useRouter();
 
   const truncateSummary = (summary, maxWords) => {
     const words = summary?.split(' ');
@@ -139,6 +140,10 @@ export default function ProjectView({
   const refreshMeetings = async () => {
     const updatedMeetings = await getAllMeetings({ projectId: data.project._id });
     setMeetings(updatedMeetings);
+  }
+
+  const onUploadComplete = (meetingId: string) => {
+    router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
   }
 
   return (
@@ -423,7 +428,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
-      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} /> : <></>}
+      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
 
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal} /> : <></>}
 

@@ -3,43 +3,37 @@
 "use client";
 
 import { ThreeDots } from 'react-loader-spinner'
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
-import Link from "next/link";
-import { IProject } from "@models";
+import { useState } from "react";
 import { uploadAudio } from "@./service/project.service";
 import { Meeting } from "@models/meeting.model";
-import { useCallback } from 'react';
 // import { useDropzone } from 'react-dropzone';
 import UploadComponent from "./UploadComponent";
 import moment from 'moment';
-import { useRouter } from 'next/navigation'
 import { toast } from "react-toastify";
 export default function UploadAudioModal({
   meetings,
+  meetingId,
   projectId,
   isShow,
-  setShow
+  setShow,
+  onUploadComplete
+}: {
+  meetings?: Meeting[] | null;
+  meetingId?: string;
+  projectId: string;
+  isShow: boolean;
+  setShow: (boolean) => void;
+  onUploadComplete: (string) => void;
 }) {
-  const [file, setFile] = useState<File | undefined>();
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [selectedMeetingId, setSelectedMeetingId] = useState('');
+  const [selectedMeetingId, setSelectedMeetingId] = useState(meetingId || '');
   const [uploadedFileData, setUploadedFileData] = useState<any | ArrayBuffer | null>(null);
 
   const getTime = (date: string) => {
     return moment(date).format('HH:mm:ss');
   }
 
-  function closeModal() {
-    setIsOpen(false);
-  }
-
-  function openModal() {
-    setIsOpen(true);
-  }
   function back() {
     setIsAdded(false);
     setSelectedMeetingId('');
@@ -67,11 +61,9 @@ export default function UploadAudioModal({
     formData.append('meetingAudio', data.fileData);
     setLoader(true);
     uploadAudio({ projectId: projectId, formData }).then((res) => {
-      
-      setLoader(true);
-      if (res.meetingId) {
-        router.push('/dashboard/project/' + projectId + '/meeting/' + res.meetingId);
-      }
+      setLoader(false);
+      onUploadComplete(res?.meetingId);
+      setShow(false);
     }).catch((err) => {
       setLoader(false);
       toast.error(err.message);
@@ -101,17 +93,23 @@ export default function UploadAudioModal({
                   </div>
                 </div>
                 <div className="p-4">
-                  <div>
-                    <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this recording to</p>
-                    <select id="countries" className={`bg-gray-50 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedMeetingId == '' && uploadedFileData != null ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
-                      defaultValue={'Select Meeting'} onChange={(event) => { setSelectedMeetingId(event.target.value) }} value={selectedMeetingId}>
-                      <option selected>Select Meeting</option>
-                      {meetings.map((meeting: Meeting) => (
-                        <option value={meeting?._id}>{meeting?.summary}</option>
-                      ))}
-                    </select>
+                  {
+                    (meetings && meetings.length > 0) ?
+                      (
+                        <div>
+                          <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this recording to</p>
+                          <select id="countries" className={`bg-gray-50 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedMeetingId == '' && uploadedFileData != null ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
+                            defaultValue={'Select Meeting'} onChange={(event) => { setSelectedMeetingId(event.target.value) }} value={selectedMeetingId}>
+                            <option selected>Select Meeting</option>
+                            {meetings.map((meeting: Meeting) => (
+                              <option value={meeting?._id}>{meeting?.summary}</option>
+                            ))}
+                          </select>
 
-                  </div>
+                        </div>
+                      )
+                    : null
+                  }
                   {!isAdded ?
                     <UploadComponent isUpload={isAdded} setUpload={(data) => { setUploaded(data) }} />
                     :

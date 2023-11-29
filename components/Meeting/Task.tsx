@@ -22,7 +22,7 @@ const Task = ({ id: taskId, title, content, date, handleRemove, handleClick, ...
     setId(taskId);
   }, [])
 
-  console.log(typeof content, "===")
+
   return (
     <div className='relative'>
 

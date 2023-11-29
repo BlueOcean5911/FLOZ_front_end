@@ -1,12 +1,12 @@
 import { createPerson } from '@service/person.service';
 import { useState } from 'react'
 
-const NewContact = ({ setShow, organization }) => {
+const NewContact = ({ setShow, organization, setPeople, people }) => {
 
   const [firstName, setFirstname] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState('PM');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [salutation, setSalutation] = useState('');
@@ -16,7 +16,7 @@ const NewContact = ({ setShow, organization }) => {
     setFirstname("");
     setLastName("");
     setEmail("");
-    setRole("");
+    setRole("PM");
     setPhone("");
     setNote("");
   }
@@ -33,6 +33,7 @@ const NewContact = ({ setShow, organization }) => {
         updatedAt: new Date(),
         createdAt: new Date(),
       });
+      setPeople([...people, result])
     }
   }
 
@@ -60,7 +61,7 @@ const NewContact = ({ setShow, organization }) => {
                 <div className="last-name text-xs font-bold text-gray-500">Last Name</div>
                 <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)}></input>
                 <div className="role text-xs font-bold text-gray-500">Role</div>
-                <select className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="None" value={role} onChange={(e) => setRole(e.target.value)}>
+                <select className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="None" defaultValue={'PM'} value={role} onChange={(e) => setRole(e.target.value)}>
                   <option value="PM">PM</option>
                   <option value="Engineer">Engineer</option>
                   <option value="Client">Client</option>

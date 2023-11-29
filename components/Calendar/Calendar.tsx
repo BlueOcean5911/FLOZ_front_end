@@ -2,7 +2,7 @@
 
 import React, { useState, Fragment, useEffect, useRef } from "react";
 import IconSearch from "@components/icons/IconSearch";
-import { getUsers } from "@service/user.service"
+import { getUserByEmail, getUsers } from "@service/user.service"
 
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -16,8 +16,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateCalendar, StaticDatePicker, TimeField, TimePicker } from "@mui/x-date-pickers";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 
-
-
 import { getCookie } from "cookies-next";
 
 import FullCalendar from "@fullcalendar/react";
@@ -26,9 +24,14 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
 import { getProjects } from "../../service/project.service";
-import { createEvent } from "@./service/event.service";
+import { createEvent, updateEvent } from "@./service/event.service";
 import Event from "./Event";
-import { Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { Checkbox, ListItemText, OutlinedInput, Typography } from "@mui/material";
+import { getPersons, getPersonsByOrganization } from "@service/person.service";
+import { useAuthContext } from "@contexts/AuthContext";
+import { signOut } from "next-auth/react";
+import { createMeeting, deleteMeeting, updateMeeting } from "@service/meeting.service";
+import { List } from "rsuite";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -105,6 +108,12 @@ interface Item {
     signature: string;
   };
   hangoutLink: string;
+  extendedProperties?: {
+    private?: {
+      projectId?: string;
+      meetingId?: string;
+    }
+  }
 }
 interface Event {
   kind: string;
@@ -113,9 +122,10 @@ interface Event {
 }
 
 export default function Calendar() {
-  const [personName, setPersonName] = React.useState<string[]>([]);
+  // attencies
+  const [selectedPersonEmailList, setSelectedPersonEmailList] = React.useState<string[]>([]);
 
-
+  const { user } = useAuthContext();
   // Start and End date that reflect to the calendar 
   const [summary, setSummary] = React.useState('');
   const [startDate, setStartDate] = React.useState<Dayjs | null>(dayjs(''));
@@ -132,8 +142,7 @@ export default function Calendar() {
   // Determine if the calendar is open or closed
   const [isOpen, setIsOpen] = useState(false);
   const [isEditCompShow, setIsEditCompShow] = useState(false);
-  const [positionX, setPositionX] = useState(0);
-  const [positionY, setPositionY] = useState(0);
+  const [openModalState, setOpenModalState] = useState("None");
   // Attributes for the calendar
   const [initialEvents, setInitialEvents] = useState([]);
 
@@ -156,35 +165,65 @@ export default function Calendar() {
     fetchAllProjects();
   }, [isOpen]);
 
-  const handleKeyDown = async (event) => {
-    // Get the key code
-    const keyCode = event.keyCode || event.which;
+  useEffect(() => {
+    setSummary(selectedEvent?.event.title);
+    setDescription(selectedEvent?.event.extendedProps.description);
+    setStartDate(dayjs(selectedEvent?.event.start));
+    setEndDate(dayjs(selectedEvent?.event.end));
+    // TODO set previous attendencies and project id....
+    getSelectedPersonEmailsFromAttentdees();
+    getSelectedProjectId();
+    // setSelectedPersonEmailList();
+    // setSelectedProject();
+  }, [selectedEvent])
 
-    // Perform actions based on the key code
-    if (keyCode === 46) {
-      const url = new URL(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
-      );
-      console.log(selectedEvent.event.id, "---------id");
-      try {
-        await fetch(url, {
-          method: "DELETE",
-          headers: {
-            Authorization: "Bearer " + providerToken, // Access token for google
-          }
-        });
-        selectedEvent.remove();
-      } catch (error) {
-        console.log("Delete Event Error", error);
+  const getSelectedProjectId = () => {
+    console.log(selectedEvent?.event.extendedProps.projectId);
+    setSelectedProject(selectedEvent?.event.extendedProps.projectId);
+  }
+
+  const getSelectedPersonEmailsFromAttentdees = () => {
+    const tempselectedPersonEmailLists = [];
+    console.log(selectedEvent?.event.extendedProps.attendees, "attendees")
+    const tempAttendees = selectedEvent?.event?.extendedProps?.attendees;
+    for (let i = 0; i < tempAttendees?.length; i++) {
+      tempselectedPersonEmailLists.push(tempAttendees[i]?.email);
+      if (i === tempAttendees.length - 1) {
+        setSelectedPersonEmailList(tempselectedPersonEmailLists);
       }
     }
-  };
+  }
 
-  const handleSelected = (event: SelectChangeEvent<typeof personName>) => {
+  const editSelectedEvent = async () => {
+    setOpenModalState("Update");
+    fetchAllUsers();
+    fetchAllProjects();
+    setIsOpen(true);
+  }
+
+  const deleteEventFromCalendar = async () => {
+    const url = new URL(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
+    );
+    console.log(selectedEvent.event.id, "---------id");
+    try {
+      await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + providerToken, // Access token for google
+        }
+      });
+      selectedEvent.remove();
+    } catch (error) {
+      console.log("Delete Event Error", error);
+    }
+  }
+
+  const handleSelected = (event: SelectChangeEvent<typeof selectedPersonEmailList>) => {
     const {
       target: { value },
     } = event;
-    setPersonName(
+    setSelectedPersonEmailList(
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
@@ -194,89 +233,91 @@ export default function Calendar() {
     setSummary(event.target.value as string);
   };
 
+  const fetchAllUsers = async () => {
+    let data = await getPersonsByOrganization(user.organization);
+    setUsers(data);
+  }
+
   const fetchAllProjects = async () => {
-    const projects = await getProjects({ userId: userId });
+    setAllProjects(await getProjects({ userId: userId }));
   };
 
   async function fetchEvents() {
-    const allEvents: Response = await fetch(
-      "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-      {
-        method: "GET",
-        headers: {
-          Authorization: "Bearer " + providerToken, // Access token for google
-        },
-      }
-    );
+    try {
 
-    const events: Event = (await allEvents.json()) as Event;
-    // Loop through the Google Calendar events and convert them
-    const googleEvents = events?.items;
-    console.log(googleEvents, "googleEvents");
-    console.log(events, "events");
-    for (const googleEvent of googleEvents) {
-      const eventId = googleEvent.id; // Event ID
-      const title = googleEvent.summary; // Event summary
-      const start = googleEvent.start.dateTime; // Start date
-      const end = googleEvent.end.dateTime; // End date
-      // const startStr = start?.replace(/T.*$/, "") ?? start;
-      // const endStr = end?.replace(/T.*$/, "") ?? end;
-      const ievents = INITIAL_EVENTS.filter(
-        (evt: { id: string }) => evt.id === eventId
+      const allEvents: Response = await fetch(
+        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + providerToken, // Access token for google
+          },
+        }
       );
-      if (!ievents.length) {
-        INITIAL_EVENTS.push({
-          id: eventId,
-          title: title,
-          start: start,
-          end: end,
-          backgroundColor: eventBackColor[title],
-          borderColor: "transparent",
-          // ...googleEvent
-        });
+
+      const events: Event = (await allEvents.json()) as Event;
+      // Loop through the Google Calendar events and convert them
+      const googleEvents = events?.items;
+      console.log(googleEvents, "googleEvents");
+      console.log(events, "events");
+      for (const googleEvent of googleEvents) {
+        const eventId = googleEvent.id; // Event ID
+        const title = googleEvent.summary; // Event summary
+        const description = googleEvent.description;// Event description
+        const start = googleEvent.start.dateTime; // Start date
+        const end = googleEvent.end.dateTime; // End date
+        const attendees = googleEvent.attendees;
+        const projectId = googleEvent.extendedProperties?.private.projectId;
+        const meeetingId = googleEvent.extendedProperties?.private.meetingId;
+        const meetingUrl = googleEvent.hangoutLink;
+        console.log(attendees, "attendees getted from google event");
+        // const startStr = start?.replace(/T.*$/, "") ?? start;
+        // const endStr = end?.replace(/T.*$/, "") ?? end;
+        const ievents = INITIAL_EVENTS.filter(
+          (evt: { id: string }) => evt.id === eventId
+        );
+        if (!ievents.length) {
+          INITIAL_EVENTS.push({
+            id: eventId,
+            title: title,
+            description: description,
+            start: start,
+            end: end,
+            extendedProps: {
+              attendees: attendees,
+              projectId: projectId,
+              meetingId: meeetingId,
+            },
+            url: meetingUrl,
+            backgroundColor: eventBackColor[title],
+            borderColor: "transparent",
+            // ...googleEvent
+          });
+        }
+        setInitialEvents(INITIAL_EVENTS);
       }
+      // Now, INITIAL_EVENTS contains the converted events in the desired format
+    } catch (error) {
+      console.log(error, 'fetch events from googlecalendar error!');
+      signOut()
     }
-
-    // Now, INITIAL_EVENTS contains the converted events in the desired format
-    setInitialEvents(INITIAL_EVENTS);
   }
-
-  // async function checkSession() {
-  //   const { data } = await supabaseClient.auth.getSession();
-  //   return data.session;
-  // }
-
 
   function closeModal() {
     setIsOpen(false);
   }
 
-  // const handleDateSelect = (selectInfo) => {
-  //   const title = prompt("Please enter a new title for your event");
-  //   const calendarApi = selectInfo.view.calendar;
-
-  //   calendarApi.unselect(); // clear date selection
-
-  //   if (title) {
-  //     calendarApi.addEvent({
-  //       id: createEventId(),
-  //       title,
-  //       start: selectInfo.startStr,
-  //       end: selectInfo.endStr,
-  //       allDay: selectInfo.allDay,
-  //     });
-  //   }
-  // };
-  ////////////////////////////////////////////////////////////////
-
-
 
   const addEvent = async (selectInfo: { start: string; end: string }) => {
+    setOpenModalState("Insert")
+    setSummary('');
+    setDescription('');
+    setSelectedProject('');
+    setSelectedPersonEmailList([]);
     setStartDate(dayjs(selectInfo.start));
     setEndDate(dayjs(selectInfo.end));
-    let data = await getUsers();
-    setUsers(data);
-    console.log("users", users);
+    fetchAllUsers();
+    fetchAllProjects();
     setIsOpen(true);
   };
 
@@ -290,12 +331,29 @@ export default function Calendar() {
 
   const onSave = async () => {
 
+    const personIdList = [];
+    for (const personEmail of selectedPersonEmailList) {
+      personIdList.push((await getPersons({
+        email: personEmail
+      }))?.at(0)?._id);
+    }
+
+    const newMeeting = await createMeeting({
+      date: startDate.toDate(),
+      audioURL: '',
+      summary: '',
+      members: personIdList,
+      projectId: selectedProject,
+      updatedAt: new Date(),
+      createdAt: new Date(),
+    })
+
     let attendees = [];
 
     for (const user of users) {
-      if (personName.indexOf(user.name) > -1) {
+      if (selectedPersonEmailList.indexOf(user.email) > -1) {
         attendees.push({
-          // name: user.name,
+          name: user.name,
           email: user.email,
           responseStatus: "accepted",
           self: true,
@@ -318,7 +376,7 @@ export default function Calendar() {
         dateTime: getLocalTime(endDate.toISOString()),
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
       },
-      ...(attendees?.length && { attendees: [attendees] }),
+      ...(attendees?.length && { attendees: attendees }),
       conferenceData: {
         createRequest: {
           requestId: requestId,
@@ -327,6 +385,12 @@ export default function Calendar() {
           },
         },
       },
+      extendedProperties: {
+        private: {
+          projectId: selectedProject,
+          meetingId: newMeeting._id,
+        }
+      }
     };
 
     const url = new URL(
@@ -351,15 +415,41 @@ export default function Calendar() {
 
     const eventId = eventCreationResponse.id;
 
-    await createEvent({
-      eventId: eventId,
-      projectId: selectedProject ? selectedProject : allProjects[0]?._id,
-    });
-
     fetchEvents();
     setIsOpen(false);
     clearData();
   };
+
+  const handleFullcalendarUpdate = async (event: any) => {
+
+    const url = new URL(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${event.id}`
+    );
+    const updatedEvent = {
+      summary: event.title,
+      description: event.description ?? "",
+      start: {
+        dateTime: event.start
+      },
+      end: {
+        dateTime: event.end,
+      },
+      attendees: event?.extendedProps.attendees,
+      extendedProperties: {
+        private: {
+          projectId: event.extendedProps.projectId,
+          meetingId: event.extendedProps.meetingId,
+        }
+      }
+    };
+    const eventCreationRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + providerToken, // Access token for google
+      },
+      body: JSON.stringify(updatedEvent),
+    });
+  }
 
   const handleChangeEvent = async (info) => {
 
@@ -395,7 +485,8 @@ export default function Calendar() {
     setDescription("");
     setStartDate(dayjs(''));
     setEndDate(dayjs(''));
-    setPersonName([]);
+    setSelectedPersonEmailList([]);
+    setOpenModalState("None")
   }
 
   const onChangeDescription = (e: any) => {
@@ -426,54 +517,10 @@ export default function Calendar() {
   //   );
   // };
 
-  const EditEventComponent = ({ info:infoEvent, x:posX, y:posY }) => {
-    const [info, setInfo] = useState(infoEvent);
 
-    useEffect(() => {
-      setX(infoEvent.jsEvent.screenX)
-      setY(infoEvent.jsEvent.screenY)
-    })
-    const [x, setX] = useState(posX);
-    const [y, setY] = useState(posY);
-    return (
-      <div className={`fixed w-100 h-50 bg-white shadow-lg z-100000 top-[100px] left-[1000px]`}>
-        <div className="flex justify-end">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none" viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none" viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-            onClick={() => { calendarRef.current.getEventById(info.event.id) }}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none" viewBox="0 0 24 24"
-            strokeWidth={1.5} stroke="currentColor"
-            className="w-6 h-6"
-            onClick={() => setIsEditCompShow(false)}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-
-        </div>
-        <div className="title text-lg text-gray-600">eventInfo.current.title</div>
-        <div className="title text-lg text-gray-600">eventInfo.current.description</div>
-      </div>
-    );
-  }
-
-  const handleSelectChange = (id: string) => {
-    setSelectedProject(id);
+  const handleSelectChange = (e) => {
+    console.log(e.target.value, 'selected project id');
+    setSelectedProject(e.target.value);
   };
 
   const onSaveNew = () => {
@@ -488,7 +535,8 @@ export default function Calendar() {
 
   const setStartDate_date = (date) => {
     const start_date = dayjs(date);
-    setStartDate(dayjs(new Date(start_date.year(), start_date.month(), start_date.day(), startDate.hour(), startDate.minute(), startDate.second()).toISOString()));
+    console.log(new Date(start_date.year(), start_date.month(), start_date.day(), startDate.hour(), startDate.minute(), startDate.second()), "error isostrng")
+    // setStartDate(dayjs(new Date(start_date.year(), start_date.month(), start_date.day(), startDate.hour(), startDate.minute(), startDate.second()).toISOString()));
   }
 
   const setStartDate_time = (time) => {
@@ -526,17 +574,122 @@ export default function Calendar() {
 
   const handleClickedEvent = ((info) => {
     setSelectedEvent(info)
+    console.log(info, "selected info")
   })
+
+  const handleUpdate = async () => {
+
+
+    let attendees = [];
+
+    for (const user of users) {
+      if (selectedPersonEmailList.indexOf(user.email) > -1) {
+        attendees.push({
+          name: user.name,
+          email: user.email,
+          responseStatus: "accepted",
+          self: true,
+        });
+      }
+    }
+
+    const timestamp = Date.now().toString();
+    const requestId = "conference-" + timestamp;
+
+
+    const event = {
+      summary: summary,
+      description: description ?? "",
+      start: {
+        dateTime: getLocalTime(startDate.toISOString()), // Date.ISOString()
+        timeZone: Intl.DateTimeFormat().resolvedOptions, // Pakistan/Lahore
+      },
+      end: {
+        dateTime: getLocalTime(endDate.toISOString()),
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
+      },
+      ...(attendees?.length && { attendees: attendees }),
+      conferenceData: {
+        createRequest: {
+          requestId: requestId,
+          conferenceSolutionKey: {
+            type: "hangoutsMeet",
+          },
+        },
+      },
+      extendedProperties: {
+        private: {
+          projectId: selectedProject
+        }
+      }
+    };
+
+    const url = new URL(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
+    );
+    const params = { conferenceDataVersion: 1 };
+    Object.keys(params).forEach((key) =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      url.searchParams.append(key, params[key])
+    );
+
+    const eventCreationRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + providerToken, // Access token for google
+      },
+      body: JSON.stringify(event),
+    });
+
+    const personIdList = [];
+    for (const personEmail of selectedPersonEmailList) {
+      personIdList.push((await getUserByEmail(personEmail))?.at(0)?._id);
+    }
+
+    await updateMeeting(selectedEvent?.event?.extendedProps?.meetingId, {
+      date: startDate.toDate(),
+      audioURL: '',
+      summary: '',
+      members: personIdList,
+      projectId: selectedProject,
+      updatedAt: new Date(),
+    })
+
+    setIsOpen(false);
+    clearData();
+    fetchEvents();
+  }
 
   const getCalendarTitle = () => {
     return calendarRef.current?.getApi().view.title;
   }
 
+  const startMeeting = () => {
+    window.open(selectedEvent.event.url, '_blank');
+  }
+
+  const goTOMeetingPage = () => {
+    window.open(`\\dashboard\\project\\${selectedEvent?.event?.extendedProps.projectId}\\meeting\\${selectedEvent?.event?.extendedProps?.meetingId}`, '_self');
+  }
+
+  const removeEvent = () => {
+    setIsEditCompShow(false);
+    deleteMeeting(selectedEvent?.event?.extendedProps?.meetingId);
+    selectedEvent?.event?.remove();
+    deleteEventFromCalendar();
+    setIsEditCompShow(false)
+  }
+
   return (
-    <div className="h-full flex flex-row" onKeyDown={(e) => { handleKeyDown(e); console.log("clicked") }}>
+    <div className="h-full flex flex-row">
       <div className="flex-[85%] h-full flex flex-col">
         <div className="flex items-center my-[14px] m-[30px] text-[13px]">
           <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
@@ -581,15 +734,26 @@ export default function Calendar() {
               selectMirror={true}
               dayMaxEvents={true}
               eventResizableFromStart={true}
-              initialEvents={initialEvents} // alternatively, use the `events` setting to fetch from a feed
+              events={initialEvents} // alternatively, use the `events` setting to fetch from a feed
               // select={handleDateSelect}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               //@ts-ignore No overload matches this call.
               select={addEvent}
-              eventResize={(info) => handleChangeEvent(info)}
-              eventDrop={(info) => handleChangeEvent(info)}
-              eventClick={(info) => { handleClickedEvent(info); setIsEditCompShow(true) }}
-              onKeyDown={(e) => { handleKeyDown(e) }}
+              eventResize={(info) => {
+                handleFullcalendarUpdate(info?.event);
+                updateMeeting(info?.event?.extendedProps?.meetingId, {
+                  date: new Date(info?.event.start),
+                  updatedAt: new Date(),
+                })
+              }}
+              eventDrop={(info) => {
+                handleFullcalendarUpdate(info?.event);
+                updateMeeting(info?.event?.extendedProps?.meetingId, {
+                  date: new Date(info?.event.start),
+                  updatedAt: new Date(),
+                })
+              }}
+              eventClick={(info) => { info.jsEvent.preventDefault(); handleClickedEvent(info); setIsEditCompShow(true); setOpenModalState('Update') }}
             />
           </div>
         </div>
@@ -620,7 +784,7 @@ export default function Calendar() {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
+                  <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-y-auto rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
                     <div className="close-btn flex justify-end p-2">
                       {/* <CloseButton /> */}
                     </div>
@@ -636,15 +800,16 @@ export default function Calendar() {
                             <Select
                               labelId="demo-simple-select-label"
                               id="demo-simple-select"
-                              sx={{ height: '32px' }}
+                              sx={{ height: '32px', fontSize: '12px' }}
                               onChange={handleChange}
                               // variant="outlined"
                               IconComponent={() => (<span></span>)}
+                              value={summary}
                             >
-                              <MenuItem key={0} value={'Call'}>Call</MenuItem>
-                              <MenuItem key={1} value={'Meeting'}>Meeting</MenuItem>
-                              <MenuItem key={2} value={'Send letter/Quote'}>Send letter/Quote</MenuItem>
-                              <MenuItem key={3} value={'Other'}>Other</MenuItem>
+                              <MenuItem key={0} value={'Call'} sx={{ fontSize: '12px' }}>Call</MenuItem>
+                              <MenuItem key={1} value={'Meeting'} sx={{ fontSize: '12px' }}>Meeting</MenuItem>
+                              <MenuItem key={2} value={'Send letter/Quote'} sx={{ fontSize: '12px' }}>Send letter/Quote</MenuItem>
+                              <MenuItem key={3} value={'Other'} sx={{ fontSize: '12px' }}>Other</MenuItem>
                             </Select>
                           </FormControl>
                           <IconSearch className="absolute right-4 top-2" />
@@ -652,7 +817,7 @@ export default function Calendar() {
                       </div>
                       <div className="description flex flex-col mt-[30px]">
                         <div className="description-title text-xs">Description</div>
-                        <textarea className=" max-h-[659px] h-[80px] border-2 border-gray-300 rounded-md" value={description} onChange={(e) => onChangeDescription(e)}></textarea>
+                        <textarea className=" max-h-[659px] h-[80px] border-2 border-gray-300 rounded-md p-2" value={description} onChange={(e) => onChangeDescription(e)}></textarea>
                       </div>
                       <div className="period flex mt-[31px] justify-between">
                         <div className="start-date flex flex-col  w-[303px] h-[82px] justify-between" >
@@ -661,7 +826,7 @@ export default function Calendar() {
                             <div className="flex flex-col">
                               <div className="date-title text-xs">Date</div>
                               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['DatePicker']}>
+                                <DemoContainer components={['DatePicker']} >
                                   <div className="m-w-[100px]">
                                     <DatePicker
                                       value={startDate}
@@ -729,7 +894,7 @@ export default function Calendar() {
                               labelId="demo-multiple-checkbox-label"
                               id="demo-multiple-checkbox"
                               multiple
-                              value={personName}
+                              value={selectedPersonEmailList}
                               onChange={handleSelected}
                               input={<OutlinedInput label="Tag" />}
                               renderValue={(selected) => selected.join(', ')}
@@ -739,9 +904,13 @@ export default function Calendar() {
                               IconComponent={() => (<span></span>)}
                             >
                               {users.map((user, index) => (
-                                <MenuItem key={index} value={user.name}>
-                                  <Checkbox checked={personName.indexOf(user.name) > -1} />
-                                  <ListItemText primary={user.name} />
+                                <MenuItem key={index} value={user.email} sx={{height:'36px'}}>
+                                  <Checkbox checked={selectedPersonEmailList.indexOf(user.email) > -1} />
+                                  <ListItemText>
+                                    <Typography variant="body2" sx={{ fontSize: '12px', fontFamily: 'Arial' }}>
+                                      {user.name}
+                                    </Typography>
+                                  </ListItemText>
                                 </MenuItem>
                               ))}
                             </Select>
@@ -749,19 +918,33 @@ export default function Calendar() {
                           <IconSearch className="absolute right-4 top-2" />
                         </div>
                       </div>
-                      <div className="w-full border-1 rounded-md bg-gray-200 my-[6px] flex justify-start h-8">
-                        <ChevronRightIcon className="pl-2 w-8 h-8" />
-                        <div className='content text-base'>TBD</div>
-                      </div>
-                      <div className="w-full border-1 rounded-md bg-gray-200 my-[6px] flex justify-start h-8">
-                        <ChevronRightIcon className="pl-2 w-8 h-8" />
-                        <div className='content text-base'>TBD</div>
+                      <div className="guests flex flex-col">
+                        <div className="guest-title text-xs font-bold p-1">Projects</div>
+                        <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
+                          <FormControl fullWidth>
+                            <Select
+                              labelId="demo-simple-select-label"
+                              id="demo-simple-select"
+                              value={selectedProject}
+                              label="Projects"
+                              sx={{ height: '32px', fontSize: '12px' }}
+                              IconComponent={() => (<span></span>)}
+                              onChange={(e) => handleSelectChange(e)}
+                            >
+                              {
+                                allProjects.map((project, index) => (
+                                  <MenuItem key={index} sx={{ fontSize: '12px' }} value={project._id}>{project.name}</MenuItem>
+                                ))
+                              }
+                            </Select>
+                          </FormControl>
+                        </div>
                       </div>
                     </div>
                     <div className="h-[56px] flex justify-end align-baseline gap-3 mx-[30px]">
                       <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onCancel}>Cancel</button>
-                      <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onSaveNew}>Save & New</button>
-                      <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={onSave}>Save</button>
+                      <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={() => { onSaveNew }}>Save & New</button>
+                      <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={() => { openModalState === "Insert" ? onSave() : handleUpdate() }}>Save</button>
                     </div>
                   </Dialog.Panel>
                 </Transition.Child>
@@ -780,7 +963,91 @@ export default function Calendar() {
         </LocalizationProvider>
         <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => { setCurrentDateTime(dayjs(new Date())); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>
       </div>
-      {isEditCompShow ? <EditEventComponent info={selectedEvent} x={positionX} y={positionY} /> : <></>}
+      {/* <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all "></Dialog.Panel> */}
+      {/* {isEditCompShow ? <EditEventComponent info={selectedEvent} x={positionX} y={positionY} /> : <></>} */}
+      <Transition appear show={isEditCompShow} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={() => setIsEditCompShow(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="relative min-h-full p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-xs   transform overflow-hidden absolute rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+                  style={{ left: `${selectedEvent?.jsEvent.x}px`, top: `${selectedEvent?.jsEvent.y}px` }}>
+                  <div className="flex justify-end gap-1 &>svg:hover:bg-gray-500">
+                    <svg
+                      onClick={() => goTOMeetingPage()}
+                      className="w-8 h-8 rounded-md p-1 hover:bg-gray-300"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                    </svg>
+
+                    <svg
+                      onClick={() => { startMeeting() }}
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 rounded-md p-1 hover:bg-gray-300">
+                      <path strokeLinecap="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    <svg
+                      onClick={() => editSelectedEvent()}
+                      className="w-8 h-8 rounded-md p-1 hover:bg-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                    </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none" viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-8 h-8 rounded-md p-1 hover:bg-gray-300"
+                      onClick={() => { removeEvent() }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none" viewBox="0 0 24 24"
+                      strokeWidth={1.5} stroke="currentColor"
+                      className="w-8 h-8 rounded-md p-1 hover:bg-gray-300"
+                      onClick={() => { setIsEditCompShow(false); setIsEditCompShow(false) }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+
+                  </div>
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    {selectedEvent?.event?.title}
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      {selectedEvent?.event?.extendedProps?.description}
+                    </p>
+                  </div>
+
+
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 }

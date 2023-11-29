@@ -15,14 +15,14 @@ const PeopleList = () => {
   const [isNewContactModalOpen, setIsNewContactModalOpen] = useState(false)
   const user = useAuthContext().user;
   useEffect(() => {
-    initialize();
+    fetchPeople();
   }, [])
 
   useEffect(() => {
-    initialize();
+    fetchPeople();
   }, [isNewContactModalOpen])
 
-  const initialize = async () => {
+  const fetchPeople = async () => {
     setpeople( await getPersonsByOrganization(user.organization));
   }
 
@@ -68,7 +68,7 @@ const PeopleList = () => {
             <div className="flex gap-3 my-5 sm:my-0">
               <h3 className="font-bold">All People</h3>
               <h4>As of today at <CurrentTimeDynamic /> </h4>
-              <a href="#" className="text-blue-500 underline">refresh</a>
+              <button className="text-blue-500 underline" onClick={fetchPeople}>refresh</button>
             </div>
             <div className="gap-3 flex items-center">
               <div className="border rounded py-2 px-5 flex items-center">
@@ -124,14 +124,14 @@ const PeopleList = () => {
                         <td className="px-4 py-2 border border-slate-300"></td>
                       </tr>
                     ))
-                  }``
+                  }
                 </tbody>
               </table>
             </div>
           </div>
           <>
             {isNewContactModalOpen ?
-              <NewContact setShow={setIsNewContactModalOpen} organization={user.organization} /> : <></>}
+              <NewContact setShow={setIsNewContactModalOpen} setPeople={setpeople} people={people} organization={user.organization} /> : <></>}
           </>
         </div>
       </div>

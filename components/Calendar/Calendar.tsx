@@ -31,7 +31,6 @@ import { getPersons, getPersonsByOrganization } from "@service/person.service";
 import { useAuthContext } from "@contexts/AuthContext";
 import { signOut } from "next-auth/react";
 import { createMeeting, deleteMeeting, updateMeeting } from "@service/meeting.service";
-import { SketchPicker } from 'react-color';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;

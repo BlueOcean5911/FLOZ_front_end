@@ -9,8 +9,6 @@ import { IProject } from "@models";
 import moment from "moment";
 import { createProject, getProjects } from "@./service/project.service";
 import { Meeting } from "@models/meeting.model";
-import { getCookie } from 'cookies-next';
-import supabase from "@utils/supabase";
 import AddMeeting from "@components/Meeting/AddMeeting";
 import { getMeetings } from "@service/meeting.service";
 import dynamic from 'next/dynamic';

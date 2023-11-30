@@ -6,7 +6,7 @@ import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
 import { useAuthContext } from "@/contexts/AuthContext";
 import { getProjects } from '@service/project.service';
-import { getPersons } from '@service/person.service';
+import { IPerson, IProject } from '@models';
 
 type TreeNode = {
   label: string;
@@ -16,6 +16,11 @@ type TreeNode = {
 type TreeViewProps = {
   nodes: TreeNode[];
 };
+
+type SidebarProps = {
+  persons: IPerson[];
+  projects: IProject[];
+}
 
 const TreeView: React.FC<TreeViewProps> = ({ nodes }) => {
   const [expandedNodes, setExpandedNodes] = useState<string[]>([]);
@@ -58,24 +63,9 @@ const TreeView: React.FC<TreeViewProps> = ({ nodes }) => {
   return <div>{renderTreeItems(nodes)}</div>;
 };
 
-const Sidebar: React.FC = () => {
-  const { user } = useAuthContext();
-  const [projects, setProjects] = useState<any>([]);
-  const [peoples, setPeoples] = useState<any>([]);
-
-  useEffect(() => {
-    if (user?._id) {
-      getProjects({userId: user._id}).then((res) => {
-        setProjects(res);
-      }).catch(console.log);
-  
-      getPersons().then((res) => {
-        setPeoples(res);
-      }).catch(console.log)
-    }
-  }, [user])
-
-  const treeData: TreeNode[] = [
+const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
+  const [peoples, setPeoples] = useState<any>(persons);
+  const [treeData, setTreeData] = useState<TreeNode[]>([
     {
       label: 'Floz team',
       children: [
@@ -101,7 +91,41 @@ const Sidebar: React.FC = () => {
         children: [{ label: 'sub_project' }],
       })) : [],
     },
-  ];
+  ]);
+
+  React.useEffect(() => {
+    if (persons.length > 0) setPeoples(persons);
+
+    if (peoples.length > 0 && projects.length > 0) {
+      setTreeData([
+        {
+          label: 'Floz team',
+          children: [
+            { label: 'Dashboard' },
+            { label: 'News' },
+            ...(peoples.length > 0
+              ? peoples.map((item) => {
+                  item.label = item.name;
+                  item.children = [{ label: 'profile' }];
+                  return item;
+                })
+              : []),
+          ],
+        },
+        {
+          label: 'Projects',
+          children: projects.length > 0 ? projects.map((item) => ({
+            label: (
+              <Link key={item._id} href={`/dashboard/project/${item._id}`}>
+                {item.name}
+              </Link>
+            ),
+            children: [{ label: 'sub_project' }],
+          })) : [],
+        },
+      ])
+    }
+  }, [persons, projects])
 
 
   return (

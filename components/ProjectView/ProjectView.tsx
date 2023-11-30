@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
-import { Dialog, Transition } from "@headlessui/react";
+import React from "react";
 import { Fragment, useEffect, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
 import moment from 'moment';
 import { IProject } from "@models/project.model";
@@ -19,10 +20,11 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
-import React from "react";
+import { useAuthContext } from '@contexts/AuthContext';
 import { getProjects } from "@service/project.service";
 import { getPersons } from "@service/person.service";
 import { useRouter } from 'next/navigation'
+import { IUser } from "@models/user.model";
 
 export default function ProjectView({
   data
@@ -35,6 +37,7 @@ export default function ProjectView({
     providerToken?: string;
   }
 }) {
+  const { user } = useAuthContext();
   const [pendingTodos, setPendingTodos] = useState(data.todolist.filter(todo => todo.status === 'pending'));
   const [completedTodos, setCompletedTodos] = useState(data.todolist.filter(todo => todo.status === 'completed'));
   const [isOpenAddTask, setIsOpenAddTask] = useState({ modalType: 'add', isOpen: false });
@@ -46,7 +49,31 @@ export default function ProjectView({
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', assignedPerson:'', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
+  const [peopleList, setPeopleList] = useState([]);
+  const [projects, setProjects] = useState([]);
   const router = useRouter();
+
+  const getIntialData = async (user: IUser) => {
+    try {
+      const dbPersons = await getPersons({ organization: user.organization});
+      if (dbPersons.length > 0) {
+        setPeopleList(dbPersons);
+      }
+
+      const dbProjects = await getProjects({ userId: user._id });
+      if (dbProjects.length > 0) {
+        setProjects(dbProjects);
+      }
+    } catch (error) {
+      console.log("getPersons error", error?.response?.data);
+    }
+  }
+  
+  useEffect(() => {
+    if (user && user.organization) {
+      getIntialData(user);
+    }
+  }, [user])
 
   const truncateSummary = (summary, maxWords) => {
     const words = summary?.split(' ');
@@ -154,7 +181,7 @@ export default function ProjectView({
     <div className="w-full items-center justify-between">
       <div className="grid grid-cols-5 gap-4">
         <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
-          <Sidebar />
+          <Sidebar persons={peopleList} projects={projects} />
         </div>
 
 
@@ -381,7 +408,7 @@ export default function ProjectView({
           {pendingTodos.length>0 && <div className="grid grid-cols-1 to-do-container">
             <div>
               {pendingTodos.map((item, index) => (
-                <div key={item._id} className={`max-h-[80px] min-h-[80px] flex justify-right border rounded border-stone-300 px-2 py-3 my-2 bg-[#FBF3E0]`} >
+                <div key={item._id} className={`max-h-[80px] min-h-[80px] flex justify-between border rounded border-stone-300 px-2 py-3 my-2 bg-[#FBF3E0]`} >
                   <div className="pr-1">
                     <input type="checkbox" checked={item._id == isOpenConfirmModal._id && isOpenConfirmModal.modalType != 'delete'? true : false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
                       setIsOpenConfirmModal({ modalType: 'update', isOpen: true, _id: item._id })
@@ -420,11 +447,15 @@ export default function ProjectView({
                       <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
                     </div>
                   </div>
-                  <div className="align-right relative">
-                    <svg className="absolute top-0 right-0" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => setIsOpenConfirmModal({ _id: item._id, modalType: 'delete', isOpen: true })}>
-                      <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
-                    </svg>
-                    <p className="todo-card-content-desc mt-6" >Oct 16 {item.status == 'warning' ? 'EOD' : ''}</p>
+                  <div className="flex flex-col justify-between">
+                    <div className="relative">
+                      <svg className="absolute top-0 right-0" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={(e) => setIsOpenConfirmModal({ _id: item._id, modalType: 'delete', isOpen: true })}>
+                        <path fillRule="evenodd" clipRule="evenodd" d="M9.53863 7.81555L13.5386 3.78478C13.7232 3.60017 13.7232 3.32324 13.5386 3.13863L12.9232 2.49247C12.7386 2.30786 12.4617 2.30786 12.2771 2.49247L8.24632 6.52324C8.12324 6.64632 7.93863 6.64632 7.81555 6.52324L3.78478 2.4617C3.60017 2.27709 3.32324 2.27709 3.13863 2.4617L2.49247 3.10786C2.30786 3.29247 2.30786 3.5694 2.49247 3.75401L6.52324 7.78478C6.64632 7.90786 6.64632 8.09247 6.52324 8.21555L2.4617 12.2771C2.27709 12.4617 2.27709 12.7386 2.4617 12.9232L3.10786 13.5694C3.29247 13.754 3.5694 13.754 3.75401 13.5694L7.78478 9.53863C7.90786 9.41555 8.09247 9.41555 8.21555 9.53863L12.2463 13.5694C12.4309 13.754 12.7079 13.754 12.8925 13.5694L13.5386 12.9232C13.7232 12.7386 13.7232 12.4617 13.5386 12.2771L9.53863 8.24632C9.41555 8.12324 9.41555 7.93863 9.53863 7.81555Z" fill="#747474" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="todo-card-content-desc mt-2" >{moment(item.dueDate).format('MMM Do')}</p>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -31,7 +31,7 @@ import { getPersons, getPersonsByOrganization } from "@service/person.service";
 import { useAuthContext } from "@contexts/AuthContext";
 import { signOut } from "next-auth/react";
 import { createMeeting, deleteMeeting, updateMeeting } from "@service/meeting.service";
-import { List } from "rsuite";
+import { SketchPicker } from 'react-color';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -155,6 +155,7 @@ export default function Calendar() {
 
   const userId = getCookie("user_id");
   ///////////////////////////////////////////////////////////////////////////
+  const projectColor = useState('');
 
   useEffect(() => {
     setCurrentDateTime(dayjs((new Date()).toISOString()));
@@ -920,24 +921,29 @@ export default function Calendar() {
                       </div>
                       <div className="guests flex flex-col">
                         <div className="guest-title text-xs font-bold p-1">Projects</div>
-                        <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
-                          <FormControl fullWidth>
-                            <Select
-                              labelId="demo-simple-select-label"
-                              id="demo-simple-select"
-                              value={selectedProject}
-                              label="Projects"
-                              sx={{ height: '32px', fontSize: '12px' }}
-                              IconComponent={() => (<span></span>)}
-                              onChange={(e) => handleSelectChange(e)}
-                            >
-                              {
-                                allProjects.map((project, index) => (
-                                  <MenuItem key={index} sx={{ fontSize: '12px' }} value={project._id}>{project.name}</MenuItem>
-                                ))
-                              }
-                            </Select>
-                          </FormControl>
+                        <div className="flex gap-1 items-center">
+                          <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
+                            <FormControl fullWidth>
+                              <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={selectedProject}
+                                label="Projects"
+                                sx={{ height: '32px', fontSize: '12px' }}
+                                IconComponent={() => (<span></span>)}
+                                onChange={(e) => handleSelectChange(e)}
+                              >
+                                {
+                                  allProjects.map((project, index) => (
+                                    <MenuItem key={index} sx={{ fontSize: '12px' }} value={project._id}>{project.name}</MenuItem>
+                                  ))
+                                }
+                              </Select>
+                            </FormControl>
+                          </div>
+                          
+                          <button className="relative w-8 h-8 rounded-lg bg-gray-500 ">
+                          </button>
                         </div>
                       </div>
                     </div>

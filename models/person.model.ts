@@ -7,7 +7,7 @@ interface IPerson {
   organization?: string;
   projectId?: string;
   updatedAt: Date;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export type { IPerson } 

@@ -1,7 +1,7 @@
-import { createPerson } from '@service/person.service';
-import { useState } from 'react'
+import { createPerson, getPerson, getPersonsByOrganization, updatePerson } from '@service/person.service';
+import { useEffect, useState } from 'react'
 
-const NewContact = ({ setShow, organization, setPeople, people }) => {
+const NewContact = ({ setShow, organization, setPeople, people, selectedPersonId }) => {
 
   const [firstName, setFirstname] = useState('');
   const [lastName, setLastName] = useState('');
@@ -21,19 +21,47 @@ const NewContact = ({ setShow, organization, setPeople, people }) => {
     setNote("");
   }
 
+  useEffect(() => {
+    initialize();
+  }, [])
+
+  const initialize = async () => {
+    try {
+      const person = await getPerson(selectedPersonId);
+      setFirstname(person.name.split(" ")[0]);
+      setLastName(person.name.split(" ")[1]);
+      setEmail(person.email);
+      setRole(person.role);
+      setPhone(person.phone);
+    } catch (error) {
+      selectedPersonId = '';
+      console.log(error);
+    }
+  }
+
   const save = async () => {
-    if(email !== null && firstName !== null && lastName !== null) {
-      const result = await createPerson({
-        name: firstName + lastName,
-        role: role, // what`s type of role?
-        email: email,
-        phone: phone,
-        organization,
-        // projectId: '655d220b2128b99ad7088376',
-        updatedAt: new Date(),
-        createdAt: new Date(),
-      });
-      setPeople([...people, result])
+    if (email !== null && firstName !== null && lastName !== null) {
+      if(selectedPersonId === '') {
+        const result = await createPerson({
+          name: firstName + ' ' + lastName,
+          role: role, // what`s type of role?
+          email: email,
+          phone: phone,
+          organization,
+          // projectId: '655d220b2128b99ad7088376',
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        });
+        setPeople([...people, result])
+      } else {
+        updatePerson(selectedPersonId, {
+          name: `${firstName} ${lastName}`,
+          role: role,
+          email: email,
+          phone: phone,
+          updatedAt: new Date(),
+        })
+      }
     }
   }
 

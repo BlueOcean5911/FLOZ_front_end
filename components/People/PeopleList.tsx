@@ -13,17 +13,19 @@ const PeopleList = () => {
 
   const [people, setpeople] = useState<IPerson[]>([])
   const [isNewContactModalOpen, setIsNewContactModalOpen] = useState(false)
+  const [searchPeople, setSearchPeople] = useState('');
+  const [selectedPersonId, setSelectedPersonId] = useState('')
   const user = useAuthContext().user;
   useEffect(() => {
-    initialize();
+    fetchPeople();
   }, [])
 
   useEffect(() => {
-    initialize();
+    fetchPeople();
   }, [isNewContactModalOpen])
 
-  const initialize = async () => {
-    setpeople( await getPersonsByOrganization(user.organization));
+  const fetchPeople = async () => {
+    setpeople(await getPersonsByOrganization(user.organization));
   }
 
   const formatDate = (dateString) => {
@@ -52,7 +54,7 @@ const PeopleList = () => {
           Import
         </button>
 
-        <button className="flex  text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1" onClick={() => {setIsNewContactModalOpen(true)}}>
+        <button className="flex  text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1" onClick={() => { setSelectedPersonId(''); setIsNewContactModalOpen(true) }}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
@@ -68,11 +70,14 @@ const PeopleList = () => {
             <div className="flex gap-3 my-5 sm:my-0">
               <h3 className="font-bold">All People</h3>
               <h4>As of today at <CurrentTimeDynamic /> </h4>
-              <a href="#" className="text-blue-500 underline">refresh</a>
+              <button className="text-blue-500 underline" onClick={fetchPeople}>refresh</button>
             </div>
             <div className="gap-3 flex items-center">
               <div className="border rounded py-2 px-5 flex items-center">
-                <input type="text" className="focus:outline-none" placeholder="Search this list..."></input>
+                <input
+                  value={searchPeople}
+                  onChange={(e) => setSearchPeople(e.target.value)}
+                  type="text" className="focus:outline-none" placeholder="Search this list..."></input>
                 <IconSearch></IconSearch>
               </div>
             </div>
@@ -113,8 +118,8 @@ const PeopleList = () => {
                 </thead>
                 <tbody>
                   {
-                    people?.map((person: IPerson, index: number) => (
-                      <tr>
+                    people?.filter((person) => searchPeople !== '' ? person.name.search(new RegExp(`(${searchPeople})`, "i")) !== -1 : true).map((person: IPerson, index: number) => (
+                      <tr className="hover:bg-gray-200" id ={`${person._id}`} onClick={(e) => {setSelectedPersonId(e.currentTarget.id); setIsNewContactModalOpen(true);}}>
                         <td className="px-4 py-2 text-center border border-slate-300"><input type="checkbox"></input></td>
                         <td className="px-4 py-2 border border-slate-300">{person.name}</td>
                         <td className="px-4 py-2 border border-slate-300">{person.role}</td>
@@ -124,14 +129,14 @@ const PeopleList = () => {
                         <td className="px-4 py-2 border border-slate-300"></td>
                       </tr>
                     ))
-                  }``
+                  }
                 </tbody>
               </table>
             </div>
           </div>
           <>
             {isNewContactModalOpen ?
-              <NewContact setShow={setIsNewContactModalOpen} organization={user.organization} /> : <></>}
+              <NewContact setShow={setIsNewContactModalOpen} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={user.organization} /> : <></>}
           </>
         </div>
       </div>

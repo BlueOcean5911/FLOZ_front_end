@@ -23,8 +23,9 @@ export const createPerson = async (Person: IPerson): Promise<IPerson> => {
     return newPerson;
 }
 
-export const getPersons = async () => {
-    const resp: IResponse = await api.get('/persons');
+export const getPersons = async (query:any) => {
+    const queryParams = new URLSearchParams(query).toString();
+    const resp: IResponse = await api.get(`/persons?${queryParams}`);
     const users: IPerson[] = resp?.data && resp.data.data as IPerson[];
     return users;
 }

@@ -13,6 +13,7 @@ import { getCookie } from 'cookies-next';
 import supabase from "@utils/supabase";
 import AddMeeting from "@components/Meeting/AddMeeting";
 import { getMeetings } from "@service/meeting.service";
+import dynamic from 'next/dynamic';
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -69,20 +70,26 @@ export default function ProjectPanel({
   const [meetingsByDays, setMeetingsByDays] = useState(
     setMeetingsDay(data.meetings)
   );
+  const [searchProject, setSearchProject] = useState('');
+  const [searchMeeting, setSearchMeeting] = useState('');
 
   useEffect(() => {
     // filter this month and next month project
     let thisMonth = allProjects.filter((project) => {
       const date = new Date(project.createdAt);
-      return date.getMonth() === new Date().getMonth();
+      return (searchProject !== '' ? project.name.search(new RegExp(`(${searchProject})`, "i")) !== -1 : true) && date.getMonth() === new Date().getMonth();
     });
     let nextMonth = allProjects.filter((project) => {
       const date = new Date(project.createdAt);
-      return date.getMonth() === new Date().getMonth() + 1;
+      return (searchProject !== '' ? project.name.search(new RegExp(`(${searchProject})`, "i")) !== -1 : true) && date.getMonth() === new Date().getMonth() + 1;
     });
     setThisMonthProjects(thisMonth);
     setNextMonthProjects(nextMonth);
-  }, [data, allProjects]);
+  }, [data, allProjects, searchProject]);
+
+  useEffect(() => {
+    setMeetingsByDays(setMeetingsDay (meetings.filter((meeting) => (searchMeeting !== '' ? meeting.summary.search(new RegExp(`(${searchMeeting})`, "i")) !== -1 : true))))
+  }, [searchMeeting])
 
   function closeModal() {
     setIsOpen(false);
@@ -125,6 +132,11 @@ export default function ProjectPanel({
     }
   };
 
+  const CurrentTimeDynamic = dynamic(
+    () => import('../People/ShowingCurrentTime'),
+    { ssr: false }
+  );
+
   return (
     <div className="mb-5 w-full items-center justify-between">
       <div className="grid grid-cols-3 gap-4">
@@ -135,7 +147,7 @@ export default function ProjectPanel({
                 <div className="flex">
                   <h3 className="my-auto pr-2 text-sm font-bold">Project</h3>
                   <p className="my-auto text-sm">
-                    As of today at {getTime(new Date().toISOString())}
+                    As of today at <CurrentTimeDynamic />
                   </p>
                 </div>
                 <div className="flex">
@@ -143,6 +155,8 @@ export default function ProjectPanel({
                     type="text"
                     id="name"
                     name="name"
+                    value={searchProject}
+                    onChange={(e)=>{setSearchProject(e.target.value)}}
                     required
                     placeholder="Search Project"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
@@ -365,6 +379,8 @@ export default function ProjectPanel({
                     type="text"
                     id="name"
                     name="name"
+                    value={searchMeeting}
+                    onChange={(e) => {setSearchMeeting(e.target.value)}}
                     required
                     placeholder="Search Meetings"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}

@@ -1,12 +1,12 @@
-import { createPerson } from '@service/person.service';
-import { useState } from 'react'
+import { createPerson, getPerson, getPersonsByOrganization, updatePerson } from '@service/person.service';
+import { useEffect, useState } from 'react'
 
-const NewContact = ({ setShow, organization }) => {
+const NewContact = ({ setShow, organization, setPeople, people, selectedPersonId }) => {
 
   const [firstName, setFirstname] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState('PM');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [salutation, setSalutation] = useState('');
@@ -16,23 +16,52 @@ const NewContact = ({ setShow, organization }) => {
     setFirstname("");
     setLastName("");
     setEmail("");
-    setRole("");
+    setRole("PM");
     setPhone("");
     setNote("");
   }
 
+  useEffect(() => {
+    initialize();
+  }, [])
+
+  const initialize = async () => {
+    try {
+      const person = await getPerson(selectedPersonId);
+      setFirstname(person.name.split(" ")[0]);
+      setLastName(person.name.split(" ")[1]);
+      setEmail(person.email);
+      setRole(person.role);
+      setPhone(person.phone);
+    } catch (error) {
+      selectedPersonId = '';
+      console.log(error);
+    }
+  }
+
   const save = async () => {
-    if(email !== null && firstName !== null && lastName !== null) {
-      const result = await createPerson({
-        name: firstName + lastName,
-        role: role, // what`s type of role?
-        email: email,
-        phone: phone,
-        organization,
-        // projectId: '655d220b2128b99ad7088376',
-        updatedAt: new Date(),
-        createdAt: new Date(),
-      });
+    if (email !== null && firstName !== null && lastName !== null) {
+      if(selectedPersonId === '') {
+        const result = await createPerson({
+          name: firstName + ' ' + lastName,
+          role: role, // what`s type of role?
+          email: email,
+          phone: phone,
+          organization,
+          // projectId: '655d220b2128b99ad7088376',
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        });
+        setPeople([...people, result])
+      } else {
+        updatePerson(selectedPersonId, {
+          name: `${firstName} ${lastName}`,
+          role: role,
+          email: email,
+          phone: phone,
+          updatedAt: new Date(),
+        })
+      }
     }
   }
 
@@ -60,7 +89,7 @@ const NewContact = ({ setShow, organization }) => {
                 <div className="last-name text-xs font-bold text-gray-500">Last Name</div>
                 <input className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)}></input>
                 <div className="role text-xs font-bold text-gray-500">Role</div>
-                <select className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="None" value={role} onChange={(e) => setRole(e.target.value)}>
+                <select className="rounded-md p-2 text-[13px] border-[1px] border-gray-500 w-full" placeholder="None" defaultValue={'PM'} value={role} onChange={(e) => setRole(e.target.value)}>
                   <option value="PM">PM</option>
                   <option value="Engineer">Engineer</option>
                   <option value="Client">Client</option>

@@ -19,7 +19,9 @@
 .fc-scroller::-webkit-scrollbar {
   display: none;
 }
-
+.align-webkit-right{
+  text-align: -webkit-right;
+}
 /* Hide scrollbar for IE, Edge and Firefox */
 .fc-scroller {
   -ms-overflow-style: none;

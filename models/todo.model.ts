@@ -3,6 +3,7 @@ import { IProject } from "./project.model";
 
 interface Todo {
     _id?: string;
+    assignedPerson?:string,
     title?: string;
     description: string;
     dueDate?: Date;

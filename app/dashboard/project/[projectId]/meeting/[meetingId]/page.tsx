@@ -10,6 +10,7 @@ import Record from "@components/Record/Record";
 import { getMeetingData } from '@service/meeting.service';
 import { useRouter } from "next/navigation";
 import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
+import { getTodosByMeetingId } from '@service/todo.service';
 
 interface pageProps {
   projectId: string;
@@ -38,7 +39,7 @@ const Page = ({ params }: { params: pageProps }) => {
         }
 
         if (meetingData.todos) {
-          setTodoList(meetingData.todos);
+          setTodoList(await getTodosByMeetingId(params.meetingId));
           setIsTodosLoading(false);
         }
 

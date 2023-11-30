@@ -44,7 +44,7 @@ export default function ProjectView({
   const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   const [isSubmit, setIsSubmit] = useState(false);
   const [dueDate, setDueDate] = useState<Date | any>(null);
-  const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
+  const [formData, setFormData] = useState({ _id: '', title: '', assignedPerson:'', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
   const router = useRouter();
 
@@ -89,6 +89,7 @@ export default function ProjectView({
     // Access the form element by name
     const title = form.get("title");
     const description = form.get("description");
+    const assignedPerson = form.get("assignedPerson");
     // const meetingId = form.get("meetingId");
     // const dueDate = form.get("dueDate");
     setIsSubmit(true);
@@ -97,6 +98,7 @@ export default function ProjectView({
       let projectReq = {
         title: title.toString(),
         description: description.toString(),
+        assignedPerson:assignedPerson.toString(),
         projectId: data.project._id,
         status: 'pending',
         meetingId: selectedMeetingId.toString(),
@@ -126,13 +128,13 @@ export default function ProjectView({
     setDueDate(null);
     setSelectedMeetingId('');
     setIsOpenAddTask({ modalType: 'add', isOpen: true });
-    setFormData({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
+    setFormData({ _id: '', title: '',assignedPerson:'', description: '', meetingId: '', dueDate: null });
   }
   function onEditTaks(task) {
     setDueDate(new Date(task.dueDate));
     setSelectedMeetingId(task.meetingId._id);
     setIsOpenAddTask({ modalType: 'edit', isOpen: true });
-    setFormData({ _id: task._id, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
+    setFormData({ _id: task._id, assignedPerson : task.assignedPerson, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
   }
 
   const uploadMeetingAudio = (): void => {
@@ -387,7 +389,7 @@ export default function ProjectView({
                   </div>
                   <div className="w-[73%]">
 
-                    <h3 className="todo-card-content-title">{truncateSummary(item?.title, 5)}</h3>
+                    <h3 className="todo-card-content-title">{`${item?.assignedPerson}-${truncateSummary(item?.title, 5)}`}</h3>
                     <div className="flex justify-between">
                       <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
                     </div>
@@ -413,7 +415,7 @@ export default function ProjectView({
               {completedTodos.map((item, index) => (
                 <div key={item._id} className="max-h-[80px] min-h-[80px] flex justify-between border rounded border-stone-300 px-3 py-3 my-2 bg-[#DDF1EE]">
                   <div>
-                    <h3 className="todo-card-content-title">{truncateSummary(item?.title, 10)}</h3>
+                    <h3 className="todo-card-content-title">{`${item?.assignedPerson}-${truncateSummary(item?.title, 10)}`}</h3>
                     <div className="flex justify-between">
                       <p className="todo-card-content-desc" >{typeof item.meetingId === 'string' ? "" : truncateSummary(item?.description, 10) || ""}</p>
                     </div>
@@ -455,6 +457,16 @@ export default function ProjectView({
                       </Dialog.Title>
                       <div className="my-10">
                         <form onSubmit={handleSubmit}>
+                        <input
+                            type="text"
+                            id="assignedPerson"
+                            name="assignedPerson"
+                            required
+                            value={formData.assignedPerson}
+                            placeholder="Assigned Person"
+                            onChange={(e) => setFormData({ ...formData, assignedPerson: e.target.value })}
+                            className={`w-full rounded-md border p-2 my-1 px-4 outline-none ${formData.assignedPerson == '' && isSubmit ? 'border-red-500' : 'border-gray-300'}}`}
+                          />
                           <input
                             type="text"
                             id="name"

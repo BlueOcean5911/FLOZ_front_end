@@ -1,12 +1,18 @@
 "use client"
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import ToggleButton from "@components/button/ToogleButton";
 import Task from "./Task";
 import Todo from '@models/todo.model'
 import { createTodo, getTodosByMeetingId, deleteTodo, deleteTodosByMeetingId, updateTodo } from 'service/todo.service'
 import { id } from 'date-fns/locale';
 import { log } from 'console';
+import { Dialog, Transition } from '@headlessui/react';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { Meeting } from '@models';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import moment from 'moment';
 
 // for the test data
 const testData = [
@@ -23,138 +29,135 @@ const testData = [
 ]
 
 // the list of tasks in the meeting summary
-const TaskList = ({ data: todoList, handleClick, handleRemove }) => {
+const TaskList = ({ data: todoList, assignedPersonList, editTask, handleClick, handleRemove }) => {
+  const [personList, setPersonList] = useState([]);
+  useEffect(() => {
+    setPersonList(assignedPersonList)
+  }, [])
+  console.log(assignedPersonList, "assignedpersonList");
   return (
     <>
-      {todoList ? todoList?.map((task, index) => (
-        <Task
-          key={index}
-          id={index}
-          title={task.title}
-          content={task.content}
-          date={task.date}
-          handleRemove={handleRemove}
-          handleClick={() => { handleClick(index) }} />
-      )) : <></>}
+      {
+
+        assignedPersonList.map((assignedPerson, index) => (
+          <Task
+            editTask={editTask}
+            key={index}
+            personName={assignedPerson}
+            taskList={(todoList?.filter((task) => task.assignedPerson === assignedPerson))}
+            handleRemove={handleRemove}
+            handleClick={handleClick} />
+        ))
+      }
+
     </>
   );
 };
 
 const TodoList = ({ todoListData, meetingId, projectId }) => {
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [formData, setFormData] = useState({ _id: '', assignedPerson: '', title: '', description: '', meetingId: '', dueDate: null });
+  const [isOpenAddTask, setIsOpenAddTask] = useState({ modalType: 'add', isOpen: false });
+  const [assignedPersonList, setAssignedPersonList] = useState([]);
+  const [isSubmit, setIsSubmit] = useState(false);
   const [todoList, setTodoList] = useState([]);
-  const [selectedId, setSelectedPersonId] = useState(-1);
-
+  const [selectedId, setSelectedTodoId] = useState(-1);
+  const [dueDate, setDueDate] = useState<Date | any>(null);
 
   useEffect(() => {
-    processTodoListString();
-  }, [todoListData]);
+    setTodoList(todoListData);
+  }, []);
 
-  const processTodoListString = async () => {
-    const todoListArr = [];
-    for(const data in todoListData) {
-      todoListArr.push({
-        id: '',
-        title: data,
-        content: todoListData[data].todolist,
-        date: new Date().toISOString(),
-      })
-    }
-
-    console.log(todoListArr)
-    setTodoList([...todoListArr]);
-  }
-
-  const addTodoListToDatabase = async (todoListArr) => {
-    for (const [index, todo] of todoListArr.entries()) {
-      const newTodo = await createTodo({
-        description: todo.content,
-        dueDate: new Date(),
-        status: 'pending',
-        meetingId,
-        projectId,
-        updatedAt: new Date(),
-        createdAt: new Date(),
-      });
-      todoListArr[index].id = newTodo._id;
-    }
-  }
-  // useMemo(() => {
-  //   processTodoListString();
-  // }, [])
-
-
-  const clearInputData = () => {
-    setTitle('');
-    setContent('');
-  }
-
-  const handleAddAndModifyTodo = async () => {
-    if (title && content) {
-      if (selectedId === -1) {
-        const newTodo = await createTodo({
-          description: content,
-          dueDate: new Date(),
-          status: 'pending',
-          meetingId,
-          projectId,
-          updatedAt: new Date(),
-          createdAt: new Date(),
-        })
-        todoList.push({
-          id: newTodo._id,
-          title: title,
-          content: content,
-          date: new Date().toISOString(),
-        })
-      } else {
-        todoList[selectedId].title = title;
-        todoList[selectedId].content = content;
-        await updateTodo(todoList[selectedId].id, {
-          description: content,
-          dueDate: new Date(),
-          status: 'pending',
-          meetingId,
-          projectId,
-          updatedAt: new Date(),
-          createdAt: new Date(),
-        })
-        setSelectedPersonId(-1);
+  useEffect(() => {
+    const tempAssignList = [];
+    todoList.forEach((todo, index) => {
+      if (!tempAssignList.includes(todo.assignedPerson)) {
+        tempAssignList.push(todo.assignedPerson);
       }
-    }
-    setIsOpen(false);
-    clearInputData();
+    })
+    setAssignedPersonList(tempAssignList);
+  }, [todoList])
+
+  const handleClickedTodo = (id) => {
+    setSelectedTodoId(id);
   }
 
   const handleRemove = async (id) => {
-    try {
-      await deleteTodo(todoList[id].id);
-    } catch (error) {
-      console.error(error);
-    }
-    setTodoList([...todoList.splice(id, 1)]);
+    setTodoList(todoList.filter((todo, index) => todo._id !== id));
+    await deleteTodo(id);
   }
 
-  const handleClickedTodo = (id) => {
-    setSelectedPersonId(id);
-    setTitle(todoList[id].title);
-    setContent(todoList[id].content);
-    setIsOpen(true);
-  }
-
-  const clearTodoList = () => {
+  const clearTodoList = async () => {
     setTodoList([]);
+    await deleteTodosByMeetingId(meetingId);
   }
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
 
+    // Access the form element by name
+    const title = form.get("title");
+    const description = form.get("description");
+    const assignedPerson = form.get("assignedPerson");
+    // const meetingId = form.get("meetingId");
+    // const dueDate = form.get("dueDate");
+    setIsSubmit(true);
 
+    if (description && title) {
+      let projectReq = {
+        assignedPerson: assignedPerson.toString(),
+        title: title.toString(),
+        description: description.toString(),
+        projectId: projectId,
+        status: 'pending',
+        meetingId: meetingId,
+        dueDate: formData.dueDate
+      }
+      if (projectReq.title === "" || projectReq.description === "" || projectReq.meetingId === "" || projectReq.dueDate === "") {
+        alert("Please fill all the fields");
+        setIsSubmit(false);
+        return;
+      }
+      if (isOpenAddTask.modalType === 'edit' && formData._id) {
+
+        const updateTask = await updateTodo(formData._id, { ...projectReq, });
+        if (updateTask) {
+          const updateTodo = todoList.filter((todo) => todo._id === formData._id)[0];
+          updateTodo.title = title.toString();
+          updateTodo.description = description.toString()
+          updateTodo.dueDate = formData.dueDate
+        }
+        setIsSubmit(false);
+        setIsOpenAddTask({ modalType: 'add', isOpen: false });
+      } else {
+
+        const savedProject = await createTodo(projectReq);
+        if (savedProject) setTodoList([...todoList, savedProject]);
+        setIsSubmit(false);
+        setIsOpenAddTask({ modalType: 'add', isOpen: false });
+      }
+    }
+  };
+
+  function onAddTask() {
+    setDueDate(null);
+    setIsOpenAddTask({ modalType: 'add', isOpen: true });
+    setFormData({ _id: '', assignedPerson: '', title: '', description: '', meetingId: '', dueDate: null });
+  }
+
+  function closeModal() { setIsOpenAddTask({ modalType: 'add', isOpen: false }); }
+
+  function onEditTask(task) {
+    setDueDate(new Date(task.dueDate));
+    setSelectedTodoId(task._id);
+    setIsOpenAddTask({ modalType: 'edit', isOpen: true });
+    setFormData({ _id: task._id,assignedPerson:task.assignedPerson, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
+  }
 
   return (
     <div className="todoList h-[35%] mx-2 flex flex-col 
-    justify-center rounded-xl bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]"
+      justify-center rounded-xl bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]"
       style={{ scrollbarWidth: 'none' }}>
       <div className="todolist-header flex justify-between w-full p-4 items-center">
         <h2 className="font-bold text-[21px]">To do list:</h2>
@@ -164,27 +167,104 @@ const TodoList = ({ todoListData, meetingId, projectId }) => {
         </div>
       </div>
       <div className="grow todolist-tasks flex flex-col gap-1 px-6 overflow-auto">
-        <TaskList data={todoList} handleClick={handleClickedTodo} handleRemove={handleRemove} />
+        <TaskList data={todoList} handleClick={handleClickedTodo} editTask={ onEditTask} assignedPersonList={assignedPersonList} handleRemove={handleRemove} />
       </div>
       <div className="todolist-footer flex justify-between px-6 my-2">
-        <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => setIsOpen(true)}>Add taks</button>
+        <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => onAddTask()}>Add taks</button>
         <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => { clearTodoList() }}>Remove All</button>
       </div>
-      {
-        isOpen ?
-          <div className='fixed h-screen w-screen top-0 left-0 flex justify-center items-center bg-[rgba(0,0,0,0.6)]'>
-            <div className='p-20 flex flex-col gap-2 rounded-lg bg-white shadow-md '>
-              <div className='text-center text-xl text-gray-600'>{selectedId === -1 ? 'Add Todo' : 'Edit Todo'}</div>
-              <div className="text-gray-500 text-md">Title:</div>
-              <input required className="pl-2 border-2 rounded-md p-1
-           border-[#1B96FF]" value={title} onChange={(e) => { setTitle(e.target.value) }}></input>
-              <div className="text-gray-500 text-md">Content:</div>
-              <input required className="pl-2 rounded-md p-1 border-2 border-[#1B96FF]" value={content} onChange={(e) => { setContent(e.target.value) }}></input>
-              <button className="bg-[#06A59A] text-white p-1 rounded-md" onClick={() => { handleAddAndModifyTodo() }}>{selectedId === -1 ? 'Add' : 'Edit'}</button>
-              <button className="bg-[#06A59A] text-white p-1 rounded-md" onClick={() => { setIsOpen(false); clearInputData() }}>Cancel</button>
-            </div>
-          </div> : <></>
-      }
+      <div className="z-20 flex gap-x-4">
+        <div className="z-20 flex gap-x-4">
+          <Transition appear show={isOpenAddTask.isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={closeModal}>
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                      <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900"  >
+                        {isOpenAddTask.modalType == 'add' ? 'Add' : 'Edit'} new task
+                      </Dialog.Title>
+                      <div className="my-10">
+                        <form onSubmit={handleSubmit}>
+                          <input
+                            type="text"
+                            id="assignedPerson"
+                            name="assignedPerson"
+                            required
+                            value={formData.assignedPerson}
+                            placeholder="Assigned Person"
+                            onChange={(e) => setFormData({ ...formData, assignedPerson: e.target.value })}
+                            className={`w-full rounded-md border p-2 my-1 px-4 outline-none ${formData.assignedPerson == '' && isSubmit ? 'border-red-500' : 'border-gray-300'}}`}
+                          />
+                          <input
+                            type="text"
+                            id="name"
+                            name="title"
+                            required
+                            value={formData.title}
+                            placeholder="Title"
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            className={`w-full rounded-md border p-2 my-1 px-4 outline-none ${formData.title == '' && isSubmit ? 'border-red-500' : 'border-gray-300'}}`}
+                          />
+                          <input
+                            type="text"
+                            id="name"
+                            name="description"
+                            required
+                            placeholder="Description"
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className={`w-full rounded-md border p-2 px-4 my-2 outline-none `}
+                          />
+                          <div>
+                            {/* <select id="countries" className={`bg-gray-50 my-1 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedMeetingId == '' && isSubmit ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
+                              // defaultValue={'Select Meeting'}
+                              onChange={(event) => {
+                                setFormData({ ...formData, meetingId: event.target.value });
+                                setSelectedMeetingId(event.target.value)
+                              }}
+                              value={meetings.findIndex((meeting) => meeting._id == selectedMeetingId) > -1 ? meetings[meetings.findIndex((meeting) => meeting._id == selectedMeetingId)]._id : ''}
+                            >
+                              <option selected>Select Meeting</option>
+                              {meetings.map((meeting: Meeting) => (<option value={meeting?._id}>{meeting?.summary}</option>))}
+                            </select> */}
+
+                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                              <DemoContainer components={['DatePicker']}>
+                                <div className="m-w-[100px]">
+                                  <DatePicker
+                                    value={moment(dueDate)}
+                                    slotProps={{ textField: { placeholder: 'Due Date' } }}
+                                    onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
+                                  />
+                                </div>
+                              </DemoContainer>
+                            </LocalizationProvider>
+                          </div>
+                          <button
+                            type="submit"
+                            className="mt-3 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          >
+                            Submit
+                          </button>
+                        </form>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
+        </div>
+      </div>
     </div>
   )
 }

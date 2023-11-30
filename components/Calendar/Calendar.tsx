@@ -23,7 +23,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
-import { getProjects } from "../../service/project.service";
+import { getProjects, updateProject } from "../../service/project.service";
 import { createEvent, updateEvent } from "@./service/event.service";
 import Event from "./Event";
 import { Checkbox, ListItemText, OutlinedInput, Typography } from "@mui/material";
@@ -149,17 +149,23 @@ export default function Calendar() {
   const [users, setUsers] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   //////////////////////////////////////////////////////////////////////////
+  const [isPickColorOpen, setIsPickColorOpen] = useState(false)
+  const [projectColor, setProjectColor] = useState('#000');
+  const [projectColorMap, setProjectColorMap] = useState<Record<string, number>[]>([]);
+  //////////////////////////////////////////////////////////////////////////
   const calendarRef: any = useRef();
   const providerToken = getCookie("p_token");
   const INITIAL_EVENTS = [];
 
   const userId = getCookie("user_id");
   ///////////////////////////////////////////////////////////////////////////
-  const projectColor = useState('');
 
   useEffect(() => {
-    setCurrentDateTime(dayjs((new Date()).toISOString()));
-    fetchEvents();
+    const initalize = async () => {
+      setCurrentDateTime(dayjs((new Date()).toISOString()));
+      await fetchAllProjects();
+    }
+    initalize();
   }, []);
 
   useEffect(() => {
@@ -167,20 +173,22 @@ export default function Calendar() {
   }, [isOpen]);
 
   useEffect(() => {
+    setProjectColor(projectColorMap[selectedProject]);
+  }, [selectedProject])
+
+  useEffect(() => {
     setSummary(selectedEvent?.event.title);
     setDescription(selectedEvent?.event.extendedProps.description);
     setStartDate(dayjs(selectedEvent?.event.start));
     setEndDate(dayjs(selectedEvent?.event.end));
-    // TODO set previous attendencies and project id....
     getSelectedPersonEmailsFromAttentdees();
-    getSelectedProjectId();
-    // setSelectedPersonEmailList();
-    // setSelectedProject();
+    getSelectedProjectIdandColor();
   }, [selectedEvent])
 
-  const getSelectedProjectId = () => {
+  const getSelectedProjectIdandColor = () => {
     console.log(selectedEvent?.event.extendedProps.projectId);
     setSelectedProject(selectedEvent?.event.extendedProps.projectId);
+    setProjectColor(projectColorMap[selectedEvent?.event.extendedProps.projectId as string])
   }
 
   const getSelectedPersonEmailsFromAttentdees = () => {
@@ -240,12 +248,26 @@ export default function Calendar() {
   }
 
   const fetchAllProjects = async () => {
-    setAllProjects(await getProjects({ userId: userId }));
+    const tempProjects = await getProjects({ userId: userId });
+    const tempProjectColorMap = [];
+    for(let i = 0; i < tempProjects.length; i++) {
+      tempProjectColorMap[tempProjects[i]._id] = tempProjects[i].color;
+    }
+    // console.log("temp allProjects before set--------->", allProjects);
+    setAllProjects(tempProjects);
+    setProjectColorMap(tempProjectColorMap);
+    // console.log("temp allProjects after--------->", allProjects);
+    return;
   };
+
+  useEffect(() => {
+    (async() => {
+      await fetchEvents();
+    })()
+  },[projectColorMap, allProjects]);
 
   async function fetchEvents() {
     try {
-
       const allEvents: Response = await fetch(
         "https://www.googleapis.com/calendar/v3/calendars/primary/events",
         {
@@ -290,7 +312,7 @@ export default function Calendar() {
               meetingId: meeetingId,
             },
             url: meetingUrl,
-            backgroundColor: eventBackColor[title],
+            backgroundColor: projectColorMap[projectId],
             borderColor: "transparent",
             // ...googleEvent
           });
@@ -342,7 +364,7 @@ export default function Calendar() {
     const newMeeting = await createMeeting({
       date: startDate.toDate(),
       audioURL: '',
-      summary: '',
+      summary: summary,
       members: personIdList,
       projectId: selectedProject,
       updatedAt: new Date(),
@@ -416,7 +438,9 @@ export default function Calendar() {
 
     const eventId = eventCreationResponse.id;
 
-    fetchEvents();
+    await updateProject(selectedProject, {
+      color:projectColor,
+    })
     setIsOpen(false);
     clearData();
   };
@@ -620,7 +644,8 @@ export default function Calendar() {
       },
       extendedProperties: {
         private: {
-          projectId: selectedProject
+          meetingId: selectedEvent?.event.extendedProps.meetingId,
+          projectId: selectedProject,
         }
       }
     };
@@ -648,17 +673,22 @@ export default function Calendar() {
     }
 
     await updateMeeting(selectedEvent?.event?.extendedProps?.meetingId, {
+      summary:summary,
       date: startDate.toDate(),
-      audioURL: '',
-      summary: '',
       members: personIdList,
       projectId: selectedProject,
       updatedAt: new Date(),
     })
+    const resultUpdateProject = await updateProject(selectedEvent?.event?.extendedProps?.projectId, {
+      color: projectColor,
+    })
+    
+    console.log(resultUpdateProject, "Result update Project!!!");
+    
+    projectColorMap[selectedEvent?.event?.extendedProps?.projectId as string] = projectColor;
 
     setIsOpen(false);
     clearData();
-    fetchEvents();
   }
 
   const getCalendarTitle = () => {
@@ -696,6 +726,7 @@ export default function Calendar() {
             </svg>
             <div onClick={() => { setIsOpen(true) }}>Create</div>
           </div>
+          <button onClick={() => { setIsPickColorOpen(true) }}>Show Pick Color</button>
           <div className="flex justify-center w-[85px] h-[32px] mx-[12px] border-2 border-[#349989] rounded-md text-[#349989]">
             <select className="focus:border-none selected:border-none focus:outline-none" defaultValue={'timeGridWeek'} onChange={(e) => { calendarRef.current.getApi().changeView(e.target.value) }}>
               <option value={'timeGridDay'} >Day</option>
@@ -761,7 +792,7 @@ export default function Calendar() {
 
         {/* DIALOGUE */}
         <Transition appear show={isOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-50" onClose={closeModal}>
+          <Dialog as="div" className="relative z-10" onClose={closeModal}>
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -775,7 +806,7 @@ export default function Calendar() {
             </Transition.Child>
 
             <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <div className="flex min-h-full items-center justify-center text-center">
                 <Transition.Child
                   as={Fragment}
                   enter="ease-out duration-300"
@@ -785,175 +816,225 @@ export default function Calendar() {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-y-auto rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
-                    <div className="close-btn flex justify-end p-2">
-                      {/* <CloseButton /> */}
-                    </div>
-                    <div className="title text-center text-xl p-1">
-                      New Event
-                    </div>
-                    <hr className="border-b-1 border-gray-600" />
-                    <div className="body px-[30px] py-[40px] flex flex-col">
-                      <div className="subject">
-                        <div className="subject-title text-xs font-bold p-1"><span className="text-red-500">*</span> Subject</div>
-                        <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
-                          <FormControl fullWidth variant="standard">
-                            <Select
-                              labelId="demo-simple-select-label"
-                              id="demo-simple-select"
-                              sx={{ height: '32px', fontSize: '12px' }}
-                              onChange={handleChange}
-                              // variant="outlined"
-                              IconComponent={() => (<span></span>)}
-                              value={summary}
-                            >
-                              <MenuItem key={0} value={'Call'} sx={{ fontSize: '12px' }}>Call</MenuItem>
-                              <MenuItem key={1} value={'Meeting'} sx={{ fontSize: '12px' }}>Meeting</MenuItem>
-                              <MenuItem key={2} value={'Send letter/Quote'} sx={{ fontSize: '12px' }}>Send letter/Quote</MenuItem>
-                              <MenuItem key={3} value={'Other'} sx={{ fontSize: '12px' }}>Other</MenuItem>
-                            </Select>
-                          </FormControl>
-                          <IconSearch className="absolute right-4 top-2" />
-                        </div>
+                  <Dialog.Panel className="w-[719px] h-[741px] relative flex flex-col transform overflow-y-auto rounded-2xl bg-white text-left align-middle shadow-xl transition-all ">
+                    <div className="new-event-container flex flex-col p-8">
+                      <div className="close-btn flex justify-end p-2">
+                        {/* <CloseButton /> */}
                       </div>
-                      <div className="description flex flex-col mt-[30px]">
-                        <div className="description-title text-xs">Description</div>
-                        <textarea className=" max-h-[659px] h-[80px] border-2 border-gray-300 rounded-md p-2" value={description} onChange={(e) => onChangeDescription(e)}></textarea>
+                      <div className="title text-center text-xl p-1">
+                        New Event
                       </div>
-                      <div className="period flex mt-[31px] justify-between">
-                        <div className="start-date flex flex-col  w-[303px] h-[82px] justify-between" >
-                          <div className="title text-xs font-bold">Start</div>
-                          <div className="date flex gap-1">
-                            <div className="flex flex-col">
-                              <div className="date-title text-xs">Date</div>
-                              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['DatePicker']} >
-                                  <div className="m-w-[100px]">
-                                    <DatePicker
-                                      value={startDate}
-                                      // renderInput={(props) => <TextField {...props} sx={{ height:'32px'}}/>}
-                                      onChange={(newValue) => setStartDate_date(newValue)}
-                                    />
-                                  </div>
-                                </DemoContainer>
-                              </LocalizationProvider>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="date-title text-xs">Time</div>
-                              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['TimePicker']}>
-                                  <div className="m-w-[100px] ">
-                                    <TimePicker
-                                      value={startDate}
-                                      onChange={(newValue) => setStartDate_time(newValue)}
-                                    />
-                                  </div>
-                                </DemoContainer>
-                              </LocalizationProvider>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="end-date flex flex-col w-[303px] h-[82px] justify-between" >
-                          <div className="title text-xs font-bold">End</div>
-                          <div className="date flex gap-1">
-                            <div className="flex flex-col">
-                              <div className="date-title text-xs">Date</div>
-                              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['DatePicker']}>
-                                  <div className="m-w-[100px]">
-
-                                    <DatePicker
-                                      value={endDate}
-                                      onChange={(newValue) => setEndDate_date(newValue)}
-                                    />
-                                  </div>
-                                </DemoContainer>
-                              </LocalizationProvider>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="date-title text-xs">Time</div>
-                              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['TimePicker']}>
-                                  <div className="m-w-[100px]">
-
-                                    <TimePicker
-                                      value={endDate}
-                                      onChange={(newValue) => setEndDate_time(newValue)}
-                                    />
-                                  </div>
-                                </DemoContainer>
-                              </LocalizationProvider>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="guests flex flex-col mt-[32px] mb-[24px]">
-                        <div className="guest-title text-xs font-bold p-1">Guests</div>
-                        <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
-                          <FormControl fullWidth variant="standard">
-                            <Select
-                              labelId="demo-multiple-checkbox-label"
-                              id="demo-multiple-checkbox"
-                              multiple
-                              value={selectedPersonEmailList}
-                              onChange={handleSelected}
-                              input={<OutlinedInput label="Tag" />}
-                              renderValue={(selected) => selected.join(', ')}
-                              MenuProps={MenuProps}
-
-                              sx={{ height: '32px', fontSize: '12px' }}
-                              IconComponent={() => (<span></span>)}
-                            >
-                              {users.map((user, index) => (
-                                <MenuItem key={index} value={user.email} sx={{height:'36px'}}>
-                                  <Checkbox checked={selectedPersonEmailList.indexOf(user.email) > -1} />
-                                  <ListItemText>
-                                    <Typography variant="body2" sx={{ fontSize: '12px', fontFamily: 'Arial' }}>
-                                      {user.name}
-                                    </Typography>
-                                  </ListItemText>
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                          <IconSearch className="absolute right-4 top-2" />
-                        </div>
-                      </div>
-                      <div className="guests flex flex-col">
-                        <div className="guest-title text-xs font-bold p-1">Projects</div>
-                        <div className="flex gap-1 items-center">
+                      <hr className="border-b-1 border-gray-600" />
+                      <div className="body px-[30px] py-[40px] flex flex-col">
+                        <div className="subject">
+                          <div className="subject-title text-xs font-bold p-1"><span className="text-red-500">*</span> Subject</div>
                           <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
-                            <FormControl fullWidth>
+                            <FormControl fullWidth variant="standard">
                               <Select
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
-                                value={selectedProject}
-                                label="Projects"
                                 sx={{ height: '32px', fontSize: '12px' }}
+                                onChange={handleChange}
+                                // variant="outlined"
                                 IconComponent={() => (<span></span>)}
-                                onChange={(e) => handleSelectChange(e)}
+                                value={summary}
                               >
-                                {
-                                  allProjects.map((project, index) => (
-                                    <MenuItem key={index} sx={{ fontSize: '12px' }} value={project._id}>{project.name}</MenuItem>
-                                  ))
-                                }
+                                <MenuItem key={0} value={'Call'} sx={{ fontSize: '12px' }}>Call</MenuItem>
+                                <MenuItem key={1} value={'Meeting'} sx={{ fontSize: '12px' }}>Meeting</MenuItem>
+                                <MenuItem key={2} value={'Send letter/Quote'} sx={{ fontSize: '12px' }}>Send letter/Quote</MenuItem>
+                                <MenuItem key={3} value={'Other'} sx={{ fontSize: '12px' }}>Other</MenuItem>
                               </Select>
                             </FormControl>
+                            <IconSearch className="absolute right-4 top-2" />
                           </div>
-                          
-                          <button className="relative w-8 h-8 rounded-lg bg-gray-500 ">
-                          </button>
+                        </div>
+                        <div className="description flex flex-col mt-[30px]">
+                          <div className="description-title text-xs">Description</div>
+                          <textarea className=" max-h-[659px] h-[80px] border-2 border-gray-300 rounded-md p-2" value={description} onChange={(e) => onChangeDescription(e)}></textarea>
+                        </div>
+                        <div className="period flex mt-[31px] justify-between">
+                          <div className="start-date flex flex-col  w-[303px] h-[82px] justify-between" >
+                            <div className="title text-xs font-bold">Start</div>
+                            <div className="date flex gap-1">
+                              <div className="flex flex-col">
+                                <div className="date-title text-xs">Date</div>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                  <DemoContainer components={['DatePicker']} >
+                                    <div className="m-w-[100px]">
+                                      <DatePicker
+                                        value={startDate}
+                                        // renderInput={(props) => <TextField {...props} sx={{ height:'32px'}}/>}
+                                        onChange={(newValue) => setStartDate_date(newValue)}
+                                      />
+                                    </div>
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </div>
+                              <div className="flex flex-col">
+                                <div className="date-title text-xs">Time</div>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                  <DemoContainer components={['TimePicker']}>
+                                    <div className="m-w-[100px] ">
+                                      <TimePicker
+                                        value={startDate}
+                                        onChange={(newValue) => setStartDate_time(newValue)}
+                                      />
+                                    </div>
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="end-date flex flex-col w-[303px] h-[82px] justify-between" >
+                            <div className="title text-xs font-bold">End</div>
+                            <div className="date flex gap-1">
+                              <div className="flex flex-col">
+                                <div className="date-title text-xs">Date</div>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                  <DemoContainer components={['DatePicker']}>
+                                    <div className="m-w-[100px]">
+
+                                      <DatePicker
+                                        value={endDate}
+                                        onChange={(newValue) => setEndDate_date(newValue)}
+                                      />
+                                    </div>
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </div>
+                              <div className="flex flex-col">
+                                <div className="date-title text-xs">Time</div>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                  <DemoContainer components={['TimePicker']}>
+                                    <div className="m-w-[100px]">
+
+                                      <TimePicker
+                                        value={endDate}
+                                        onChange={(newValue) => setEndDate_time(newValue)}
+                                      />
+                                    </div>
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="guests flex flex-col mt-[32px] mb-[24px]">
+                          <div className="guest-title text-xs font-bold p-1">Guests</div>
+                          <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
+                            <FormControl fullWidth variant="standard">
+                              <Select
+                                labelId="demo-multiple-checkbox-label"
+                                id="demo-multiple-checkbox"
+                                multiple
+                                value={selectedPersonEmailList}
+                                onChange={handleSelected}
+                                input={<OutlinedInput label="Tag" />}
+                                renderValue={(selected) => selected.join(', ')}
+                                MenuProps={MenuProps}
+
+                                sx={{ height: '32px', fontSize: '12px' }}
+                                IconComponent={() => (<span></span>)}
+                              >
+                                {users.map((user, index) => (
+                                  <MenuItem key={index} value={user.email} sx={{ height: '36px' }}>
+                                    <Checkbox checked={selectedPersonEmailList.indexOf(user.email) > -1} />
+                                    <ListItemText>
+                                      <Typography variant="body2" sx={{ fontSize: '12px', fontFamily: 'Arial' }}>
+                                        {user.name}
+                                      </Typography>
+                                    </ListItemText>
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <IconSearch className="absolute right-4 top-2" />
+                          </div>
+                        </div>
+                        <div className="guests flex flex-col">
+                          <div className="guest-title text-xs font-bold p-1">Projects</div>
+                          <div className="flex gap-1 items-center">
+                            <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
+                              <FormControl fullWidth>
+                                <Select
+                                  labelId="demo-simple-select-label"
+                                  id="demo-simple-select"
+                                  value={selectedProject}
+                                  label="Projects"
+                                  sx={{ height: '32px', fontSize: '12px' }}
+                                  IconComponent={() => (<span></span>)}
+                                  onChange={(e) => handleSelectChange(e)}
+                                >
+                                  {
+                                    allProjects.map((project, index) => (
+                                      <MenuItem key={index} sx={{ fontSize: '12px' }} value={project._id}>{project.name}</MenuItem>
+                                    ))
+                                  }
+                                </Select>
+                              </FormControl>
+                            </div>
+
+                            <button
+                              onClick={() => { setIsPickColorOpen(true) }}
+                              className={`relative w-8 h-8 rounded-lg`}
+                              style={{backgroundColor:`${projectColor}`}} >
+                            </button>
+                          </div>
                         </div>
                       </div>
+                      <div className="h-[56px] flex justify-end align-baseline gap-3 mx-[30px]">
+                        <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onCancel}>Cancel</button>
+                        <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={() => { onSaveNew }}>Save & New</button>
+                        <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={() => { openModalState === "Insert" ? onSave() : handleUpdate() }}>Save</button>
+                      </div>
                     </div>
-                    <div className="h-[56px] flex justify-end align-baseline gap-3 mx-[30px]">
-                      <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onCancel}>Cancel</button>
-                      <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={() => { onSaveNew }}>Save & New</button>
-                      <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={() => { openModalState === "Insert" ? onSave() : handleUpdate() }}>Save</button>
-                    </div>
+
+                    {
+                      isPickColorOpen ?
+                        <>
+                          <div className="pick-color absolute w-full h-full">
+
+                            <div className="h-full w-full">
+                              <div className="flex min-h-full items-center justify-center text-center">
+
+                                <div className="w-full flex flex-col p-4 justify-center items-center max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                                  <h1
+                                    className="text-xl font-medium leading-6 text-gray-900 m-4"
+                                  >
+                                    Pick your project color!
+                                  </h1>
+                                  <div className="mt-2">
+                                    <SketchPicker
+                                      color={projectColor}
+                                      onChange={(color, event) => setProjectColor(color.hex)}
+                                    />
+                                  </div>
+
+                                  <div className="mt-4 flex gap-2">
+                                    <button
+                                      type="button"
+                                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                      onClick={() => setIsPickColorOpen(false)}
+                                    >
+                                      OK
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                      onClick={() => setIsPickColorOpen(false)}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </> : <></>
+                    }
                   </Dialog.Panel>
                 </Transition.Child>
+
               </div>
             </div>
           </Dialog>
@@ -1054,6 +1135,8 @@ export default function Calendar() {
           </div>
         </Dialog>
       </Transition>
+
+
     </div>
   );
 }

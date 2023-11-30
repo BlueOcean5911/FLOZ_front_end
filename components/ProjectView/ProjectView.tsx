@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
-import { Dialog, Transition } from "@headlessui/react";
+import React from "react";
 import { Fragment, useEffect, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
 import moment from 'moment';
 import { IProject } from "@models/project.model";
@@ -19,10 +20,11 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
-import React from "react";
+import { useAuthContext } from '@contexts/AuthContext';
 import { getProjects } from "@service/project.service";
 import { getPersons } from "@service/person.service";
 import { useRouter } from 'next/navigation'
+import { IUser } from "@models/user.model";
 
 export default function ProjectView({
   data
@@ -35,6 +37,7 @@ export default function ProjectView({
     providerToken?: string;
   }
 }) {
+  const { user } = useAuthContext();
   const [pendingTodos, setPendingTodos] = useState(data.todolist.filter(todo => todo.status === 'pending'));
   const [completedTodos, setCompletedTodos] = useState(data.todolist.filter(todo => todo.status === 'completed'));
   const [isOpenAddTask, setIsOpenAddTask] = useState({ modalType: 'add', isOpen: false });
@@ -46,7 +49,31 @@ export default function ProjectView({
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
+  const [peopleList, setPeopleList] = useState([]);
+  const [projects, setProjects] = useState([]);
   const router = useRouter();
+
+  const getIntialData = async (user: IUser) => {
+    try {
+      const dbPersons = await getPersons({ organization: user.organization});
+      if (dbPersons.length > 0) {
+        setPeopleList(dbPersons);
+      }
+
+      const dbProjects = await getProjects({ userId: user._id });
+      if (dbProjects.length > 0) {
+        setProjects(dbProjects);
+      }
+    } catch (error) {
+      console.log("getPersons error", error?.response?.data);
+    }
+  }
+  
+  useEffect(() => {
+    if (user && user.organization) {
+      getIntialData(user);
+    }
+  }, [user])
 
   const truncateSummary = (summary, maxWords) => {
     const words = summary?.split(' ');
@@ -152,7 +179,7 @@ export default function ProjectView({
     <div className="w-full items-center justify-between">
       <div className="grid grid-cols-5 gap-4">
         <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
-          <Sidebar />
+          <Sidebar persons={peopleList} projects={projects} />
         </div>
 
 

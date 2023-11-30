@@ -2,27 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import ToggleButton from "@components/button/ToogleButton";
 import Member from "./Member"
-import { opendaiApi } from '@api/api';
 import AddMemberLayout from './AddMember';
 import { getMeeting, generateEmail } from '@service/meeting.service';
 import { IPerson, Meeting } from '@models';
 import { getPerson } from '@service/person.service';
-
-// rendering the members list
-const testData = [
-  {
-    name: 'Niklaus Anton',
-    email: 'niklausanton23@gmail.com',
-    role: 'admin',
-  },
-  {
-    name: 'Jason Baker',
-    email: 'jason.baker.infor@gmail.com',
-    role: 'admin',
-  },
-]
-
-const testSummary = "test summary"
 
 // members component
 const MemberList = ({ setGenerateEmail, todolistStr, params }) => {

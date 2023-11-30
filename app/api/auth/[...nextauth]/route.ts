@@ -8,6 +8,8 @@ const handler = NextAuth({
           clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
           authorization: {
             params: {
+              access_type: "offline",
+              prompt: 'consent',
               scope: "profile email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.send",
             }
           }
@@ -17,6 +19,7 @@ const handler = NextAuth({
         async session({ session, token, user }) {
           session.user["id"] = token.id;
           session["accessToken"] = token.accessToken;
+          session["refreshToken"] = token.refreshToken;
           return session;
         },
         async jwt({ token, user, account, profile }) {
@@ -25,6 +28,7 @@ const handler = NextAuth({
           }
           if (account) {
             token.accessToken = account.access_token;
+            token.refreshToken = account.refresh_token;
           }
           return token;
         },

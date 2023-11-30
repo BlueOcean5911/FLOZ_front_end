@@ -4,36 +4,21 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState, useEffect } from "react";
 import { opendaiApi } from 'api/api'
-import api from 'api/api'
 import { getCookie } from 'cookies-next';
-import { getProviderToken } from '@providerVar';
-import { useAuthContext } from '@contexts/AuthContext';
+import { sendEmail } from '@service/utils.service';
 
-import { getUser, getUserByEmail, updateUser } from '@service/user.service'
-import { getPersons } from '@service/person.service';
-
-const MeetingSummary = ({ email }) => {
+const MeetingSummary = ({ email, peoples }) => {
 
   const [emailPrompt, setEmailPrompt] = useState("");
   const [isPolishing, setIsPolishing] = useState(false);
   const [isPeopleListOpen, setIsPeopleListOpen] = useState(false);
-  const [peopleList, setPeopleList] = useState([]);
+  const [peopleList, setPeopleList] = useState(peoples || []);
   const [selectedPeopleList, setSelectedPeopleList] = useState([]);
 
   useEffect(() => {
-    initialize();
-    setEmailPrompt(email || "Hania is working on a project in Berkeley Downtown. She needs to get a cost estimation for adding a new window to the bathroom. Joseph is helping her out and will be sending her different window types with different prices tonight. The estimated cost for adding a new window with the current design is approximately $300.   Some options include Sierra Pacific, which is a more affordable choice ranging from $100 to $200 depending on the size, and Marvin, a higher quality option priced between $300 to $350. The Marvin window is recommended due to the high salt content in the air near the project location.");
-  }, [email]);
-
-  const initialize = async () => {
-    const persons = await getPersons();
-    setPeopleList(persons);
-    const temp = [];
-    for (let i = 0; i < persons.length; i++) {
-      temp.push(false);
-    }
-    setSelectedPeopleList(temp);
-  }
+    if (email) setEmailPrompt(email);
+    if (peoples) setPeopleList(peoples);
+  }, [email, peoples]);
 
   // polish the email
   const polish = async () => {
@@ -52,25 +37,46 @@ const MeetingSummary = ({ email }) => {
   }
 
   // send emial to selected person
-  const sendEmail = async () => {
-    const oAuthTokenForEmail = getCookie('p_token');
-
+  const sendEmailToMembers = async () => {
     try {
-      for(let i = 0; i < selectedPeopleList.length; i++) {
-        if(selectedPeopleList[i]) {
-          const { data } = await opendaiApi.get('/sendEmail', { params: { email: peopleList[i].email, content: emailPrompt, oAuthToken: oAuthTokenForEmail } });
+      const accessToken = getCookie('p_token');
+      const refreshToken = getCookie('r_token');
+      if (selectedPeopleList.length > 0) {
+        const emails = selectedPeopleList.map(person => person.email)
+        const res = await sendEmail(emails, emailPrompt, accessToken, refreshToken);
+        if (res) {
+          toast.success("Email sent successfully", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          })
         }
       }
     } catch (error) {
-      console.error(error);
+      console.error("Axios error:", error?.response?.data);
+      toast.error(error?.response?.data?.message || "Could not send email", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      })
     }
   }
 
-  const handleSelectPeople = (e) => {
-    let id =  parseInt(e.target.id);
-    const tempSelectedPeopleList = [...selectedPeopleList];
-    tempSelectedPeopleList[id] = !tempSelectedPeopleList[id];
-    setSelectedPeopleList([...tempSelectedPeopleList]);
+  const handleSelectPeople = (person) => {
+    const personIndex = selectedPeopleList.findIndex(p => p._id === person._id);
+    if (personIndex === -1) {
+      setSelectedPeopleList([...selectedPeopleList, person]);
+    } else {
+      setSelectedPeopleList(selectedPeopleList.filter((p, index) => index !== personIndex));
+    }
   }
 
   return (
@@ -93,29 +99,28 @@ const MeetingSummary = ({ email }) => {
             </textarea>
           </div>}
       </div>
-      <div className="summary-search flex justify-center">
-        <input type="text" placeholder="Search for enhancements in email" className="w-11/12 p-1 shadow-md rounded-md border-2 border-solid border-[#1B96FF]" />
-      </div>
       <div className="summary-footer flex  gap-4 text-[13px] px-5 pb-2 pt-1">
         <button className="text-[#06A59A] w-4/12 border-2 border-gray-300 p-1  rounded-md" onClick={() => polish()}>Polish text</button>
-        <button className="rounded-md bg-[#06A59A] w-8/12 text-white p-1" onClick={() => sendEmail()}>Send email</button>
+        <button className="rounded-md bg-[#06A59A] w-8/12 text-white p-1" onClick={() => sendEmailToMembers()}>Send email</button>
       </div>
       <>
         {
           isPeopleListOpen ?
             <div
-              className='absolute top-8 right-8 w-[113px] 
-                max-h-[180px] bg-white p-1 border-[1px] border-gray-100 rounded-md 
-                flex flex-col text-sm overflow-x-hidden overflow-y-auto'>
-              <div className='people-list-layout w-full grow flex flex-col justify-start items-start gap-2'>
+              className='absolute top-8 right-8 min-w-[180px] max-h-[180px] bg-white border-[1px] border-[#dedede] shadow-md rounded-md text-sm overflow-x-hidden overflow-y-auto'>
+              <div className='people-list-layout w-full grow flex flex-col justify-start items-start shadow-md'>
                 {
                   peopleList ? peopleList.map((person, index) => (
-                    <div className='flex'>
-                      <input id={`${index}`} type='checkbox' onClick={(e) => handleSelectPeople(e)} checked={selectedPeopleList[index]}></input>
-                      <label htmlFor={`${index}`} className='whitespace-nowrap'>{person.name}</label>
+                    <div key={person._id} className='flex gap-2 items-center px-3 py-2 w-full hover:bg-[#06A59A] hover:text-white border-b-[1px] border-[#dedede] cursor-pointer'>
+                      <input id={`${person._id}`} type='checkbox' onChange={() => handleSelectPeople(person)} checked={selectedPeopleList.findIndex(p => p._id === person._id) !== -1}></input>
+                      <label htmlFor={`${person._id}`} className='whitespace-nowrap cursor-pointer'>{person.name}</label>
                     </div>
                   )) : <></>
                 }
+                <div className='flex gap-2 justify-end items-center w-full p-2'>
+                  <button type='button' className='btn btn-link text-[#06A59A]' onClick={() => { setSelectedPeopleList([]); setIsPeopleListOpen(false); }}>Cancel</button>
+                  <button type='button' className='btn btn-link text-[#06A59A]' onClick={() => setIsPeopleListOpen(false)}>Apply</button>
+                </div>
               </div>
             </div>
             : <></>

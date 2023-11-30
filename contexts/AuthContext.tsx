@@ -4,6 +4,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { setCookie, deleteCookie } from 'cookies-next';
 import axios from 'axios';
+import api from '../api/api';
 import { createUser, getUserByEmail, signInUser } from '../service/user.service';
 import { IUser } from '../models';
 import { setProviderToken } from '@providerVar';
@@ -34,6 +35,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   async function checkSession() {
     if (!session) {
       deleteCookie('user_id');
+      deleteCookie("user_organization");
       router.push("/");
     } else {
       await handleSessionChange(session);
@@ -50,20 +52,23 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     }
     setProviderToken(session.accessToken);
     setCookie("p_token", session.accessToken);
+    setCookie("r_token", session.refreshToken);
     const accessToken = session?.accessToken;
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+    api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     // Add the user if this is the first time they are signing in
-    await addUserIfNew({ ...session.user, oAuthToken: accessToken });
+    await addUserIfNew({ ...session.user, oAuthToken: accessToken, refreshToken: session.refreshToken });
 
     const resp = await signInUser({
       email: session.user.email,
       name: session.user.name as string,
       oAuthToken: session.accessToken,
+      refreshToken: session.refreshToken,
     });
     
     setUser(resp);
     setCookie("user_id", resp._id);
+    setCookie("user_organization", resp.organization);
     setCookie("AUTH_STATUS", "SIGNED_IN");
     setIsSignedIn(true);
   }
@@ -74,6 +79,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     name?: string;
     picture?: string;
     oAuthToken?: string;
+    refreshToken?: string;
   };
   async function addUserIfNew(userMetadata: AddUserIfNewArgs) {
     // Check if the user exists
@@ -115,7 +121,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     setIsSignedIn(false);
     deleteCookie("AUTH_STATUS");
     deleteCookie("p_token");
+    deleteCookie("r_token");
     deleteCookie("user_id");
+    deleteCookie("user_organization");
     await signOut({redirect: false});
   }
 

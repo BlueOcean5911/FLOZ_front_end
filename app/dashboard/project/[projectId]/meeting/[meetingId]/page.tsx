@@ -10,6 +10,12 @@ import Record from "@components/Record/Record";
 import { getMeetingData } from '@service/meeting.service';
 import { useRouter } from "next/navigation";
 import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
+import { useAuthContext } from '@contexts/AuthContext';
+import { getPersons } from '@service/person.service';
+import { getProjects } from "@service/project.service";
+import { IUser } from '@models';
+import { ToastContainer } from 'react-toastify';
+
 
 interface pageProps {
   projectId: string;
@@ -17,6 +23,7 @@ interface pageProps {
 }
 const Page = ({ params }: { params: pageProps }) => {
   const router = useRouter();
+  const { user } = useAuthContext();
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [isTodosLoading, setIsTodosLoading] = useState(true);
   const [isEmailSummaryLoading, setIsEmailSummaryLoading] = useState(true);
@@ -25,6 +32,8 @@ const Page = ({ params }: { params: pageProps }) => {
   const [generatedEmail, setGeneratedEmail] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
+  const [peopleList, setPeopleList] = useState([]);
+  const [projects, setProjects] = useState([]);
   let pollingInterval;
 
   const getTrascriptData = async () => {
@@ -62,6 +71,22 @@ const Page = ({ params }: { params: pageProps }) => {
     }
   }
 
+  const getIntialData = async (user: IUser) => {
+    try {
+      const dbPersons = await getPersons({ organization: user.organization});
+      if (dbPersons.length > 0) {
+        setPeopleList(dbPersons);
+      }
+
+      const dbProjects = await getProjects({ userId: user._id });
+      if (dbProjects.length > 0) {
+        setProjects(dbProjects);
+      }
+    } catch (error) {
+      console.log("getPersons error", error?.response?.data);
+    }
+  }
+
   useEffect(() => {
     getTrascriptData()
     // Polling mechanism with a 5-second interval
@@ -74,6 +99,12 @@ const Page = ({ params }: { params: pageProps }) => {
       clearInterval(pollingInterval);
     };
   }, [])
+
+  useEffect(() => {
+    if (user && user.organization) {
+      getIntialData(user);
+    }
+  }, [user])
 
   const onUploadComplete = () => {
     setIsSummaryLoading(true);
@@ -90,7 +121,7 @@ const Page = ({ params }: { params: pageProps }) => {
     <div className="projects-layout bg-gray-100 flex flex-row h-full">
       <div className="sidebar shadow-md w-[21%] rounded-md mx-[26px] flex flex-col  bg-white">
         <div className="grow ">
-          <Sidebar />
+          <Sidebar persons={peopleList} projects={projects} />
         </div>
       </div>
       <div className="main-layout shadow-md rounded-md w-[52%]  flex flex-col  bg-white">
@@ -141,7 +172,7 @@ const Page = ({ params }: { params: pageProps }) => {
             )
             :
             (
-              <MeetingSummary email={generatedEmail}/>
+              <MeetingSummary email={generatedEmail} peoples={peopleList}/>
             )
           }
         </div>
@@ -152,6 +183,8 @@ const Page = ({ params }: { params: pageProps }) => {
         : 
           <></>
       }
+
+      <ToastContainer />
     </div>
   );
 }

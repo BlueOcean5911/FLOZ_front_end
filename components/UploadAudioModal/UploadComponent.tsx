@@ -76,7 +76,6 @@ const UploadComponent = ({ isUpload, uploadType, setUpload }) => {
     // reader.readAsDataURL(event.target.files);
     // reader.onloadend = function () {
     // };
-    console.log(event.target.files, 'event.target.files', event.target.files[0]);
 
     setIsUploaded(true);
     setUpload(event.target.files);

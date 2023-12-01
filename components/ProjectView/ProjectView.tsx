@@ -402,7 +402,7 @@ export default function ProjectView({
                                 </clipPath>
                               </defs>
                             </svg>
-                            <a href={doc?.url} className="ml-2 font-small"> {truncateSummary(doc.fileName, 2)}</a>
+                            <a href={doc?.url} target="_blank" className="ml-2 font-small"> {truncateSummary(doc.fileName, 2)}</a>
                           </div>
 
                           <div>
@@ -478,7 +478,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
-      {isUploadAudioModal.isOpen ? <UploadAudioModal modalType={isUploadAudioModal.uploadType} project={data.project} meetings={meetings} isShow={isUploadAudioModal.isOpen} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
+      {isUploadAudioModal.isOpen ? <UploadAudioModal modalType={isUploadAudioModal.uploadType} projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal.isOpen} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
 
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal} /> : <></>}
 

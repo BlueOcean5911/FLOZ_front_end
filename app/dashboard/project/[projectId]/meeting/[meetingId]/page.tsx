@@ -180,7 +180,7 @@ const Page = ({ params }: { params: pageProps }) => {
       </div>
       {
         isUploadAudioModal ? 
-          <UploadAudioModal projectId={params.projectId} meetingId={params.meetingId} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> 
+          <UploadAudioModal modalType="audio" projectId={params.projectId} meetingId={params.meetingId} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> 
         : 
           <></>
       }

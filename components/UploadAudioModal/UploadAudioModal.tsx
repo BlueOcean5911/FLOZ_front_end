@@ -6,7 +6,6 @@ import { ThreeDots } from 'react-loader-spinner'
 import { useState } from "react";
 import { uploadAudio, uploadFile } from "@./service/project.service";
 import { Meeting } from "@models/meeting.model";
-import { IProject } from "@models/project.model";
 // import { useDropzone } from 'react-dropzone';
 import UploadComponent from "./UploadComponent";
 import moment from 'moment';
@@ -15,7 +14,7 @@ export default function UploadAudioModal({
   modalType,
   meetings,
   meetingId,
-  project,
+  projectId,
   isShow,
   setShow,
   onUploadComplete
@@ -23,7 +22,7 @@ export default function UploadAudioModal({
   modalType?: string;
   meetings?: Meeting[] | null;
   meetingId?: string;
-  project: any;
+  projectId: string;
   isShow: boolean;
   setShow: (boolean) => void;
   onUploadComplete: (string) => void;
@@ -31,9 +30,8 @@ export default function UploadAudioModal({
   const [isAdded, setIsAdded] = useState(false);
   const [loader, setLoader] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState(meetingId || '');
-  const [selectedProjectId, setSelectedProjectId] = useState(project._id || '');
+  const [selectedProjectId, setSelectedProjectId] = useState(projectId || '');
   const [uploadedFileData, setUploadedFileData] = useState<any | ArrayBuffer | null>(null);
-  console.log('meetings', modalType);
 
   const getTime = (date: string) => {
     return moment(date).format('HH:mm:ss');
@@ -48,20 +46,13 @@ export default function UploadAudioModal({
     if (data) {
       // Convert FilesType to an array
       const dataArray = Array.from(data);
-      // Update each element in the array
-      const updatedArray = dataArray.map((file: any) => {
-        const fileName = file?.name.split('.')[0];
-        return { ...file, fileName }; // Create a new object with the added fileName property
-      });
 
-      setIsAdded(updatedArray.length > 0); // Check if the updated array has elements
-      setUploadedFileData({ files: updatedArray, binaryFile: data });
+      setIsAdded(dataArray.length > 0); // Check if the updated array has elements
+      setUploadedFileData({ files: dataArray, binaryFile: data });
     }
   }
 
   function onUploadAudio(data: any) {
-    console.log('data on upload click >>>', data);
-    
     if (selectedMeetingId == '' && modalType == 'audio') {
       toast.error('Please select meeting');
       return;
@@ -71,7 +62,7 @@ export default function UploadAudioModal({
     if (modalType == 'audio') {
       formData.append('meetingId', selectedMeetingId);
       formData.append('meetingAudio', data[0]);
-      uploadAudio({ projectId: project._id, formData }).then((res) => {
+      uploadAudio({ projectId, formData }).then((res) => {
         setLoader(false);
         onUploadComplete(res?.meetingId);
         setShow(false);
@@ -80,16 +71,13 @@ export default function UploadAudioModal({
         toast.error(err.message);
       });
     } else {
-
-
-      // Append each selected file to the FormData object
       [...data].forEach((file, index) => {
         formData.append(`documentFiles`, file);
       });
 
-      formData.append('projectId', project._id);
+      formData.append('projectId', projectId);
 
-      uploadFile({ projectId: project._id, formData }).then((res) => {
+      uploadFile({ projectId, formData }).then((res) => {
         setLoader(false);
         onUploadComplete(res?.projectId);
         setShow(false);
@@ -121,7 +109,7 @@ export default function UploadAudioModal({
                     </svg>
                   </div>
                   <div className="mb-4">
-                    {modalType == 'Transcribe audio' ? 'Audio' : 'Upload Document'}
+                    {modalType == 'audio' ? 'Transcribe audio' : 'Upload Document'}
                   </div>
                 </div>
                 <div className="p-4">
@@ -142,23 +130,6 @@ export default function UploadAudioModal({
                       )
                       : null
                   }
-                  {
-                    (project && modalType == 'document' && [project].length > 0) ?
-                      (
-                        <div>
-                          <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this file to</p>
-                          <select id="countries" className={`bg-gray-50 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedProjectId == '' && uploadedFileData != null ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
-                            defaultValue={'Select Project'} onChange={(event) => { setSelectedMeetingId(event.target.value) }} value={modalType == 'document' ? selectedProjectId : selectedMeetingId}>
-                            {/* <option selected>Select Project</option> */}
-                            {[project].map((projectItem: IProject) => (
-                              <option selected value={projectItem?._id}>{projectItem?.name}</option>
-                            ))}
-                          </select>
-
-                        </div>
-                      )
-                      : null
-                  }
                   {!isAdded ?
                     <UploadComponent isUpload={isAdded} uploadType={modalType} setUpload={(data) => { setUploaded(data) }} />
                     :
@@ -168,8 +139,8 @@ export default function UploadAudioModal({
                           return (
                             <div className="w-[100%] mt-[10px] mb-[10px] flex " key={index}>
                               <div className="w-[100%] grid grid-cols-5 text-left my-1 border-b-[1px] border-[#C3C3C3] " key={index}>
-                                <div className="col-span-2">{file?.fileName} #1</div>
-                                <div className="col-span-2">{file?.size}byts</div>
+                                <div className="col-span-2">{file?.name} {`#${index + 1}`}</div>
+                                <div className="col-span-2">{file?.size} byts</div>
                                 <div className="col-span-1">{getTime(file?.lastModifiedDate)}</div>
                               </div>
                             </div>

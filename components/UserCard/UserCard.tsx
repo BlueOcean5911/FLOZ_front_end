@@ -9,6 +9,7 @@ import { IUser } from "@models";
 import { getTodos, deleteTodo, updateTodoStatus } from "@service/todo.service";
 import { Dialog, Transition } from "@headlessui/react";
 import moment from "moment";
+import { getUserTodos } from "@service/user.service";
 
 export default function UserCard({
   data
@@ -30,7 +31,7 @@ export default function UserCard({
   };
   //Get to do list
   function getTodosList() {
-    return getTodos().then((res) => {
+    return getUserTodos(user._id).then((res) => {
       setToDoList(res.filter((todo: any) => todo.status === 'pending'));
       setIsOpenConfirmModal({ todo: null, modalType: 'delete', isOpen: false });
 

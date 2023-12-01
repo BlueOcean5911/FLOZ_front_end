@@ -322,7 +322,7 @@ export default function Calendar() {
       // Now, INITIAL_EVENTS contains the converted events in the desired format
     } catch (error) {
       console.log(error, 'fetch events from googlecalendar error!');
-      signOut()
+      // signOut()
     }
   }
 

@@ -44,7 +44,7 @@ export default function UploadAudioModal({
     setSelectedMeetingId('');
     setUploadedFileData(null)
   }
-  function setUploaded(data: any) {
+  function setUploaded(data) {
     if (data) {
       // Convert FilesType to an array
       const dataArray = Array.from(data);
@@ -60,11 +60,14 @@ export default function UploadAudioModal({
   }
 
   function onUploadAudio(data: any) {
+    console.log('data on upload click >>>', data);
+    
     if (selectedMeetingId == '' && modalType == 'audio') {
       toast.error('Please select meeting');
       return;
     }
     const formData = new FormData();
+    setLoader(true);
     if (modalType == 'audio') {
       formData.append('meetingId', selectedMeetingId);
       formData.append('meetingAudio', data[0]);
@@ -76,10 +79,16 @@ export default function UploadAudioModal({
         setLoader(false);
         toast.error(err.message);
       });
-      setLoader(true);
     } else {
+
+
+      // Append each selected file to the FormData object
+      [...data].forEach((file, index) => {
+        formData.append(`documentFiles`, file);
+      });
+
       formData.append('projectId', project._id);
-      formData.append('documentFile', data);
+
       uploadFile({ projectId: project._id, formData }).then((res) => {
         setLoader(false);
         onUploadComplete(res?.projectId);
@@ -151,14 +160,14 @@ export default function UploadAudioModal({
                       : null
                   }
                   {!isAdded ?
-                    <UploadComponent isUpload={isAdded} setUpload={(data) => { setUploaded(data) }} />
+                    <UploadComponent isUpload={isAdded} uploadType={modalType} setUpload={(data) => { setUploaded(data) }} />
                     :
                     <div className="h-[227px] w-[100%] text-center">
                       {
                         uploadedFileData != null && uploadedFileData.files?.map((file: any, index: number) => {
                           return (
                             <div className="w-[100%] mt-[10px] mb-[10px] flex " key={index}>
-                              <div className="w-[100%] grid grid-cols-5 text-left my-2 border-t-[1px] border-b-[1px] border-[#C3C3C3] " key={index}>
+                              <div className="w-[100%] grid grid-cols-5 text-left my-1 border-b-[1px] border-[#C3C3C3] " key={index}>
                                 <div className="col-span-2">{file?.fileName} #1</div>
                                 <div className="col-span-2">{file?.size}byts</div>
                                 <div className="col-span-1">{getTime(file?.lastModifiedDate)}</div>

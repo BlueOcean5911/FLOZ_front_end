@@ -16,6 +16,7 @@ import Sidebar from "@components/sidebar/Sidebar";
 import AddMeeting from "@components/Meeting/AddMeeting";
 import { getAllMeetings } from "@service/meeting.service";
 import { createTodo, getAllTodos, deleteTodo, updateTodoStatus, updateTodo } from "@service/todo.service";
+import { getAllDocument } from "@service/document.service";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
@@ -44,18 +45,18 @@ export default function ProjectView({
   const [meetings, setMeetings] = useState(data.meetings);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState('');
-  const [isUploadAudioModal, setIsUploadAudioModal] = useState({isOpen:false,uploadType:'audio'});
+  const [isUploadAudioModal, setIsUploadAudioModal] = useState({ isOpen: false, uploadType: 'audio' });
   const [isSubmit, setIsSubmit] = useState(false);
   const [dueDate, setDueDate] = useState<Date | any>(null);
-  const [formData, setFormData] = useState({ _id: '', title: '', assignedPerson:'', description: '', meetingId: '', dueDate: null });
+  const [formData, setFormData] = useState({ _id: '', title: '', assignedPerson: '', description: '', meetingId: '', dueDate: null });
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState({ _id: '', modalType: 'delete', isOpen: false });
   const [peopleList, setPeopleList] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [documents, setDocuments] = useState([]);
   const router = useRouter();
-
   const getIntialData = async (user: IUser) => {
     try {
-      const dbPersons = await getPersons({ organization: user.organization});
+      const dbPersons = await getPersons({ organization: user.organization });
       if (dbPersons.length > 0) {
         setPeopleList(dbPersons);
       }
@@ -68,12 +69,19 @@ export default function ProjectView({
       console.log("getPersons error", error?.response?.data);
     }
   }
-  
+
   useEffect(() => {
     if (user && user.organization) {
       getIntialData(user);
     }
-  }, [user])
+  }, [user]);
+
+  useEffect(() => {
+
+    getAllDocument(data.project._id, { projectId: data.project._id }).then(resp => {
+      setDocuments(resp);
+    })
+  }, [])
 
   const truncateSummary = (summary, maxWords) => {
     const words = summary?.split(' ');
@@ -125,7 +133,7 @@ export default function ProjectView({
       let projectReq = {
         title: title.toString(),
         description: description.toString(),
-        assignedPerson:assignedPerson.toString(),
+        assignedPerson: assignedPerson.toString(),
         projectId: data.project._id,
         status: 'pending',
         meetingId: selectedMeetingId.toString(),
@@ -155,17 +163,17 @@ export default function ProjectView({
     setDueDate(null);
     setSelectedMeetingId('');
     setIsOpenAddTask({ modalType: 'add', isOpen: true });
-    setFormData({ _id: '', title: '',assignedPerson:'', description: '', meetingId: '', dueDate: null });
+    setFormData({ _id: '', title: '', assignedPerson: '', description: '', meetingId: '', dueDate: null });
   }
   function onEditTaks(task) {
     setDueDate(new Date(task.dueDate));
     setSelectedMeetingId(task.meetingId._id);
     setIsOpenAddTask({ modalType: 'edit', isOpen: true });
-    setFormData({ _id: task._id, assignedPerson : task.assignedPerson, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
+    setFormData({ _id: task._id, assignedPerson: task.assignedPerson, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
   }
 
   const uploadMeetingAudio = (): void => {
-    setIsUploadAudioModal({isOpen:true,uploadType:'audio'});
+    setIsUploadAudioModal({ isOpen: true, uploadType: 'audio' });
   }
 
   const refreshMeetings = async () => {
@@ -174,7 +182,14 @@ export default function ProjectView({
   }
 
   const onUploadComplete = (meetingId: string) => {
-    // router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
+    if (isUploadAudioModal.uploadType == 'audio') {
+      router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
+    }
+    else {
+      getAllDocument(data.project._id, { projectId: data.project._id }).then(resp => {
+        setDocuments(resp);
+      })
+    }
   }
 
   return (
@@ -214,7 +229,7 @@ export default function ProjectView({
                       </svg>
                     </div>
                     <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
-                      <h3 className="card-title-font" onClick={() => setIsUploadAudioModal({isOpen:true,uploadType:'audio'})}>Upload meeting audios</h3>
+                      <h3 className="card-title-font" onClick={() => setIsUploadAudioModal({ isOpen: true, uploadType: 'audio' })}>Upload meeting audios</h3>
 
                       <p className="card-desc-font" >Get summary for your meetings</p>
                     </div>
@@ -355,7 +370,7 @@ export default function ProjectView({
                         <path fillRule="evenodd" clipRule="evenodd" d="M16.6771 1.50701C16.3079 1.13777 15.754 1.13777 15.3848 1.50701L7.0771 9.81483C6.70787 10.1841 6.70787 10.7379 7.0771 11.1072L8.36941 12.3995C8.73864 12.7687 9.29249 12.7687 9.66172 12.3995L13.1079 8.95328C13.4771 8.58404 14.154 8.8302 14.154 9.38406L14.154 22.4919C14.2156 22.9843 14.7079 23.415 15.1386 23.415L16.9848 23.415C17.4771 23.415 17.9079 22.9843 17.9079 22.4919L17.9079 9.44559C17.9079 8.89174 18.5848 8.64558 18.954 9.01482L22.4002 12.461C22.7694 12.8303 23.3233 12.8303 23.6925 12.461L24.9848 11.1072C25.354 10.7379 25.354 10.1841 24.9848 9.81483L16.6771 1.50701Z" fill="#349989" />
                       </svg>
                     </div>
-                    <div className="pl-4 cursor-pointer" onClick={() => setIsUploadAudioModal({isOpen:true,uploadType:'document'})}>
+                    <div className="pl-4 cursor-pointer" onClick={() => setIsUploadAudioModal({ isOpen: true, uploadType: 'document' })}>
                       <h3 className="card-title-font">Upload files</h3>
                       <p className="card-desc-font" >Files from different teams</p>
                     </div>
@@ -363,17 +378,17 @@ export default function ProjectView({
                 </div>
               </div>
 
-              <div className="col-span-1">
-                <div className="flex flex-col pl-4 " style={{ borderLeft: "2px solid gainsboro" }}>
+              <div className="col-span-1 ">
+                <div className="flex flex-col pl-4 w-[100%] h-[160px] overflow-y-scroll hide_scroll" style={{ borderLeft: "2px solid gainsboro" }}>
                   <div className="flex items-center justify-between">
                     <h3 className="my-auto pr-2 pb-1 font-bold text-sm">Recent Files</h3>
                     <h3 className="my-auto pr-2 pb-1 font-bold text-sm">Time</h3>
                   </div>
                   {
-                    meetings.map((meeting) => {
+                    documents.map((doc) => {
                       return (
                         <div className="flex items-center justify-between">
-                          <div className="mb-2 px-2 py-1 flex items-center justify-center border rounded border-stone-300" style={{ background: "#E5E5E5" }}>
+                          <div className="mb-2 px-2 py-1 flex items-left justify-left border rounded border-stone-300 min-w-[200px] max-w-[201px]" style={{ background: "#E5E5E5" }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="17" viewBox="0 0 18 20" fill="none">
                               <g clip-path="url(#clip0_728_11882)">
                                 <path fillRule="evenodd" clipRule="evenodd" d="M1.84734 -0.0078125C0.971406 -0.0078125 0.261719 0.702187 0.261719 1.57781V18.4031C0.261719 19.2791 0.971406 19.9888 1.84734 19.9888H16.1514C17.0267 19.9888 17.737 19.2791 17.737 18.4031V6.33906L11.8305 -0.0078125H1.84734Z" fill="#747474" />
@@ -387,16 +402,16 @@ export default function ProjectView({
                                 </clipPath>
                               </defs>
                             </svg>
-                            <p className="ml-2 font-small"> attachment.jpg</p>
+                            <a href={doc?.url} className="ml-2 font-small"> {truncateSummary(doc.fileName, 2)}</a>
                           </div>
 
                           <div>
-                            <p className="my-auto py-1 text-sm">{moment(meeting.date).format('MMM DD, YYYY HH:mm:ss')}</p>
+                            <p className="my-auto py-1 text-sm">{moment(doc.createdAt).format('MMM DD, YYYY HH:mm:ss')}</p>
                           </div>
                         </div>
                       )
                     })
-                  }
+                  }{documents.length == 0 && <div><p className="text-center">No documents uploaded</p></div>}
                 </div>
               </div>
             </div>
@@ -405,12 +420,12 @@ export default function ProjectView({
 
         <div className="col-span-1 border rounded border-stone-300 p-3 bg-white card_shadow h-[785px]" >
           <h3 className="my-auto pr-2 pb-3 font-bold text-sm">To Do:</h3>
-          {pendingTodos.length>0 && <div className="grid grid-cols-1 to-do-container">
+          {pendingTodos.length > 0 && <div className="grid grid-cols-1 to-do-container">
             <div>
               {pendingTodos.map((item, index) => (
                 <div key={item._id} className={`max-h-[80px] min-h-[80px] flex justify-between border rounded border-stone-300 px-2 py-3 my-2 bg-[#FBF3E0]`} >
                   <div className="pr-1">
-                    <input type="checkbox" checked={item._id == isOpenConfirmModal._id && isOpenConfirmModal.modalType != 'delete'? true : false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
+                    <input type="checkbox" checked={item._id == isOpenConfirmModal._id && isOpenConfirmModal.modalType != 'delete' ? true : false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
                       setIsOpenConfirmModal({ modalType: 'update', isOpen: true, _id: item._id })
                     }} />
                   </div>
@@ -488,7 +503,7 @@ export default function ProjectView({
                       </Dialog.Title>
                       <div className="my-10">
                         <form onSubmit={handleSubmit}>
-                        <input
+                          <input
                             type="text"
                             id="assignedPerson"
                             name="assignedPerson"

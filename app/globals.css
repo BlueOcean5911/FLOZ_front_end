@@ -19,9 +19,11 @@
 .fc-scroller::-webkit-scrollbar {
   display: none;
 }
-.align-webkit-right{
+
+.align-webkit-right {
   text-align: -webkit-right;
 }
+
 /* Hide scrollbar for IE, Edge and Firefox */
 .fc-scroller {
   -ms-overflow-style: none;
@@ -380,12 +382,17 @@
     border: 1px dashed var(--foundation-gray-neutral-80, #C9C9C9);
   }
 
-  .to-do-container{
+  .to-do-container {
     height: 45%;
     overflow-y: scroll;
   }
+
   /* Hide scrollbar for Chrome, Safari and Opera */
-.to-do-container::-webkit-scrollbar {
-  display: none;
-}
+  .to-do-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide_scroll::-webkit-scrollbar {
+    display: none;
+  }
 }

@@ -15,7 +15,6 @@ export const getTodo = async (id: string) => {
 }
 
 export const createTodo = async (todo: Todo) => {
-    console.log("function called")
     const resp = await api.post('/todos', todo);
     const newTodo = resp.data?.data;
     return newTodo;
@@ -30,7 +29,6 @@ export const getTodos = async (): Promise<Todo[]> => {
 export const getAllTodos = async (projectId: string) => {    
     const resp = await api.get(`/todos/all/${projectId}`);
     const todos = resp.data?.data || [];
-    console.log(todos, "todos");
     return todos;
 }
 export const deleteTodo = async (id: string) => {

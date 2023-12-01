@@ -39,3 +39,10 @@ export const getPersonsByOrganization = async (organization: string) => {
     const persons: IPerson[] = resq?.data && resq.data.data as IPerson[];
     return persons;
 }
+
+export const deletePerson = async (id: string) => {
+    const resp: IResponse = await api.delete(`/persons/${id}`);
+    const Person: IPerson = resp?.data && resp.data.data as IPerson;
+    return Person;
+
+}

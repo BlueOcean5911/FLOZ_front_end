@@ -9,9 +9,15 @@ export const updateMeeting = async (id: string, meeting: Meeting) => {
 }
 
 export const deleteMeeting = async (id: string) => {
-    const resp = await api.delete(`/meetings/${id}`);
-    const deletedMeeting = resp.data?.data;
-    return deletedMeeting;
+    try {
+        const resp = await api.delete(`/meetings/${id}`);
+        const deletedMeeting = resp.data?.data;
+        // TODO delete google calendar
+        return deletedMeeting;
+    } catch (error) {
+        console.log("delete meeting error!!!");
+        return null;
+    }
 }
 
 export const getMeeting = async (id: string) => {

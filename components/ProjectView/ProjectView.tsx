@@ -202,7 +202,15 @@ export default function ProjectView({
 
         <div className="col-span-3">
           <div className=" manage-project-box border rounded border-stone-300 px-3 py-3 bg-white" >
-            <h3 className="my-auto pr-2 pb-3 font-bold text-sm">Manage your project</h3>
+            <div className="flex justify-between">
+              <h3 className="my-auto pr-2 pb-3 font-bold text-sm">Manage your project</h3>
+              <Link href={`/dashboard/project/${data.project._id}/meeting`}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </Link>
+            </div>
             <div className="grid grid-cols-2">
               <div>
                 <div className="grid grid-cols px-3">

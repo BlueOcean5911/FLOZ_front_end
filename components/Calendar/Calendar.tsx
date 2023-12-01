@@ -25,13 +25,13 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { Dialog, Transition } from "@headlessui/react";
 import { getProjects, updateProject } from "../../service/project.service";
 import { createEvent, updateEvent } from "@./service/event.service";
-import Event from "./Event";
 import { Checkbox, ListItemText, OutlinedInput, Typography } from "@mui/material";
 import { getPersons, getPersonsByOrganization } from "@service/person.service";
 import { useAuthContext } from "@contexts/AuthContext";
 import { signOut } from "next-auth/react";
 import { createMeeting, deleteMeeting, updateMeeting } from "@service/meeting.service";
 import { SketchPicker } from 'react-color';
+import axios from "axios";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -159,6 +159,7 @@ export default function Calendar() {
 
   const userId = getCookie("user_id");
   ///////////////////////////////////////////////////////////////////////////
+  const { signOut } = useAuthContext();
 
   useEffect(() => {
     const initalize = async () => {
@@ -268,31 +269,31 @@ export default function Calendar() {
 
   async function fetchEvents() {
     try {
-      const allEvents: Response = await fetch(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Bearer " + providerToken, // Access token for google
-          },
-        }
-      );
 
-      const events: Event = (await allEvents.json()) as Event;
+      const allEvents = await axios.get(
+          "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + providerToken, // Access token for google
+            },
+          }
+        );
+      const events: Event = (await allEvents.data) as Event;
       // Loop through the Google Calendar events and convert them
       const googleEvents = events?.items;
       console.log(googleEvents, "googleEvents");
       console.log(events, "events");
       for (const googleEvent of googleEvents) {
         const eventId = googleEvent.id; // Event ID
-        const title = googleEvent.summary; // Event summary
-        const description = googleEvent.description;// Event description
-        const start = googleEvent.start.dateTime; // Start date
-        const end = googleEvent.end.dateTime; // End date
-        const attendees = googleEvent.attendees;
-        const projectId = googleEvent.extendedProperties?.private.projectId;
-        const meeetingId = googleEvent.extendedProperties?.private.meetingId;
-        const meetingUrl = googleEvent.hangoutLink;
+        const title = googleEvent?.summary; // Event summary
+        const description = googleEvent?.description;// Event description
+        const start = googleEvent?.start?.dateTime; // Start date
+        const end = googleEvent?.end?.dateTime; // End date
+        const attendees = googleEvent?.attendees;
+        const projectId = googleEvent?.extendedProperties?.private.projectId;
+        const meeetingId = googleEvent?.extendedProperties?.private.meetingId;
+        const meetingUrl = googleEvent?.hangoutLink;
         console.log(attendees, "attendees getted from google event");
         // const startStr = start?.replace(/T.*$/, "") ?? start;
         // const endStr = end?.replace(/T.*$/, "") ?? end;
@@ -319,10 +320,13 @@ export default function Calendar() {
         }
         setInitialEvents(INITIAL_EVENTS);
       }
-      // Now, INITIAL_EVENTS contains the converted events in the desired format
     } catch (error) {
-      console.log(error, 'fetch events from googlecalendar error!');
-      // signOut()
+      if((error?.response?.status & 400) === 400){
+        signOut();
+        return;
+      } else {
+        throw error;
+      }
     }
   }
 
@@ -716,17 +720,12 @@ export default function Calendar() {
       <div className="flex-[85%] h-full flex flex-col">
         <div className="flex items-center my-[14px] m-[30px] text-[13px]">
           <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-            </svg>
-
+            
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
             <div onClick={() => { setIsOpen(true) }}>Create</div>
           </div>
-          <button onClick={() => { setIsPickColorOpen(true) }}>Show Pick Color</button>
           <div className="flex justify-center w-[85px] h-[32px] mx-[12px] border-2 border-[#349989] rounded-md text-[#349989]">
             <select className="focus:border-none selected:border-none focus:outline-none" defaultValue={'timeGridWeek'} onChange={(e) => { calendarRef.current.getApi().changeView(e.target.value) }}>
               <option value={'timeGridDay'} >Day</option>

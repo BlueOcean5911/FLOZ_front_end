@@ -24,12 +24,12 @@ const UploadComponent = ({ isUpload, setUpload }) => {
   };
 
   const handleFiles = (files) => {
-    let reader = new FileReader();
-    reader.readAsDataURL(files[0]);
-    reader.onloadend = function () {
-      setIsUploaded(true);
-      setUpload({ fileData: files[0]  });
-    };
+    // let reader = new FileReader();
+    // reader.readAsDataURL(files);
+    // reader.onloadend = function () {
+    // };
+    setIsUploaded(true);
+    setUpload(files);
   };
 
   useEffect(() => {
@@ -72,12 +72,14 @@ const UploadComponent = ({ isUpload, setUpload }) => {
   };
 
   const handleChange = event => {
-    let reader = new FileReader();
-    reader.readAsDataURL(event.target.files[0]);
-    reader.onloadend = function () {
-      setIsUploaded(true);
-      setUpload({ fileData: event.target.files[0] });
-    };
+    // let reader = new FileReader();
+    // reader.readAsDataURL(event.target.files);
+    // reader.onloadend = function () {
+    // };
+    console.log(event.target.files, 'event.target.files', event.target.files[0]);
+    
+    setIsUploaded(true);
+    setUpload(event.target.files);
   };
   return (
 

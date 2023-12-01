@@ -4,23 +4,26 @@
 
 import { ThreeDots } from 'react-loader-spinner'
 import { useState } from "react";
-import { uploadAudio } from "@./service/project.service";
+import { uploadAudio, uploadFile } from "@./service/project.service";
 import { Meeting } from "@models/meeting.model";
+import { IProject } from "@models/project.model";
 // import { useDropzone } from 'react-dropzone';
 import UploadComponent from "./UploadComponent";
 import moment from 'moment';
 import { toast } from "react-toastify";
 export default function UploadAudioModal({
+  modalType,
   meetings,
   meetingId,
-  projectId,
+  project,
   isShow,
   setShow,
   onUploadComplete
 }: {
+  modalType?: string;
   meetings?: Meeting[] | null;
   meetingId?: string;
-  projectId: string;
+  project: any;
   isShow: boolean;
   setShow: (boolean) => void;
   onUploadComplete: (string) => void;
@@ -28,7 +31,9 @@ export default function UploadAudioModal({
   const [isAdded, setIsAdded] = useState(false);
   const [loader, setLoader] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState(meetingId || '');
+  const [selectedProjectId, setSelectedProjectId] = useState(project._id || '');
   const [uploadedFileData, setUploadedFileData] = useState<any | ArrayBuffer | null>(null);
+  console.log('meetings', modalType);
 
   const getTime = (date: string) => {
     return moment(date).format('HH:mm:ss');
@@ -40,34 +45,52 @@ export default function UploadAudioModal({
     setUploadedFileData(null)
   }
   function setUploaded(data: any) {
-    if (data.fileData) {
-      setIsAdded(data.fileData == null ? false : true);
-      const fileName = data.fileData?.name.split('.')[0];
-      data.fileData.fileName = fileName;
-      setUploadedFileData(data);
-    }
+    if (data) {
+      // Convert FilesType to an array
+      const dataArray = Array.from(data);
+      // Update each element in the array
+      const updatedArray = dataArray.map((file: any) => {
+        const fileName = file?.name.split('.')[0];
+        return { ...file, fileName }; // Create a new object with the added fileName property
+      });
 
+      setIsAdded(updatedArray.length > 0); // Check if the updated array has elements
+      setUploadedFileData({ files: updatedArray, binaryFile: data });
+    }
   }
 
   function onUploadAudio(data: any) {
-    if (selectedMeetingId == '') {
+    if (selectedMeetingId == '' && modalType == 'audio') {
       toast.error('Please select meeting');
       return;
     }
     const formData = new FormData();
-    if (!selectedMeetingId) { console.log('Meeting is required'); return };
+    if (modalType == 'audio') {
+      formData.append('meetingId', selectedMeetingId);
+      formData.append('meetingAudio', data[0]);
+      uploadAudio({ projectId: project._id, formData }).then((res) => {
+        setLoader(false);
+        onUploadComplete(res?.meetingId);
+        setShow(false);
+      }).catch((err) => {
+        setLoader(false);
+        toast.error(err.message);
+      });
+      setLoader(true);
+    } else {
+      formData.append('projectId', project._id);
+      formData.append('documentFile', data);
+      uploadFile({ projectId: project._id, formData }).then((res) => {
+        setLoader(false);
+        onUploadComplete(res?.projectId);
+        setShow(false);
+      }).catch((err) => {
+        setLoader(false);
+        toast.error(err.message);
+      });
+    }
 
-    formData.append('meetingId', selectedMeetingId);
-    formData.append('meetingAudio', data.fileData);
-    setLoader(true);
-    uploadAudio({ projectId: projectId, formData }).then((res) => {
-      setLoader(false);
-      onUploadComplete(res?.meetingId);
-      setShow(false);
-    }).catch((err) => {
-      setLoader(false);
-      toast.error(err.message);
-    })
+
   }
   return (
     <>
@@ -89,12 +112,12 @@ export default function UploadAudioModal({
                     </svg>
                   </div>
                   <div className="mb-4">
-                    Transcribe Audio
+                    {modalType == 'Transcribe audio' ? 'Audio' : 'Upload Document'}
                   </div>
                 </div>
                 <div className="p-4">
                   {
-                    (meetings && meetings.length > 0) ?
+                    (meetings && modalType == 'audio' && meetings.length > 0) ?
                       (
                         <div>
                           <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this recording to</p>
@@ -108,26 +131,48 @@ export default function UploadAudioModal({
 
                         </div>
                       )
-                    : null
+                      : null
+                  }
+                  {
+                    (project && modalType == 'document' && [project].length > 0) ?
+                      (
+                        <div>
+                          <p className="font-bold pb-1"><span style={{ color: "red" }}>*</span>Add this file to</p>
+                          <select id="countries" className={`bg-gray-50 border  text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${selectedProjectId == '' && uploadedFileData != null ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
+                            defaultValue={'Select Project'} onChange={(event) => { setSelectedMeetingId(event.target.value) }} value={modalType == 'document' ? selectedProjectId : selectedMeetingId}>
+                            {/* <option selected>Select Project</option> */}
+                            {[project].map((projectItem: IProject) => (
+                              <option selected value={projectItem?._id}>{projectItem?.name}</option>
+                            ))}
+                          </select>
+
+                        </div>
+                      )
+                      : null
                   }
                   {!isAdded ?
                     <UploadComponent isUpload={isAdded} setUpload={(data) => { setUploaded(data) }} />
                     :
                     <div className="h-[227px] w-[100%] text-center">
-                      <div className="w-[100%] mt-[20px] mb-[20px] flex ">
-                        <div className="w-[100%] grid grid-cols-5 text-left my-2 border-t-[1px] border-b-[1px] border-[#C3C3C3] ">
-                          <div className="col-span-2">{uploadedFileData?.fileData.fileName} #1</div>
-                          <div className="col-span-2">{uploadedFileData?.fileData.size}byts</div>
-                          <div className="col-span-1">{getTime(uploadedFileData?.fileData.lastModifiedDate)}</div>
-                          {/* <div className="col-span-1">1000 Harrison St</div> */}
+                      {
+                        uploadedFileData != null && uploadedFileData.files?.map((file: any, index: number) => {
+                          return (
+                            <div className="w-[100%] mt-[10px] mb-[10px] flex " key={index}>
+                              <div className="w-[100%] grid grid-cols-5 text-left my-2 border-t-[1px] border-b-[1px] border-[#C3C3C3] " key={index}>
+                                <div className="col-span-2">{file?.fileName} #1</div>
+                                <div className="col-span-2">{file?.size}byts</div>
+                                <div className="col-span-1">{getTime(file?.lastModifiedDate)}</div>
+                              </div>
+                            </div>
+                          )
+                        })
+                      }
 
-                        </div>
-                      </div>
                     </div>}
                 </div>
                 {isAdded && <div className="footer h-[56px] flex items-center justify-end rounded-bmd border-t-[1px] rounded-b-md border-[#C3C3C3] " >
                   <button className="w-[73px] h-[32px] mr-2 rounded-md text-white text-[13px] bg-[#349989]" onClick={() => back()}>Back</button>
-                  <button className="w-[73px] h-[32px] mr-4 rounded-md text-white text-[13px] bg-[#349989]" onClick={() => onUploadAudio(uploadedFileData)}>Upload</button>
+                  <button className="w-[73px] h-[32px] mr-4 rounded-md text-white text-[13px] bg-[#349989]" onClick={() => onUploadAudio(uploadedFileData.binaryFile)}>Upload</button>
                 </div>}
               </div>
             </div>

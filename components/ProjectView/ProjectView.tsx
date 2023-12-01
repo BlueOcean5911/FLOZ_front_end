@@ -41,7 +41,7 @@ export default function ProjectView({
   const [meetings, setMeetings] = useState(data.meetings);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedMeetingId, setSelectedMeetingId] = useState('');
-  const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
+  const [isUploadAudioModal, setIsUploadAudioModal] = useState({isOpen:false,uploadType:'audio'});
   const [isSubmit, setIsSubmit] = useState(false);
   const [dueDate, setDueDate] = useState<Date | any>(null);
   const [formData, setFormData] = useState({ _id: '', title: '', description: '', meetingId: '', dueDate: null });
@@ -136,7 +136,7 @@ export default function ProjectView({
   }
 
   const uploadMeetingAudio = (): void => {
-    setIsUploadAudioModal(true);
+    setIsUploadAudioModal({isOpen:true,uploadType:'audio'});
   }
 
   const refreshMeetings = async () => {
@@ -145,7 +145,7 @@ export default function ProjectView({
   }
 
   const onUploadComplete = (meetingId: string) => {
-    router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
+    // router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
   }
 
   return (
@@ -185,7 +185,7 @@ export default function ProjectView({
                       </svg>
                     </div>
                     <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
-                      <h3 className="card-title-font" onClick={() => setIsUploadAudioModal(true)}>Upload meeting audios</h3>
+                      <h3 className="card-title-font" onClick={() => setIsUploadAudioModal({isOpen:true,uploadType:'audio'})}>Upload meeting audios</h3>
 
                       <p className="card-desc-font" >Get summary for your meetings</p>
                     </div>
@@ -326,7 +326,7 @@ export default function ProjectView({
                         <path fillRule="evenodd" clipRule="evenodd" d="M16.6771 1.50701C16.3079 1.13777 15.754 1.13777 15.3848 1.50701L7.0771 9.81483C6.70787 10.1841 6.70787 10.7379 7.0771 11.1072L8.36941 12.3995C8.73864 12.7687 9.29249 12.7687 9.66172 12.3995L13.1079 8.95328C13.4771 8.58404 14.154 8.8302 14.154 9.38406L14.154 22.4919C14.2156 22.9843 14.7079 23.415 15.1386 23.415L16.9848 23.415C17.4771 23.415 17.9079 22.9843 17.9079 22.4919L17.9079 9.44559C17.9079 8.89174 18.5848 8.64558 18.954 9.01482L22.4002 12.461C22.7694 12.8303 23.3233 12.8303 23.6925 12.461L24.9848 11.1072C25.354 10.7379 25.354 10.1841 24.9848 9.81483L16.6771 1.50701Z" fill="#349989" />
                       </svg>
                     </div>
-                    <div className="pl-4 cursor-pointer" onClick={uploadMeetingAudio}>
+                    <div className="pl-4 cursor-pointer" onClick={() => setIsUploadAudioModal({isOpen:true,uploadType:'document'})}>
                       <h3 className="card-title-font">Upload files</h3>
                       <p className="card-desc-font" >Files from different teams</p>
                     </div>
@@ -430,7 +430,7 @@ export default function ProjectView({
           </div>
         </div>
       </div>
-      {isUploadAudioModal ? <UploadAudioModal projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
+      {isUploadAudioModal.isOpen ? <UploadAudioModal modalType={isUploadAudioModal.uploadType} project={data.project} meetings={meetings} isShow={isUploadAudioModal.isOpen} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
 
       {isOpenModal ? <SignupFeatures setShow={setIsOpenModal} /> : <></>}
 

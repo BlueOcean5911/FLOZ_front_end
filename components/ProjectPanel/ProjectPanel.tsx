@@ -12,6 +12,7 @@ import { Meeting } from "@models/meeting.model";
 import AddMeeting from "@components/Meeting/AddMeeting";
 import { getMeetings } from "@service/meeting.service";
 import dynamic from 'next/dynamic';
+import { SketchPicker } from 'react-color';
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -54,6 +55,7 @@ export default function ProjectPanel({
     providerToken?: string;
   };
 }) {
+  const [isPickColorOpen, setIsPickColorOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false);
   const [allProjects, setAllProjects] = useState<IProject[] | null>(
     data.projects
@@ -70,6 +72,7 @@ export default function ProjectPanel({
   );
   const [searchProject, setSearchProject] = useState('');
   const [searchMeeting, setSearchMeeting] = useState('');
+  const [projectColor, setProjectColor] = useState('#349989');
 
   useEffect(() => {
     // filter this month and next month project
@@ -86,7 +89,7 @@ export default function ProjectPanel({
   }, [data, allProjects, searchProject]);
 
   useEffect(() => {
-    setMeetingsByDays(setMeetingsDay (meetings.filter((meeting) => (searchMeeting !== '' ? meeting.summary.search(new RegExp(`(${searchMeeting})`, "i")) !== -1 : true))))
+    setMeetingsByDays(setMeetingsDay(meetings.filter((meeting) => (searchMeeting !== '' ? meeting.summary.search(new RegExp(`(${searchMeeting})`, "i")) !== -1 : true))))
   }, [searchMeeting])
 
   function closeModal() {
@@ -119,7 +122,11 @@ export default function ProjectPanel({
     const projectName = form.get("name"); // Assuming your form input has a name attribute
 
     if (projectName) {
-      const savedProject = await createProject({ name: projectName.toString(), userId: data.userId });
+      const savedProject = await createProject({ 
+        name: projectName.toString(), 
+        userId: data.userId,
+        color:projectColor,
+      });
 
       if (savedProject) {
         const projects = await getProjects({});
@@ -154,7 +161,7 @@ export default function ProjectPanel({
                     id="name"
                     name="name"
                     value={searchProject}
-                    onChange={(e)=>{setSearchProject(e.target.value)}}
+                    onChange={(e) => { setSearchProject(e.target.value) }}
                     required
                     placeholder="Search Project"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
@@ -378,7 +385,7 @@ export default function ProjectPanel({
                     id="name"
                     name="name"
                     value={searchMeeting}
-                    onChange={(e) => {setSearchMeeting(e.target.value)}}
+                    onChange={(e) => { setSearchMeeting(e.target.value) }}
                     required
                     placeholder="Search Meetings"
                     className={`w-full rounded-md border p-2 px-4 outline-none `}
@@ -495,8 +502,8 @@ export default function ProjectPanel({
       <div className="z-20 flex gap-x-4">
         <div className="z-20 flex gap-x-4">
           <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-50" onClose={closeModal}>
-              <div className="fixed inset-0 overflow-y-auto">
+            <Dialog as="div" className="z-10" onClose={() => {}}>
+              <div className="fixed inset-0 overflow-y-auto" onClick={closeModal}>
                 <div className="flex min-h-full items-center justify-center p-4 text-center">
                   <Transition.Child
                     as={Fragment}
@@ -519,14 +526,21 @@ export default function ProjectPanel({
                           <label className="text-sm font-bold">
                             Project Name
                           </label>
-                          <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            required
-                            placeholder="Project X"
-                            className={`w-full rounded-md border p-2 px-4 outline-none `}
-                          />
+                          <div className="flex gap-2 m-2">
+                            <input
+                              type="text"
+                              id="name"
+                              name="name"
+                              required
+                              placeholder="Project X"
+                              className={`w-full rounded-md border p-2 px-4 outline-none `}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => { setIsPickColorOpen(true) }}
+                              className={`relative w-8 h-8 rounded-lg`}
+                              style={{ backgroundColor: `${projectColor}` }} />
+                          </div>
                           <button
                             type="submit"
                             className="mt-3 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -535,14 +549,61 @@ export default function ProjectPanel({
                           </button>
                         </form>
                       </div>
+
                     </Dialog.Panel>
                   </Transition.Child>
                 </div>
               </div>
+                {
+                  isPickColorOpen ?
+                    <>
+                      <div className="fixed w-screen h-screen left-0 top-0 z-[100] flex flex-col items-center justify-center">
+                        <div className="pick-color absolute w-full h-full">
+
+                          <div className="h-full w-full">
+                            <div className="flex min-h-full items-center justify-center text-center">
+
+                              <div className="w-full flex flex-col p-4 justify-center items-center max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                                <h1
+                                  className="text-xl font-medium leading-6 text-gray-900 m-4"
+                                >
+                                  Pick your project color!
+                                </h1>
+                                <div className="mt-2">
+                                  <SketchPicker
+                                    color={projectColor}
+                                    onChange={(color, event) => setProjectColor(color.hex)}
+                                  />
+                                </div>
+
+                                <div className="mt-4 flex gap-2">
+                                  <button
+                                    type="button"
+                                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                    onClick={() => setIsPickColorOpen(false)}
+                                  >
+                                    OK
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                    onClick={() => setIsPickColorOpen(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </> : <></>
+                }
             </Dialog>
           </Transition>
         </div>
       </div>
+
     </div>
   );
 }

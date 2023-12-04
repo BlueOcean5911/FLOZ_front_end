@@ -17,6 +17,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterDayjs } from '@mui/x-date-pickers-pro/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateCalendar, StaticDatePicker, TimeField, TimePicker } from "@mui/x-date-pickers";
+import CalendarMUI from '@components/Calendar/Calendar'
+import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
+import { useRouter } from "next/navigation";
+import { getAllDocument } from "@service/document.service";
+import Milestone from "@components/milestone/Milestone";
+
 
 const MeetingView = ({
   data
@@ -38,18 +44,20 @@ const MeetingView = ({
   const [previousMeeting, setPreviousMeeting] = useState<Meeting>(null);
   const [nextMeeting, setNextMeeting] = useState<Meeting>(null);
   const [currDateOfSchedule, setCurrDateOfSchedule] = useState<Date>(new Date());
+  const router = useRouter();
+  const [documents, setDocuments] = useState([]);
 
   useEffect(() => {
     let tempMeetings = [...meetings].filter(meeting => (new Date(meeting.date)).toISOString() < (new Date()).toISOString());
     if (tempMeetings.length > 0) {
-      setPreviousMeeting(tempMeetings?.at(tempMeetings.length - 1));
+      setPreviousMeeting(tempMeetings?.at(0));
 
     } else {
       setPreviousMeeting(null);
     }
     tempMeetings = [...meetings].filter(meeting => (new Date(meeting.date)).toISOString() > (new Date()).toISOString());
     if (tempMeetings.length > 0) {
-      setNextMeeting(tempMeetings?.at(0));
+      setNextMeeting(tempMeetings?.at(tempMeetings.length - 1));
     } else {
       setNextMeeting(null);
     }
@@ -119,7 +127,7 @@ const MeetingView = ({
       const resp = await updateMeeting(meeting._id, {
         favourite: !meeting.favourite,
       })
-      console.log(resp, !meeting.favourite);
+
       const tempMeetings = [...meetings];
       tempMeetings[index].favourite = !meeting.favourite;
       setMeetings([...tempMeetings]);
@@ -128,7 +136,19 @@ const MeetingView = ({
     }
   }
 
-  console.log([...meetings].filter(meeting => (new Date(meeting.date)).toISOString() > (new Date()).toISOString()))
+
+  const onUploadComplete = (meetingId: string) => {
+    if (isUploadAudioModal.uploadType == 'audio') {
+      router.push('/dashboard/project/' + data.project._id + '/meeting/' + meetingId);
+    }
+    else {
+      getAllDocument(data.project._id, { projectId: data.project._id }).then(resp => {
+        setDocuments(resp);
+      })
+    }
+  }
+
+
   return (
     <div className="h-full items-center justify-between">
       <div className="grid grid-cols-5 gap-4 h-full">
@@ -140,7 +160,7 @@ const MeetingView = ({
 
             <div className="flex flex-col manage-project-box border rounded border-stone-300 px-3 py-3 bg-white h-[65%] " >
               <div className="flex justify-between">
-                <h3 className="my-auto pr-2 pb-3 font-bold text-sm">Manage your project</h3>
+                <h3 className="my-auto pr-2 pb-3 font-bold text-lg">Manage your meeting</h3>
                 <Link href={`/dashboard/project/${data.project._id}/meeting`}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -211,9 +231,9 @@ const MeetingView = ({
                             <div className="w-1/2 flex  items-center">
                               <div className="w-6/12">
                                 <p
-                                  className="p-1 mx-2 border-2border-transparent rounded-md text-white font-bold"
+                                  className="p-1 mx-2 border-2border-transparent rounded-md text-white text-center font-bold"
                                   style={{ backgroundColor: `${projectIdToColorMap[meeting.projectId]}` }}
-                                >Topic</p>
+                                >{meeting.topic || 'Topic'}</p>
                               </div>
                               <div className="w-5/12">{moment(meeting.date).format("MMM D, YYYY h:mm a")}</div>
                               <div className="w-1/12 flex justify-evenly items-center" >
@@ -225,15 +245,14 @@ const MeetingView = ({
                                       <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path fillRule="evenodd" clipRule="evenodd" d="M8.81949 1.33887L10.2349 5.95426C10.2964 6.13887 10.481 6.23118 10.6656 6.23118H15.281C15.7426 6.23118 15.9272 6.84657 15.558 7.12349L11.8041 9.89272C11.6503 10.0158 11.5887 10.2312 11.6503 10.4158L13.4349 15.1543C13.558 15.585 13.0964 15.9543 12.7272 15.6773L8.69641 12.662C8.54257 12.5389 8.32718 12.5389 8.14257 12.662L4.08103 15.6773C3.7118 15.9543 3.21949 15.585 3.37334 15.1543L5.09641 10.4158C5.15795 10.2312 5.09641 10.0158 4.94257 9.89272L1.18872 7.12349C0.819491 6.84657 1.03488 6.23118 1.46565 6.23118H6.08103C6.29641 6.23118 6.45026 6.16964 6.5118 5.95426L7.95795 1.3081C8.08103 0.877335 8.69641 0.908104 8.81949 1.33887Z" fill="white" stroke="#747474" strokeWidth="1.5" />
                                       </svg>
-
                                   }
                                 </div>
-                                <svg
-                                  onClick={() => { }}
-                                  width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path fillRule="evenodd" clipRule="evenodd" d="M7.02025 5.34225C5.79486 5.34225 4.82084 6.31627 4.82084 7.54165C4.82084 8.76703 5.79486 9.74106 7.02025 9.74106C8.24563 9.74106 9.21965 8.76703 9.21965 7.54165C9.21965 6.31627 8.24563 5.34225 7.02025 5.34225ZM13.6179 9.52028L12.4553 8.54626C12.5182 8.20064 12.5496 7.8236 12.5496 7.47798C12.5496 7.13236 12.5182 6.75532 12.4553 6.4097L13.6179 5.43567C13.9949 5.12147 14.1206 4.55591 13.8692 4.11603L13.3665 3.23627C13.178 2.92207 12.8324 2.73355 12.4553 2.73355C12.3296 2.73355 12.204 2.76497 12.1097 2.79639L10.6644 3.33053C10.0988 2.82781 9.47042 2.48219 8.8106 2.26225L8.55923 0.785502C8.46497 0.282781 8.02509 0 7.52237 0H6.51693C6.01421 0 5.57433 0.282781 5.48007 0.785502L5.22871 2.23083C4.53747 2.45077 3.90906 2.82781 3.3435 3.29911L1.89818 2.76497C1.7725 2.73355 1.67824 2.70213 1.55256 2.70213C1.17552 2.70213 0.829897 2.89065 0.641376 3.20485L0.138655 4.08461C-0.112705 4.52449 -0.018445 5.09005 0.390016 5.40425L1.55256 6.37828C1.48972 6.7239 1.4583 7.10094 1.4583 7.44656C1.4583 7.8236 1.48972 8.16922 1.55256 8.51484L0.390016 9.48886C0.012975 9.80307 -0.112705 10.3686 0.138655 10.8085L0.641376 11.6883C0.829897 12.0025 1.17552 12.191 1.55256 12.191C1.67824 12.191 1.80392 12.1596 1.89818 12.1281L3.3435 11.594C3.90906 12.0967 4.53747 12.4424 5.19729 12.6623L5.44865 14.1705C5.54291 14.6732 5.95137 15.0188 6.48551 15.0188H7.49095C7.99367 15.0188 8.43355 14.6418 8.52781 14.139L8.77918 12.6309C9.50184 12.3795 10.1617 12.0025 10.7272 11.4683L12.0783 12.0025C12.204 12.0339 12.3296 12.0653 12.4553 12.0653C12.8324 12.0653 13.178 11.8768 13.3665 11.5626L13.8378 10.7457C14.1206 10.4 13.9949 9.83448 13.6179 9.52028ZM7.01998 10.997C5.10336 10.997 3.56378 9.45744 3.56378 7.54082C3.56378 5.62419 5.10336 4.08461 7.01998 4.08461C8.93661 4.08461 10.4762 5.62419 10.4762 7.54082C10.4762 9.45744 8.93661 10.997 7.01998 10.997Z" fill="#747474" />
-                                </svg>
-
+                                <AddMeeting providerToken={data.providerToken} userId={data.userId} meetingId={`${meeting._id}`} projectId={`${meeting.projectId}`} onNewMeeting={refreshMeetings}>
+                                  <svg
+                                    width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M7.02025 5.34225C5.79486 5.34225 4.82084 6.31627 4.82084 7.54165C4.82084 8.76703 5.79486 9.74106 7.02025 9.74106C8.24563 9.74106 9.21965 8.76703 9.21965 7.54165C9.21965 6.31627 8.24563 5.34225 7.02025 5.34225ZM13.6179 9.52028L12.4553 8.54626C12.5182 8.20064 12.5496 7.8236 12.5496 7.47798C12.5496 7.13236 12.5182 6.75532 12.4553 6.4097L13.6179 5.43567C13.9949 5.12147 14.1206 4.55591 13.8692 4.11603L13.3665 3.23627C13.178 2.92207 12.8324 2.73355 12.4553 2.73355C12.3296 2.73355 12.204 2.76497 12.1097 2.79639L10.6644 3.33053C10.0988 2.82781 9.47042 2.48219 8.8106 2.26225L8.55923 0.785502C8.46497 0.282781 8.02509 0 7.52237 0H6.51693C6.01421 0 5.57433 0.282781 5.48007 0.785502L5.22871 2.23083C4.53747 2.45077 3.90906 2.82781 3.3435 3.29911L1.89818 2.76497C1.7725 2.73355 1.67824 2.70213 1.55256 2.70213C1.17552 2.70213 0.829897 2.89065 0.641376 3.20485L0.138655 4.08461C-0.112705 4.52449 -0.018445 5.09005 0.390016 5.40425L1.55256 6.37828C1.48972 6.7239 1.4583 7.10094 1.4583 7.44656C1.4583 7.8236 1.48972 8.16922 1.55256 8.51484L0.390016 9.48886C0.012975 9.80307 -0.112705 10.3686 0.138655 10.8085L0.641376 11.6883C0.829897 12.0025 1.17552 12.191 1.55256 12.191C1.67824 12.191 1.80392 12.1596 1.89818 12.1281L3.3435 11.594C3.90906 12.0967 4.53747 12.4424 5.19729 12.6623L5.44865 14.1705C5.54291 14.6732 5.95137 15.0188 6.48551 15.0188H7.49095C7.99367 15.0188 8.43355 14.6418 8.52781 14.139L8.77918 12.6309C9.50184 12.3795 10.1617 12.0025 10.7272 11.4683L12.0783 12.0025C12.204 12.0339 12.3296 12.0653 12.4553 12.0653C12.8324 12.0653 13.178 11.8768 13.3665 11.5626L13.8378 10.7457C14.1206 10.4 13.9949 9.83448 13.6179 9.52028ZM7.01998 10.997C5.10336 10.997 3.56378 9.45744 3.56378 7.54082C3.56378 5.62419 5.10336 4.08461 7.01998 4.08461C8.93661 4.08461 10.4762 5.62419 10.4762 7.54082C10.4762 9.45744 8.93661 10.997 7.01998 10.997Z" fill="#747474" />
+                                  </svg>
+                                </AddMeeting>
                               </div>
                             </div>
                           </div>
@@ -245,7 +264,10 @@ const MeetingView = ({
               </div>
             </div>
             <div className="milestone manage-project-box border rounded border-stone-300 bg-white h-[35%]">
-              <h3 className="my-auto font-bold text-sm">Milestone:</h3>
+              <h3 className="my-auto font-bold text-lg">Milestone:</h3>
+              <div>
+                <Milestone meetings={meetings} />
+              </div>
               <div className="milestone-main flex gap-2 items-center ml-1">
                 <p className="inline-block font-bold text-sm text-gray-500">Previous Meeting:&nbsp;</p>
                 {previousMeeting !== null ?
@@ -255,7 +277,7 @@ const MeetingView = ({
                   </>
                   : <></>}
               </div>
-              <div className="milestone-main flex items-center ml-1">
+              <div className="milestone-main flex items-center gap-2 ml-1">
                 <p className="inline-block font-bold text-sm text-gray-500">Next Meeting:&nbsp;</p>
                 {nextMeeting !== null ?
                   <>
@@ -269,24 +291,34 @@ const MeetingView = ({
         </div>
         <div className="col-span-1 border rounded border-stone-300 bg-white card_shadow h-full" >
           <div className="flex flex-col justify-between h-full">
-            <div className="calendar">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={[
-                  'DateCalendar',
-                ]}>
-                  <DateCalendar value={dayjs(currDateOfSchedule)} onChange={(newValue) => { setCurrDateOfSchedule(newValue.toDate());}} />
-                </DemoContainer>
-              </LocalizationProvider>
-              <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => { setCurrDateOfSchedule(new Date()); }}>Today</div>
+
+            <div className="title text-lg font-bold">Calendar:</div>
+            <div className="flex justify-end relative -top-2">
+              <div className=" bg-gray-100 rounded-md mr-1 flex items-center px-1">
+                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0.445312" y="0.290039" width="16" height="16" rx="2" fill="#349989" />
+                  <path d="M13.0847 8.4662C13.1007 8.1302 12.8607 8.0342 12.7647 8.0342H9.27669C8.97269 8.0342 8.92469 8.3542 8.92469 8.3862V12.1302H13.0847V8.4662ZM10.6847 11.1542C10.6847 11.3302 10.5407 11.4742 10.3647 11.4742H10.0447C9.86869 11.4742 9.72469 11.3302 9.72469 11.1542V10.8342C9.72469 10.6582 9.86869 10.5142 10.0447 10.5142H10.3647C10.5407 10.5142 10.6847 10.6582 10.6847 10.8342V11.1542ZM10.6847 9.5222C10.6847 9.6982 10.5407 9.8422 10.3647 9.8422H10.0447C9.86869 9.8422 9.72469 9.6982 9.72469 9.5222V9.2022C9.72469 9.0262 9.86869 8.8822 10.0447 8.8822H10.3647C10.5407 8.8822 10.6847 9.0262 10.6847 9.2022V9.5222ZM12.2847 11.1542C12.2847 11.3302 12.1407 11.4742 11.9647 11.4742H11.6447C11.4687 11.4742 11.3247 11.3302 11.3247 11.1542V10.8342C11.3247 10.6582 11.4687 10.5142 11.6447 10.5142H11.9647C12.1407 10.5142 12.2847 10.6582 12.2847 10.8342V11.1542ZM12.2847 9.5222C12.2847 9.6982 12.1407 9.8422 11.9647 9.8422H11.6447C11.4687 9.8422 11.3247 9.6982 11.3247 9.5222V9.2022C11.3247 9.0262 11.4687 8.8822 11.6447 8.8822H11.9647C12.1407 8.8822 12.2847 9.0262 12.2847 9.2022V9.5222Z" fill="white" />
+                  <path d="M9.88469 6.7382C9.88469 6.6102 9.88469 4.8822 9.88469 4.8822C9.90069 4.5462 9.66069 4.4502 9.56469 4.4502H4.15669C3.85269 4.4502 3.80469 4.7702 3.80469 4.8022V12.1302H7.96469V7.4422C7.96469 7.4422 7.96469 7.0582 8.31669 7.0582C8.31669 7.0582 9.40469 7.0582 9.58069 7.0582C9.75669 7.0582 9.88469 6.8662 9.88469 6.7382ZM5.56469 10.9942C5.56469 11.1702 5.42069 11.3142 5.24469 11.3142H4.92469C4.74869 11.3142 4.60469 11.1702 4.60469 10.9942V10.6742C4.60469 10.4982 4.74869 10.3542 4.92469 10.3542H5.24469C5.42069 10.3542 5.56469 10.4982 5.56469 10.6742V10.9942ZM5.56469 9.3462C5.56469 9.5222 5.42069 9.6662 5.24469 9.6662H4.92469C4.74869 9.6662 4.60469 9.5222 4.60469 9.3462V9.0262C4.60469 8.8502 4.74869 8.7062 4.92469 8.7062H5.24469C5.42069 8.7062 5.56469 8.8502 5.56469 9.0262V9.3462ZM5.56469 7.7142C5.56469 7.8902 5.42069 8.0342 5.24469 8.0342H4.92469C4.74869 8.0342 4.60469 7.8902 4.60469 7.7142V7.3942C4.60469 7.2182 4.74869 7.0742 4.92469 7.0742H5.24469C5.42069 7.0742 5.56469 7.2182 5.56469 7.3942V7.7142ZM5.56469 6.0822C5.56469 6.2582 5.42069 6.4022 5.24469 6.4022H4.92469C4.74869 6.4022 4.60469 6.2582 4.60469 6.0822V5.7622C4.60469 5.5862 4.74869 5.4422 4.92469 5.4422H5.24469C5.42069 5.4422 5.56469 5.5862 5.56469 5.7622V6.0822ZM7.32469 10.9942C7.32469 11.1702 7.18069 11.3142 7.00469 11.3142H6.68469C6.50869 11.3142 6.36469 11.1702 6.36469 10.9942V10.6742C6.36469 10.4982 6.50869 10.3542 6.68469 10.3542H7.00469C7.18069 10.3542 7.32469 10.4982 7.32469 10.6742V10.9942ZM7.32469 9.3462C7.32469 9.5222 7.18069 9.6662 7.00469 9.6662H6.68469C6.50869 9.6662 6.36469 9.5222 6.36469 9.3462V9.0262C6.36469 8.8502 6.50869 8.7062 6.68469 8.7062H7.00469C7.18069 8.7062 7.32469 8.8502 7.32469 9.0262V9.3462ZM7.32469 7.7142C7.32469 7.8902 7.18069 8.0342 7.00469 8.0342H6.68469C6.50869 8.0342 6.36469 7.8902 6.36469 7.7142V7.3942C6.36469 7.2182 6.50869 7.0742 6.68469 7.0742H7.00469C7.18069 7.0742 7.32469 7.2182 7.32469 7.3942V7.7142ZM7.32469 6.0822C7.32469 6.2582 7.18069 6.4022 7.00469 6.4022H6.68469C6.50869 6.4022 6.36469 6.2582 6.36469 6.0822V5.7622C6.36469 5.5862 6.50869 5.4422 6.68469 5.4422H7.00469C7.18069 5.4422 7.32469 5.5862 7.32469 5.7622V6.0822ZM9.08469 6.0822C9.08469 6.2582 8.94069 6.4022 8.76469 6.4022H8.44469C8.26869 6.4022 8.12469 6.2582 8.12469 6.0822V5.7622C8.12469 5.5862 8.26869 5.4422 8.44469 5.4422H8.76469C8.94069 5.4422 9.08469 5.5862 9.08469 5.7622V6.0822Z" fill="white" />
+                </svg>
+                <select className="font-bold text-sm p-1 focus:outline-none bg-gray-100 rounded-md" defaultValue={'SD 75%'}>
+                  <option value={'SD 75%'}>
+                    {'SD 75%'}
+                  </option>
+                </select>
+              </div>
             </div>
-
-            <div className="h-[2px] my-1 rounded-full mx-4 bg-gray-300"></div>
-
-            <div className="schedule grow m-1 mt-2 flex flex-col">
+            <div className="calendar h-1/2 flex flex-col items-center justify-between">
+              <CalendarMUI meetings={meetings} handleChangeDate={setCurrDateOfSchedule} currDate={currDateOfSchedule} />
+              <div className="w-full px-8">
+                <div className="text-center text-xs cursor-pointer text-[#0B5CAB] mb-4" onClick={() => { setCurrDateOfSchedule(new Date()); }}>Today</div>
+                <div className="h-1 bg-gray-200 rounded-full" />
+              </div>
+            </div>
+            <div className="schedule h-1/2 grow m-1 mt-2 flex flex-col">
               <div className="heading flex justify-between">
 
-                <div className="title text-sm font-bold">Schedule:</div>
-                <div className="date flex">
+                <div className="title text-lg font-bold">Schedule:</div>
+                <div className="date flex items-center justify-center">
                   <svg
                     onClick={() => { handleDateOfSchedule(-1) }}
                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
@@ -308,14 +340,15 @@ const MeetingView = ({
                 {
                   meetings.filter((meeting) => (new Date(meeting.date)).toDateString() === currDateOfSchedule.toDateString()).map((meeting, index) => (
 
-                    <div key={index} className={`schedule-meeting flex justify-between p-2 bg-[#DDF1EE] border-2 border-gray-200 rounded-md ${(new Date(meeting.date)) > (new Date()) ? '' : 'bg-white border-[#DDF1EE]'} select-none`}>
-                      <div className="flex flex-col text-xs">
-                        <p className="text-gray-500">{'Topic'}</p>
+                    <div key={index} className={`schedule-meeting flex justify-between p-2  border-2 rounded-md ${(new Date(meeting.date)) < (new Date()) ? 'bg-[#DDF1EE] border-gray-200 ' : 'bg-white border-[#DDF1EE]'} select-none`}>
+                      <div className="grow flex flex-col text-xs hover:cursor-pointer"
+                        onClick={() => { window.open(meeting.googleMeetingUrl, '_blank'); }}>
+                        <p className="text-gray-500">{meeting.topic || 'Topic'}</p>
                         <p>{meeting.summary}</p>
                       </div>
                       <div className="flex flex-col text-xs text-right">
                         <p className="hover:cursor-pointer" onClick={() => removeMeeting(meeting._id)}>X</p>
-                        <p>{moment(meeting.date).format('MMM d')}</p>
+                        <p>{moment(meeting.date).format('MMM D')}</p>
                       </div>
                     </div>
                   ))
@@ -325,6 +358,7 @@ const MeetingView = ({
           </div>
         </div>
       </div>
+      {isUploadAudioModal.isOpen ? <UploadAudioModal modalType={isUploadAudioModal.uploadType} projectId={data.project._id} meetings={meetings} isShow={isUploadAudioModal.isOpen} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> : <></>}
     </div>
   )
 }

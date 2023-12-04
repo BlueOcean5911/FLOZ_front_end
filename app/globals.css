@@ -350,8 +350,6 @@
   }
 
 
-
-
   .todo-card-content-title {
     color: var(--text-weak, #444);
     font-feature-settings: 'clig' off, 'liga' off;

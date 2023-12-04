@@ -7,12 +7,15 @@ import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { IProject } from "@models";
 import moment from "moment";
-import { createProject, getProjects } from "@./service/project.service";
+import { createProject, getProjects, updateProject } from "@./service/project.service";
 import { Meeting } from "@models/meeting.model";
 import AddMeeting from "@components/Meeting/AddMeeting";
 import { getMeetings } from "@service/meeting.service";
 import dynamic from 'next/dynamic';
 import { SketchPicker } from 'react-color';
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -57,22 +60,25 @@ export default function ProjectPanel({
 }) {
   const [isPickColorOpen, setIsPickColorOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<IProject[] | null>(
-    data.projects
-  );
-  const [thisMonthProjects, setThisMonthProjects] = useState<
-    IProject[] | null
-  >();
-  const [nextMonthProjects, setNextMonthProjects] = useState<
-    IProject[] | null
-  >();
+  const [isOpenProjectModal, setIsOpenProjectModal] = useState({ isOpen: false, action: '', _id: '' });
+  const [allProjects, setAllProjects] = useState<IProject[] | null>(data.projects);
+  const [thisMonthProjects, setThisMonthProjects] = useState<IProject[] | null>();
+  const [nextMonthProjects, setNextMonthProjects] = useState<IProject[] | null>();
   const [meetings, setMeetings] = useState<Meeting[] | null>(data.meetings);
-  const [meetingsByDays, setMeetingsByDays] = useState(
-    setMeetingsDay(data.meetings)
-  );
+  const [meetingsByDays, setMeetingsByDays] = useState(setMeetingsDay(data.meetings));
   const [searchProject, setSearchProject] = useState('');
   const [searchMeeting, setSearchMeeting] = useState('');
   const [projectColor, setProjectColor] = useState('#349989');
+  const [phases, setPhases] = useState(["25% SD", "50% SD", "75% SD", "100% SD", "25% DD", "50% DD", "75% DD", "100% DD", "25% CD", "50% CD", "75% CD", "100% CD"]);
+  const [isSubmit, setIsSubmit] = useState(false);
+  // const [dueDate, setDueDate] = useState<Date | any>(null);
+  const [checkedId, setCheckedId] = useState('Today');
+  const [formData, setFormData] = useState({
+    name: '',
+    phase: '',
+    dueDate: null,
+    userId: data.userId
+  });
 
   useEffect(() => {
     // filter this month and next month project
@@ -93,11 +99,12 @@ export default function ProjectPanel({
   }, [searchMeeting])
 
   function closeModal() {
-    setIsOpen(false);
+    setIsOpenProjectModal({ isOpen: false, action: 'add', _id: '' });
   }
 
   function openModal() {
-    setIsOpen(true);
+    setFormData({ name: '', phase: '', dueDate: null, userId: data.userId });
+    setIsOpenProjectModal({ isOpen: true, action: 'add', _id: '' });
   }
 
   //get time from date using moment js
@@ -120,23 +127,36 @@ export default function ProjectPanel({
 
     // Access the form element by name
     const projectName = form.get("name"); // Assuming your form input has a name attribute
-
+    setIsSubmit(true);
     if (projectName) {
-      const savedProject = await createProject({ 
-        name: projectName.toString(), 
-        userId: data.userId,
-        color:projectColor,
-      });
+      if (formData.phase != '' && formData.dueDate !== null) {
 
-      if (savedProject) {
-        const projects = await getProjects({});
-        if (projects) setAllProjects(projects);
+        if (isOpenProjectModal.action === 'add') {
+          const savedProject = await createProject({ name: projectName.toString(), userId: data.userId, phase: formData.phase, dueDate: formData.dueDate, color:projectColor });
+          if (savedProject) {
+            const projects = await getProjects({ userId: data.userId });
+            if (projects) setAllProjects(projects);
+          }
+        } else {
+          const savedProject = await updateProject(isOpenProjectModal._id, { name: projectName.toString(), userId: data.userId, phase: formData.phase, dueDate: formData.dueDate, color:projectColor });
+          if (savedProject) {
+            const projects = await getProjects({ userId: data.userId });
+            if (projects) setAllProjects(projects);
+          }
+        }
+        setIsSubmit(false);
+        setFormData({ name: '', phase: '', dueDate: null, userId: data.userId });
+        setIsOpenProjectModal({ isOpen: false, action: 'add', _id: '' });
       }
-
-      setIsOpen(false);
     }
   };
+  const isActionProject = (action, project) => {
+    if (action === 'edit') {
+      setFormData({ name: project.name, phase: project.phase, dueDate: project.dueDate, userId: data.userId });
+      setIsOpenProjectModal({ isOpen: true, action: 'edit', _id: project._id });
+    }
 
+  }
   const CurrentTimeDynamic = dynamic(
     () => import('../People/ShowingCurrentTime'),
     { ssr: false }
@@ -221,28 +241,20 @@ export default function ProjectPanel({
                           </div>
                           <div>
                             {thisMonthProjects?.map((project) => (
-                              <div
-                                key={project._id}
-                                className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"
-                              >
+                              <div key={project._id} className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"                              >
                                 <div className="col-span-1">
-                                  <input
-                                    type="checkbox"
-                                    className=""
-                                    id="checkbox"
-                                  />
+                                  <input type="checkbox" className="" id="checkbox" />
                                 </div>
-
                                 <div className="m0-important col-span-3">
                                   <span className="m0-important f-small">
-                                    {project.name}
+                                    {project?.name}
                                   </span>
                                 </div>
                                 <div className="m0-important f-small col-span-3">
-                                  <span>phase</span>
+                                  <span>{project?.phase}</span>
                                 </div>
                                 <div className="m0-important f-small col-span-2">
-                                  <span>{getMonth(project.createdAt)}</span>
+                                  <span>{getMonth(project?.dueDate)}</span>
                                 </div>
                                 <div className="m0-important f-small col-span-2">
                                   <span className="title_color">
@@ -258,10 +270,11 @@ export default function ProjectPanel({
                                   </span>
                                 </div>
                                 <div className="col-span-1 mx-0">
-                                  <select style={{ float: "right" }}>
-                                    <option value={""}></option>
-                                    <option value={""}>Admin</option>
-                                    <option value={""}>User</option>
+                                  <select style={{ float: "right" }} onChange={(e) => { isActionProject(e.target.value, project); }}>
+                                    <option selected disabled value='default'>Action</option>
+                                    <option value="edit">Edit</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
                                   </select>
                                 </div>
                               </div>
@@ -285,59 +298,35 @@ export default function ProjectPanel({
                       ) : (
                         <div>
                           <div className="text-black-400 text-md grid grid-cols-6 bg-gray-100 px-4 py-2 font-bold">
-                            <div>
-                              <input
-                                type="checkbox"
-                                className=""
-                                id="checkbox"
-                              />
-                            </div>
-                            <div>
-                              <span>Name</span>
-                            </div>
-                            <div>
-                              <span className="m0-important">Phase</span>
-                            </div>
-                            <div>
-                              <span>Due Date</span>
-                            </div>
-                            <div>
-                              <span></span>
-                            </div>
-                            <div>
-                              <span></span>
-                            </div>
+                            <div> <input type="checkbox" className="" id="checkbox" /> </div>
+                            <div> <span>Name</span> </div>
+                            <div> <span className="m0-important">Phase</span> </div>
+                            <div> <span>Due Date</span> </div>
+                            <div>  <span></span> </div>
+                            <div>  <span></span> </div>
                           </div>
                           <div>
                             {nextMonthProjects?.map((project) => (
-                              <div
-                                key={project._id}
-                                className="mt-4 grid grid-cols-6 space-x-4 border-t px-4 text-sm font-normal"
-                              >
-                                <div>
-                                  <input
-                                    type="checkbox"
-                                    className=""
-                                    id="checkbox"
-                                  />
+                              <div key={project._id} className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"                              >
+                                <div className="col-span-1">
+                                  <input type="checkbox" className="" id="checkbox" />
                                 </div>
-
-                                <div className="m0-important f-small">
-                                  <span className="m0-important">
-                                    {project.name}
+                                <div className="m0-important col-span-3">
+                                  <span className="m0-important f-small">
+                                    {project?.name}
                                   </span>
                                 </div>
-                                <div className="m0-important f-small">
-                                  <span>phase</span>
+                                <div className="m0-important f-small col-span-3">
+                                  <span>{project?.phase}</span>
                                 </div>
-                                <div className="m0-important f-small">
-                                  <span>{getMonth(project.createdAt)}</span>
+                                <div className="m0-important f-small col-span-2">
+                                  <span>{getMonth(project?.dueDate)}</span>
                                 </div>
-                                <div className="m0-important f-small">
+                                <div className="m0-important f-small col-span-2">
                                   <span className="title_color">
                                     {" "}
                                     <Link
-                                      href={`/project/${project._id}`}
+                                      href={`/dashboard/project/${project._id}`}
                                       key={project._id}
                                     >
                                       <h4 className="f-small text-sm">
@@ -346,11 +335,12 @@ export default function ProjectPanel({
                                     </Link>
                                   </span>
                                 </div>
-                                <div>
-                                  <select style={{ float: "right" }}>
-                                    <option value={""}></option>
-                                    <option value={""}>Admin</option>
-                                    <option value={""}>User</option>
+                                <div className="col-span-1 mx-0">
+                                  <select style={{ float: "right" }} onChange={(e) => { isActionProject(e.target.value, project); }} value={isOpenProjectModal._id == project._id ? isOpenProjectModal.action : ''}>
+                                    <option selected disabled value=''>Action</option>
+                                    <option value="edit">Edit</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
                                   </select>
                                 </div>
                               </div>
@@ -416,67 +406,52 @@ export default function ProjectPanel({
                         <p>{""}</p>
                       ) : (
                         <div>
-                          {meetingsByDays?.map(
-                            (
-                              day: {
-                                label: string;
-                                meetings: Meeting[];
-                              },
-                              index: number
-                            ) => (
-                              <section
-                                key={day.label}
-                                className="accordion mb-4"
-                              >
-                                <div className="tab bg-white-100 text-black-400 text-md">
-                                  <label
-                                    htmlFor={`accordion-${index}`}
-                                    className="tab__label font-bold"
-                                  >
-                                    {day.label}
-                                  </label>
-                                  <input
-                                    type="checkbox"
-                                    name={`accordion-${index}`}
-                                    id={`accordion-${index}`}
-                                  />
-                                  <div className="tab__content">
-                                    {day.meetings?.map(
-                                      (meetings: Meeting) => (
-                                        <div
-                                          key={meetings._id}
-                                          className="font-small grid grid-cols-4 space-x-4 border-b px-2 py-4 text-sm"
-                                        >
-                                          <div className="m0-important f-small col-span-1">
-                                            <span>
-                                              {getTime(meetings.date.toString())}
-                                            </span>
-                                          </div>
-                                          <div className="m0-important col-span-2 text-sm">
-                                            <span className="m0-important f-small font-bold">
-                                              {meetings.summary}
-                                            </span>
-                                          </div>
-                                          <div className="m0-important col-span-1 text-right">
-                                            <span className="title_color">
-                                              {" "}
-                                              <Link
-                                                href={`/dashboard/project/${meetings.projectId}/meeting/${meetings._id}`}
-                                                key={meetings._id}
-                                              >
-                                                <h4 className="f-small text-sm">
-                                                  Details
-                                                </h4>
-                                              </Link>
-                                            </span>
-                                          </div>
+                          {meetingsByDays?.map((day: { label: string; meetings: Meeting[]; }, index: number) => (
+                            <section key={day.label} className="accordion mb-4">
+                              <div className="tab bg-white-100 text-black-400 text-md">
+                                <label htmlFor={`accordion-${index}`} className="tab__label font-bold" >
+                                  {day.label}
+                                </label>
+                                <input type="checkbox" name={`accordion-${index}`} id={`accordion-${index}`} checked={day.label == checkedId ? true : false} onChange={() => {
+                                  setCheckedId(day.label);
+                                }} />
+                                <div className="tab__content">
+                                  {day.meetings?.map(
+                                    (meetings: Meeting) => (
+                                      <div
+                                        key={meetings._id}
+                                        className="font-small grid grid-cols-4 space-x-4 border-b px-2 py-4 text-sm"
+                                      >
+                                        <div className="m0-important f-small col-span-1">
+                                          <span>
+                                            {getTime(meetings.date.toString())}
+                                          </span>
                                         </div>
-                                      )
-                                    )}
-                                  </div>
+                                        <div className="m0-important col-span-2 text-sm">
+                                          <span className="m0-important f-small font-bold">
+                                            {meetings.summary}
+                                          </span>
+                                        </div>
+                                        <div className="m0-important col-span-1 text-right">
+                                          <span className="title_color">
+                                            {" "}
+                                            <Link
+                                              href={`/dashboard/project/${meetings.projectId}/meeting/${meetings._id}`}
+                                              key={meetings._id}
+                                            >
+                                              <h4 className="f-small text-sm">
+                                                Details
+                                              </h4>
+                                            </Link>
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )
+                                  )}
                                 </div>
-                              </section>
-                            )
+                              </div>
+                            </section>
+                          )
                           )}
                         </div>
                       )}
@@ -501,9 +476,9 @@ export default function ProjectPanel({
 
       <div className="z-20 flex gap-x-4">
         <div className="z-20 flex gap-x-4">
-          <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="z-10" onClose={() => {}}>
-              <div className="fixed inset-0 overflow-y-auto" onClick={closeModal}>
+          <Transition appear show={isOpenProjectModal.isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={() => {}}>
+              <div className="fixed inset-0 overflow-y-auto">
                 <div className="flex min-h-full items-center justify-center p-4 text-center">
                   <Transition.Child
                     as={Fragment}
@@ -526,20 +501,46 @@ export default function ProjectPanel({
                           <label className="text-sm font-bold">
                             Project Name
                           </label>
-                          <div className="flex gap-2 m-2">
+                          <div className="flex align-middle items-center gap-1 justify-between mt-3">
                             <input
                               type="text"
                               id="name"
                               name="name"
+                              value={formData.name}
                               required
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                               placeholder="Project X"
                               className={`w-full rounded-md border p-2 px-4 outline-none `}
                             />
                             <button
-                              type="button"
-                              onClick={() => { setIsPickColorOpen(true) }}
-                              className={`relative w-8 h-8 rounded-lg`}
-                              style={{ backgroundColor: `${projectColor}` }} />
+                                type="button"
+                                onClick={() => { setIsPickColorOpen(true) }}
+                                className={`relative w-8 h-8 rounded-lg`}
+                                style={{ backgroundColor: `${projectColor}` }} />
+                          </div>
+                          <div>
+                            <select id="countries" className={`bg-gray-50 mt-2 border text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formData.phase == '' && isSubmit ? 'dark:border-red-600 border-red-500' : 'dark:border-gray-600 border-gray-300'}`}
+                              onChange={(event) => { setFormData({ ...formData, phase: event.target.value }); }}
+                              value={formData.phase != '' ? formData.phase : ''}
+                            >
+                              <option disabled selected value="">Choose Phase</option>
+                              {phases.map((phase) => (
+                                <option value={phase}>{phase}</option>
+                              ))}
+                            </select>
+
+                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                              <DemoContainer components={['DatePicker']}>
+                                <div className="m-w-[100px]">
+                                  <DatePicker
+                                    className="px-2 py-2"  // Adjust the padding here (e.g., px-2 for horizontal padding and py-2 for vertical padding)
+                                    value={!isSubmit && formData.dueDate == null ? null : moment(formData.dueDate)}
+                                    slotProps={{ textField: { placeholder: 'Due Date' } }}
+                                    onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
+                                  />
+                                </div>
+                              </DemoContainer>
+                            </LocalizationProvider>
                           </div>
                           <button
                             type="submit"

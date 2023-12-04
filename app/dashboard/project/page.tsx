@@ -23,9 +23,10 @@ export default async function Page() {
             <Sidebar persons={persons} projects={projects} />
           </div>
 
-          <div className="col-span-3">
+          <div className="col-span-3 overflow-auto">
             <ProjectItems projects={projects} />
           </div>
+          <div className="col-span-1 border rounded border-stone-300 bg-white card_shadow h-full" ></div>
         </div>
       </div>
     </>

@@ -4,6 +4,7 @@ interface Meeting {
     audioURL?: string;
     summary?: string;
     members?: Array<any>;
+    favourite?:boolean;
     projectId?: string;
     updatedAt?: Date;
     createdAt?: Date;

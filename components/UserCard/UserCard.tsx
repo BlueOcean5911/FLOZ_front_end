@@ -69,7 +69,6 @@ export default function UserCard({
           <div key={todo._id} className="flex justify-between items-start border rounded border-stone-300 px-3 py-3 bg-white" >
             <div className="pr-2">
               <input type="checkbox" checked={(todo._id == isOpenConfirmModal.todo?._id) && isOpenConfirmModal.modalType != 'delete' ? true : false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
-                console.log(e, 'event');
                 setIsOpenConfirmModal({ modalType: 'update', isOpen: true, todo: todo })
               }} />
             </div>

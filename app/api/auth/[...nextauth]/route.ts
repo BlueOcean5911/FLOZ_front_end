@@ -24,7 +24,6 @@ const handler = NextAuth({
           if (token.expires && typeof token.expires === 'number' && Date.now() > (token.expires * 1000)) {
             try {
               const refreshedTokens = await refreshAccessToken(token.refreshToken);
-              console.log("session refreshedTokens", refreshedTokens)
               // Update session with new tokens
               session["accessToken"] = refreshedTokens.access_token;
     

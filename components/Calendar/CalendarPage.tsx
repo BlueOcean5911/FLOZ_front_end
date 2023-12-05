@@ -161,7 +161,7 @@ function fetchGoogleEvents(accessToken, refreshToken) {
         return reject(err)
       }
     });
-    
+
   })
 }
 
@@ -484,17 +484,17 @@ export default function CalendarPage() {
       const eventCreationRes = await axios.post(url.toString(),
         event,
         { headers });
-  
+
       const eventCreationResponse: { id: string, hangoutLink: string } =
         (await eventCreationRes.data) as { id: string, hangoutLink: string };
-  
+
       const googleEventId = eventCreationResponse.id;
       const googleMeetingUrl = eventCreationResponse.hangoutLink;
-  
+
       await updateProject(selectedProject, {
         color: projectColor,
       })
-  
+
       await updateMeeting(newMeeting._id, {
         googleEventId,
         googleMeetingUrl,
@@ -1187,18 +1187,20 @@ export default function CalendarPage() {
                     </div>
                     <div className="flex gap-4">
                       <span className="meh4fc KU3dEf" aria-hidden="true"><svg focusable="false" width="20" height="20" viewBox="0 0 24 24" className=" NMm5M"><path d="M15 8c0-1.42-.5-2.73-1.33-3.76.42-.14.86-.24 1.33-.24 2.21 0 4 1.79 4 4s-1.79 4-4 4c-.43 0-.84-.09-1.23-.21-.03-.01-.06-.02-.1-.03A5.98 5.98 0 0 0 15 8zm1.66 5.13C18.03 14.06 19 15.32 19 17v3h4v-3c0-2.18-3.58-3.47-6.34-3.87zM9 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 9c-2.7 0-5.8 1.29-6 2.01V18h12v-1c-.2-.71-3.3-2-6-2M9 4c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 9c2.67 0 8 1.34 8 4v3H1v-3c0-2.66 5.33-4 8-4z"></path></svg></span>
-                      {
-                        (selectedEvent?.event.extendedProps.attendees as any)?.map((person) => {
-                          if (person?.email) {
-                            return (
-                              <div className="flex gap-1">
-                                <div className="inline-block w-6 h-6 uppercase text-center rounded-full bg-gray-500 text-white">{(person.email as string).substring(0, 1)}</div>
-                                <p className="text-sm" key={person.email}>{person.email}</p>
-                              </div>
-                            )
-                          }
-                        })
-                      }
+                      <div className="flex flex-col gap-1">
+                        {
+                          (selectedEvent?.event.extendedProps.attendees as any)?.map((person) => {
+                            if (person?.email) {
+                              return (
+                                <div className="flex gap-1">
+                                  <div className="inline-block w-6 h-6 uppercase text-center rounded-full bg-gray-500 text-white">{(person.email as string).substring(0, 1)}</div>
+                                  <p className="text-sm" key={person.email}>{person.email}</p>
+                                </div>
+                              )
+                            }
+                          })
+                        }
+                      </div>
                     </div>
                     <div className="flex gap-4">
                       <svg focusable="false" width="20" height="20" viewBox="0 0 24 24" className=" NMm5M"><path d="M18 17v-6c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v6H4v2h16v-2h-2zm-2 0H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6zm-4 5c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z"></path></svg>

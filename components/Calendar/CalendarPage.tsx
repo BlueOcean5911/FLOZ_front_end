@@ -37,10 +37,11 @@ import { IPerson, Meeting } from "@models";
 import moment from "moment";
 import CopyClipboard from "@components/CopyClipboard/CopyClipboard";
 import EventModal from "./EventModal";
-import {Item, Event} from "types/Calendar.type"
+import { Item, Event } from "types/Calendar.type"
 
 import refreshAccessToken from "@utils/refreshGoogleOAuthToken"
 import AddMeeting from "@components/Meeting/AddMeeting";
+import { fetchGoogleEvents } from "@utils/googlecalendar.utils";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -55,162 +56,53 @@ const MenuProps = {
 
 
 
-function fetchGoogleEvents(accessToken, refreshToken) {
-  return new Promise((resolve, reject) => {
-    axios.get("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      },
-    }).then((res) => {
-      return resolve(res.data)
-    }).catch((err) => {
-      console.log(err, "fetchGoogleEvnets function error!!!")
-      if (err.response.status === 401) {
-        return refreshAccessToken(refreshToken).then((newAccessToken) => {
-          return fetchGoogleEvents(newAccessToken, refreshToken);
-        }).then(resolve).catch(reject)
-      } else {
-        return reject(err)
-      }
-    });
-
-  })
-}
-
 export default function CalendarPage() {
-  // selected meeting id
-  const [meetingId, setMeetingid] = useState('');
-
-  // attencies
-  const [selectedPersonEmailList, setSelectedPersonEmailList] = React.useState<string[]>([]);
-
-  const { user } = useAuthContext();
-  // Start and End date that reflect to the calendar 
-  const [summary, setSummary] = React.useState('');
-  const [startDate, setStartDate] = React.useState<Dayjs | null>(dayjs(''));
-  const [endDate, setEndDate] = React.useState<Dayjs | null>(dayjs('2022-04-17'));
-
-  // Selected project from the Form
-  const [selectedProject, setSelectedProject] = useState("");
+  // state value Project List
   const [allProjects, setAllProjects] = useState([]);
-
-  const [description, setDescription] = useState("");
-
   // Selected Date by clicking on the calendar with user
   const [currentDateTime, setCurrentDateTime] = useState<Date | null>(new Date());
-  // Determine if the calendar is open or closed
-  const [isOpen, setIsOpen] = useState(false);
-  const [isEditCompShow, setIsEditCompShow] = useState(false);
-  const [openModalState, setOpenModalState] = useState("None");
   // Attributes for the calendar
   const [initialEvents, setInitialEvents] = useState([]);
-
-  const [users, setUsers] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEventMeetingId, setSelectedEventMeetingId] = useState('');
+  const [selectedEventProjectId, setSelectedEventProjectId] = useState('');
   //////////////////////////////////////////////////////////////////////////
-  const [isPickColorOpen, setIsPickColorOpen] = useState(false)
-  const [projectColor, setProjectColor] = useState('#349989');
   const [projectColorMap, setProjectColorMap] = useState<Record<string, number>[]>([]);
   //////////////////////////////////////////////////////////////////////////
   const [meetingList, setMeetingList] = useState<Meeting[]>([]);
   ///////////////////////////////////////////////////////////////////////////
+  // Determine if the calendar is open or closed
+  const [isOpen, setIsOpen] = useState(false);
+  const [isEditCompShow, setIsEditCompShow] = useState(false);
+  ///////////////////////////////////////////////////////////////////////////
+  const { signOut } = useAuthContext();
+
   const calendarRef: any = useRef();
+  // Google OAuth Token
   const providerToken = getCookie("p_token");
   const refreshToken = getCookie("r_token");
   const INITIAL_EVENTS = [];
 
   const userId = getCookie("user_id");
-  ///////////////////////////////////////////////////////////////////////////
-  const { signOut } = useAuthContext();
 
   useEffect(() => {
-    const initalize = async () => {
+    (async () => {
       setCurrentDateTime(new Date());
       await fetchAllProjects();
       await setMeetingList(await getMeetings());
-    }
-    initalize();
+    })();
   }, []);
 
   useEffect(() => {
-    fetchAllProjects();
+    updateProjectColorMap();
   }, [isOpen]);
 
   useEffect(() => {
-    setProjectColor(projectColorMap[selectedProject]);
-  }, [selectedProject])
-
-  useEffect(() => {
-    setSummary(selectedEvent?.event.title);
-    setDescription(selectedEvent?.event.extendedProps.description);
-    setStartDate(dayjs(selectedEvent?.event.start));
-    setEndDate(dayjs(selectedEvent?.event.end));
-    getSelectedPersonEmailsFromAttentdees();
-    getSelectedProjectIdandColor();
-  }, [selectedEvent])
-
-  const getSelectedProjectIdandColor = () => {
-    setSelectedProject(selectedEvent?.event.extendedProps.projectId);
-    setProjectColor(projectColorMap[selectedEvent?.event.extendedProps.projectId as string])
-  }
-
-  const getSelectedPersonEmailsFromAttentdees = () => {
-    const tempselectedPersonEmailLists = [];
-    const tempAttendees = selectedEvent?.event?.extendedProps?.attendees;
-    for (let i = 0; i < tempAttendees?.length; i++) {
-      tempselectedPersonEmailLists.push(tempAttendees[i]?.email);
-      if (i === tempAttendees.length - 1) {
-        setSelectedPersonEmailList(tempselectedPersonEmailLists);
-      }
-    }
-  }
-
-  const editSelectedEvent = async () => {
-    setOpenModalState("Update");
-    fetchAllUsers();
-    fetchAllProjects();
-    console.log(meetingId, "selected meeting id");
-    setMeetingid(meetingId);
-    setIsOpen(true);
-  }
-
-  const deleteEventFromCalendar = async () => {
-    const url = new URL(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
-    );
-
-    try {
-      await fetch(url, {
-        method: "DELETE",
-        headers: {
-          Authorization: "Bearer " + providerToken, // Access token for google
-        }
-      });
-      selectedEvent.remove();
-    } catch (error) {
-      console.log("Delete Event Error", error);
-    }
-  }
-
-  const handleSelected = (event: SelectChangeEvent<typeof selectedPersonEmailList>) => {
-    const {
-      target: { value },
-    } = event;
-    setSelectedPersonEmailList(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-    );
-  };
-  // If summary in the is changed, the new value is added to the summary state;
-  const handleChange = (event: SelectChangeEvent) => {
-    setSummary(event.target.value as string);
-  };
-
-  const fetchAllUsers = async () => {
-    let data = await getPersonsByOrganization(user.organization);
-    setUsers(data);
-  }
+    (async () => {
+      await fetchEvents();
+      await setMeetingList(await getMeetings())
+    })()
+  }, [projectColorMap, allProjects]);
 
   const fetchAllProjects = async () => {
     const tempProjects = await getProjects({ userId: userId });
@@ -225,16 +117,8 @@ export default function CalendarPage() {
     return;
   };
 
-  useEffect(() => {
-    (async () => {
-      await fetchEvents();
-      await setMeetingList(await getMeetings())
-    })()
-  }, [projectColorMap, allProjects]);
-
   async function fetchEvents() {
     try {
-
       const allEvents = await fetchGoogleEvents(providerToken, refreshToken);
       const events: Event = allEvents as Event;
       // Loop through the Google Calendar events and convert them
@@ -286,300 +170,44 @@ export default function CalendarPage() {
     }
   }
 
-  function closeModal() {
-    setIsOpen(false);
-  }
-
   const addEvent = async (selectInfo: { start: string; end: string }) => {
-    setOpenModalState("Insert")
-    setSummary('');
-    setDescription('');
-    setSelectedProject('');
-    setSelectedPersonEmailList([]);
-    setStartDate(dayjs(selectInfo.start));
-    setEndDate(dayjs(selectInfo.end));
-    fetchAllUsers();
-    fetchAllProjects();
-
-    setMeetingid('');
+    setSelectedEventMeetingId('');
+    setSelectedEventProjectId('');
     setIsOpen(true);
   };
 
-  const getLocalTime = (val) => {
-    const date = new Date(val);
-    const offset = date.getTimezoneOffset();
-    const localTime = new Date(date.getTime() + offset * 60 * 1000)
-    // return localTime.toISOString();
-    return date.toISOString();
+  const editSelectedEvent = async () => {
+    setIsOpen(true);
   }
 
-  const onSave = async () => {
+  const updateProjectColorMap = () => {
+    fetchAllProjects();
+  }
 
-    const personIdList = [];
-    for (const personEmail of selectedPersonEmailList) {
-      personIdList.push((await getPersons({
-        email: personEmail
-      }))?.at(0)?._id);
-    }
+  const removeEvent = () => {
+    deleteMeeting(selectedEvent?.event?.extendedProps?.meetingId);
+    selectedEvent?.event?.remove();
+    deleteEventFromCalendar();
+    setIsEditCompShow(false)
+  }
 
-    const newMeeting: Meeting = await createMeeting({
-      date: startDate.toDate(),
-      audioURL: '',
-      summary: summary,
-      members: personIdList,
-      projectId: selectedProject,
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    })
-
-    let attendees = [];
-
-    for (const user of users) {
-      if (selectedPersonEmailList.indexOf(user.email) > -1) {
-        attendees.push({
-          name: user.name,
-          email: user.email,
-          responseStatus: "accepted",
-          self: true,
-        });
-      }
-    }
-
-    const timestamp = Date.now().toString();
-    const requestId = "conference-" + timestamp;
-
-
-    const event = {
-      summary: summary,
-      description: description ?? "",
-      start: {
-        dateTime: getLocalTime(startDate.toISOString()), // Date.ISOString()
-        timeZone: Intl.DateTimeFormat().resolvedOptions, // Pakistan/Lahore
-      },
-      end: {
-        dateTime: getLocalTime(endDate.toISOString()),
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Pakistan/Lahore
-      },
-      ...(attendees?.length && { attendees: attendees }),
-      conferenceData: {
-        createRequest: {
-          requestId: requestId,
-          conferenceSolutionKey: {
-            type: "hangoutsMeet",
-          },
-        },
-      },
-      extendedProperties: {
-        private: {
-          projectId: selectedProject,
-          meetingId: newMeeting._id,
-        }
-      }
-    };
-
+  const deleteEventFromCalendar = async () => {
     const url = new URL(
-      "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
     );
 
-    const headers: AxiosRequestConfig["headers"] = {
-      Authorization: "Bearer " + providerToken, // Access token for google
-      "Content-Type": "application/json",
-    };
-
-    const params = { conferenceDataVersion: 1 };
-    Object.keys(params).forEach((key) =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      url.searchParams.append(key, params[key])
-    );
-
-    // const eventCreationRes = await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     Authorization: "Bearer " + providerToken, // Access token for google
-    //   },
-    //   body: JSON.stringify(event),
-    // });
     try {
-      const eventCreationRes = await axios.post(url.toString(),
-        event,
-        { headers });
-
-      const eventCreationResponse: { id: string, hangoutLink: string } =
-        (await eventCreationRes.data) as { id: string, hangoutLink: string };
-
-      const googleEventId = eventCreationResponse.id;
-      const googleMeetingUrl = eventCreationResponse.hangoutLink;
-
-      await updateProject(selectedProject, {
-        color: projectColor,
-      })
-
-      await updateMeeting(newMeeting._id, {
-        googleEventId,
-        googleMeetingUrl,
-      })
-    } catch (error) {
-      await deleteMeeting(newMeeting._id);
-      signOut();
-    }
-
-    setIsOpen(false);
-    clearData();
-  };
-
-  const handleFullcalendarUpdate = async (event: any) => {
-
-    const url = new URL(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${event.id}`
-    );
-    const updatedEvent = {
-      summary: event.title,
-      description: event.description ?? "",
-      start: {
-        dateTime: event.start
-      },
-      end: {
-        dateTime: event.end,
-      },
-      attendees: event?.extendedProps.attendees,
-      extendedProperties: {
-        private: {
-          projectId: event.extendedProps.projectId,
-          meetingId: event.extendedProps.meetingId,
+      await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + providerToken, // Access token for google
         }
-      }
-    };
-    const eventCreationRes = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: "Bearer " + providerToken, // Access token for google
-      },
-      body: JSON.stringify(updatedEvent),
-    });
+      });
+      selectedEvent.remove();
+    } catch (error) {
+      console.log("Delete Event Error", error);
+    }
   }
-
-  const handleChangeEvent = async (info) => {
-
-    handleClickedEvent(info);
-
-    const url = new URL(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${info.event.id}`
-    );
-    const updatedEvent = {
-      summary: info.event.title,
-      description: description ?? "",
-      start: {
-        dateTime: info.event.start
-      },
-      end: {
-        dateTime: info.event.end,
-      },
-      attendees: info.event.attedeees,
-      conferenceData: info.event.conferenceData,
-    };
-    const eventCreationRes = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: "Bearer " + providerToken, // Access token for google
-      },
-      body: JSON.stringify(updatedEvent),
-    });
-
-  }
-
-  const clearData = () => {
-    setSummary("");
-    setDescription("");
-    setStartDate(dayjs(''));
-    setEndDate(dayjs(''));
-    setSelectedPersonEmailList([]);
-    setOpenModalState("None")
-  }
-
-  const onChangeDescription = (e: any) => {
-    setDescription(e.target.value);
-  };
-  ////////////////////////////////////////////////////////////////
-
-  // const handleEventClick = (clickInfo) => {
-  //   if (
-  //     confirm(
-  //       `Are you sure you want to delete the event '${clickInfo.event.title}'`
-  //     )
-  //   ) {
-  //     clickInfo.event.remove();
-  //   }
-  // };
-
-  // const handleEvents = (events) => {
-  //   // setCurrentEvents(events);
-  // };
-
-  // const renderEventContent = (eventInfo) => {
-  //   return (
-  //     <>
-  //       <b>{eventInfo.timeText}</b>
-  //       <i>{eventInfo.event.title}</i>
-  //     </>
-  //   );
-  // };
-
-
-  const handleSelectChange = (e) => {
-    setSelectedProject(e.target.value);
-  };
-
-  const onSaveNew = () => {
-    //save 
-    clearData();
-  }
-
-  const onCancel = () => {
-    clearData()
-    setIsOpen(false);
-  }
-
-  const setStartDate_date = (date) => {
-    const start_date = dayjs(date);
-    // setStartDate(dayjs(new Date(start_date.year(), start_date.month(), start_date.day(), startDate.hour(), startDate.minute(), startDate.second()).toISOString()));
-  }
-
-  const setStartDate_time = (time) => {
-
-    const start_time = dayjs(time);
-    setStartDate(dayjs(new Date(startDate.year(), startDate.month(), startDate.day(), start_time.hour(), start_time.minute(), start_time.second()).toISOString()));
-  }
-
-  const setEndDate_date = (date) => {
-    const end_date = dayjs(date);
-    setEndDate(dayjs(new Date(end_date.year(), end_date.month(), end_date.day(), endDate.hour(), endDate.minute(), endDate.second()).toISOString()));
-  }
-
-  const setEndDate_time = (time) => {
-
-    const end_time = dayjs(time);
-    setStartDate(dayjs(new Date(endDate.year(), endDate.month(), endDate.day(), end_time.hour(), end_time.minute(), end_time.second()).toISOString()));
-  }
-  const calendarOptions = {
-    initialDate: new Date(),
-    events: [
-      {
-        title: 'Event 1',
-        start: new Date(),
-        end: new Date(),
-      },
-      {
-        title: 'Event 2',
-        start: new Date(),
-        end: new Date(),
-      },
-    ],
-  };
-
-
-  const handleClickedEvent = ((info) => {
-    setSelectedEvent(info)
-  })
 
   const getCalendarTitle = () => {
     return calendarRef.current?.getApi().view.title;
@@ -589,18 +217,21 @@ export default function CalendarPage() {
     window.open(`\\dashboard\\project\\${selectedEvent?.event?.extendedProps.projectId}\\meeting\\${selectedEvent?.event?.extendedProps?.meetingId}`, '_self');
   }
 
-  const removeEvent = () => {
-    setIsEditCompShow(false);
-    deleteMeeting(selectedEvent?.event?.extendedProps?.meetingId);
-    selectedEvent?.event?.remove();
-    deleteEventFromCalendar();
-    setIsEditCompShow(false)
-    
-  }
-
   const handleChangeDateOfCalendar = (newValue: Date) => {
     setCurrentDateTime(newValue);
     calendarRef.current.getApi().gotoDate(newValue.toISOString())
+  }
+
+  const handleFullCalendarClicked = (info) => {
+    info.jsEvent.preventDefault();
+    setSelectedEvent(info);
+    setSelectedEventMeetingId(info?.event.extendedProps.meetingId);
+    setSelectedEventProjectId(info?.event.extendedProps.projectId);
+    setIsEditCompShow(true);
+  }
+
+  const refreshFullCalendar = () => {
+
   }
 
   const closeEventModal = () => {
@@ -608,94 +239,102 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="h-full flex flex-row">
-      <div className="flex-[85%] h-full flex flex-col">
-        <div className="flex items-center my-[14px] m-[30px] text-[13px]">
-          <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
-
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <div onClick={() => { setIsOpen(true);console.log("Create clicked!!1") }}>Create</div>
-          </div>
-          <div className="flex justify-center w-[85px] h-[32px] mx-[12px] border-2 border-[#349989] rounded-md text-[#349989]">
-            <select className="focus:border-none selected:border-none focus:outline-none" defaultValue={'timeGridWeek'} onChange={(e) => { calendarRef.current.getApi().changeView(e.target.value) }}>
-              <option value={'timeGridDay'} >Day</option>
-              <option value={'timeGridWeek'}>Week</option>
-              <option value={'dayGridMonth'}>Month</option>
-            </select>
-          </div>
-          <button className="w-8 h-8 justify-center border-2 mr-[5px] rounded-md border-[#349989] flex items-center" onClick={() => calendarRef.current.getApi().prev()}>
-            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" clipRule="evenodd" d="M7.69141 0.553519L7.69141 11.4458C7.69141 11.7535 7.29141 11.9689 7.01448 11.7227L0.491406 6.39967C0.245252 6.21506 0.245252 5.81506 0.491406 5.63044L7.01448 0.245827C7.29141 0.030442 7.69141 0.215057 7.69141 0.553519Z" fill="#349989" />
-            </svg>
-
-          </button>
-          <button className="w-8 h-8 justify-center flex items-center border-2 rounded-md border-[#349989]" onClick={() => calendarRef.current.getApi().next()}>
-            <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" clipRule="evenodd" d="M0.308594 11.4465L0.308593 0.554174C0.308593 0.246483 0.708593 0.0310983 0.985516 0.277252L7.50859 5.60033C7.75475 5.78494 7.75475 6.18494 7.50859 6.36956L0.985517 11.7542C0.708594 11.9696 0.308594 11.7849 0.308594 11.4465Z" fill="#349989" />
-            </svg>
-
-          </button>
-          <div className="text-base px-[12px]">{getCalendarTitle()}</div>
+    <div className="h-full flex flex-col">
+      <div className="flex items-center my-[14px] text-[13px]">
+        <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          <div onClick={() => { setIsOpen(true); console.log("Create clicked!!1") }}>Create</div>
         </div>
-        <div className="grow">
-          <div className="h-full text-[10px]">
-
-            <FullCalendar
-              ref={calendarRef}
-              key={initialEvents.length}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              headerToolbar={{
-                left: "",
-                center: "",
-                right: "",
-              }}
-              initialView="timeGridWeek"
-              editable={true}
-              selectable={true}
-              selectMirror={true}
-              dayMaxEvents={true}
-              eventResizableFromStart={true}
-              events={initialEvents} // alternatively, use the `events` setting to fetch from a feed
-              // select={handleDateSelect}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              //@ts-ignore No overload matches this call.
-              select={addEvent}
-              eventResize={(info) => {
-                handleFullcalendarUpdate(info?.event);
-                updateMeeting(info?.event?.extendedProps?.meetingId, {
-                  date: new Date(info?.event.start),
-                  updatedAt: new Date(),
-                })
-              }}
-              eventDrop={(info) => {
-                handleFullcalendarUpdate(info?.event);
-                updateMeeting(info?.event?.extendedProps?.meetingId, {
-                  date: new Date(info?.event.start),
-                  updatedAt: new Date(),
-                })
-              }}
-              eventClick={(info) => { info.jsEvent.preventDefault(); handleClickedEvent(info); setMeetingid(info.event.extendedProps.meetingId);console.log(info); setIsEditCompShow(true); setOpenModalState('Update') }}
-            />
-          </div>
+        <div className="flex justify-center w-[85px] h-[32px] mx-[12px] border-2 border-[#349989] rounded-md text-[#349989]">
+          <select className="focus:border-none selected:border-none focus:outline-none" defaultValue={'timeGridWeek'} onChange={(e) => { calendarRef.current.getApi().changeView(e.target.value) }}>
+            <option value={'timeGridDay'} >Day</option>
+            <option value={'timeGridWeek'}>Week</option>
+            <option value={'dayGridMonth'}>Month</option>
+          </select>
         </div>
+        <button className="w-8 h-8 justify-center border-2 mr-[5px] rounded-md border-[#349989] flex items-center" onClick={() => calendarRef.current.getApi().prev()}>
+          <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" clipRule="evenodd" d="M7.69141 0.553519L7.69141 11.4458C7.69141 11.7535 7.29141 11.9689 7.01448 11.7227L0.491406 6.39967C0.245252 6.21506 0.245252 5.81506 0.491406 5.63044L7.01448 0.245827C7.29141 0.030442 7.69141 0.215057 7.69141 0.553519Z" fill="#349989" />
+          </svg>
+        </button>
+        <button className="w-8 h-8 justify-center flex items-center border-2 rounded-md border-[#349989]" onClick={() => calendarRef.current.getApi().next()}>
+          <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" clipRule="evenodd" d="M0.308594 11.4465L0.308593 0.554174C0.308593 0.246483 0.708593 0.0310983 0.985516 0.277252L7.50859 5.60033C7.75475 5.78494 7.75475 6.18494 7.50859 6.36956L0.985517 11.7542C0.708594 11.9696 0.308594 11.7849 0.308594 11.4465Z" fill="#349989" />
+          </svg>
 
-        <AddMeeting isOpen={isOpen} setIsOpen={setIsOpen} providerToken={providerToken} userId={userId} onNewMeeting={() => {}} meetingId={meetingId}  />
+        </button>
+        <div className="text-base px-[12px]">{getCalendarTitle()}</div>
       </div>
-      <div className="flex-[15%]">
-        <Calendar handleChangeDate={handleChangeDateOfCalendar} currDate={currentDateTime} meetings={meetingList} />
-        <div className="text-center text-xs cursor-pointer text-[#0B5CAB]" onClick={() => { setCurrentDateTime(new Date()); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>
+      <div className="grow flex gap-4">
+
+        <div className="flex-[85%] h-full flex flex-col">
+
+          <div className="grow">
+            <div className="h-full text-[10px]">
+              <FullCalendar
+                ref={calendarRef}
+                key={initialEvents.length}
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                headerToolbar={{
+                  left: "",
+                  center: "",
+                  right: "",
+                }}
+                initialView="timeGridWeek"
+                editable={true}
+                selectable={true}
+                selectMirror={true}
+                dayMaxEvents={true}
+                eventResizableFromStart={true}
+                events={initialEvents} // alternatively, use the `events` setting to fetch from a feed
+                // select={handleDateSelect}
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-ignore No overload matches this call.
+                select={addEvent}
+                eventResize={(info) => {
+                  updateMeeting(info?.event?.extendedProps?.meetingId, {
+                    date: new Date(info?.event.start),
+                    updatedAt: new Date(),
+                  })
+                }}
+                eventDrop={(info) => {
+                  updateMeeting(info?.event?.extendedProps?.meetingId, {
+                    date: new Date(info?.event.start),
+                    updatedAt: new Date(),
+                  })
+                }}
+                eventClick={handleFullCalendarClicked}
+              />
+            </div>
+          </div>
+
+          <AddMeeting
+            isOpen={isOpen} setIsOpen={setIsOpen}
+            providerToken={providerToken}
+            userId={userId}
+            onNewMeeting={() => { refreshFullCalendar }}
+            meetingId={selectedEventMeetingId}
+            projectId={selectedEventProjectId}
+            updateProjectColorMap={setProjectColorMap}
+          />
+        </div>
+        <div className="flex-[15%] mt-4">
+          <Calendar handleChangeDate={handleChangeDateOfCalendar} currDate={currentDateTime} meetings={meetingList} />
+          <div
+            className="text-center text-xs cursor-pointer text-[#0B5CAB]"
+            onClick={() => { setCurrentDateTime(new Date()); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>
+        </div>
       </div>
-      <EventModal 
-        isOpen={isEditCompShow} 
-        color={projectColor}
+      <EventModal
+        isOpen={isEditCompShow}
+        color={projectColorMap[selectedEvent?.event.extendedProps.projectId]}
         selectedEvent={selectedEvent}
         removeEvent={removeEvent}
         closeModal={closeEventModal}
         editSelectedEvent={editSelectedEvent}
         goTOMeetingPage={goTOMeetingPage} />
-
     </div>
   );
 }

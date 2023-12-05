@@ -73,10 +73,10 @@ const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
         { label: 'News' },
         ...(peoples.length > 0
           ? peoples.map((item) => {
-              item.label = item.name;
-              item.children = [{ label: 'profile' }];
-              return item;
-            })
+            item.label = item.name;
+            item.children = [{ label: 'profile' }];
+            return item;
+          })
           : []),
       ],
     },
@@ -88,7 +88,15 @@ const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
             {item.name}
           </Link>
         ),
-        children: [{ label: 'sub_project' }],
+        children: [
+        {
+          label: (
+            <Link href={`/dashboard/project/${item._id}/meeting`}>
+              {"Manage Meetings"}
+            </Link>
+          )
+        }
+        ],
       })) : [],
     },
   ]);
@@ -105,10 +113,10 @@ const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
             { label: 'News' },
             ...(peoples.length > 0
               ? peoples.map((item) => {
-                  item.label = item.name;
-                  item.children = [{ label: 'profile' }];
-                  return item;
-                })
+                item.label = item.name;
+                item.children = [{ label: 'profile' }];
+                return item;
+              })
               : []),
           ],
         },
@@ -120,7 +128,11 @@ const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
                 {item.name}
               </Link>
             ),
-            children: [{ label: 'sub_project' }],
+            children: [{ label: (
+              <Link href={`/dashboard/project/${item._id}/meeting`}>
+                {"Manage Meeting"}
+              </Link>
+            ) }],
           })) : [],
         },
       ])

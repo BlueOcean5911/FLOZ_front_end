@@ -8,16 +8,20 @@ import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
 import { DateCalendar, StaticDatePicker, DatePicker, TimePicker } from "@mui/x-date-pickers";
 
-import { Checkbox, ListItemText, OutlinedInput } from "@mui/material";
+import { Checkbox, ListItemText, OutlinedInput, Typography } from "@mui/material";
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import IconSearch from "@components/icons/IconSearch";
-import { getProjects } from "@service/project.service";
+import { getProjects, updateProject } from "@service/project.service";
 import { getPersons, getPersonsByOrganization } from "@service/person.service";
-import { createMeeting } from "@service/meeting.service";
+import { createMeeting, deleteMeeting, getMeeting, updateMeeting as updateMeetingDb } from "@service/meeting.service";
 import { useAuthContext } from "@contexts/AuthContext";
 import { createEvent } from "@service/event.service";
+import axios, { AxiosRequestConfig } from "axios";
+import { SketchPicker } from 'react-color'
+import { IPerson, Meeting } from "@models";
+import { getUserByEmail } from "@service/user.service";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -35,32 +39,46 @@ const AddMeeting = ({
     providerToken,
     userId,
     projectId,
+    meetingId = '',
     onNewMeeting
 }: {
     children: React.ReactNode;
     providerToken?: string;
     userId?: string;
     projectId?: string;
+    meetingId?: string;
     onNewMeeting?: () => void
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [personName, setPersonName] = useState<string[]>([]);
+    const [selectedPersonEmailList, setSelectedPersonEmailList] = useState<string[]>([]);
     const { user } = useAuthContext();
-
+    const { signOut } = useAuthContext();
 
     // Start and End date that reflect to the calendar 
     const [summary, setSummary] = useState('');
     const [startDate, setStartDate] = useState<Moment | null>(moment().startOf('day'));
-    const [endDate, setEndDate] = useState<Moment | null>(moment().endOf('day'));
+    const [endDate, setEndDate] = useState<Moment | null>(moment().startOf('day').add(30, 'minutes'));
     const [description, setDescription] = useState("");
     const [users, setUsers] = useState([]);
-    const [selectedProject, setSelectedProject] = useState<any>(projectId);
+    const [selectedProject, setSelectedProject] = useState<string>(projectId);
     const [allProjects, setAllProjects] = useState([]);
+    const [topic, setTopic] = useState('');
+    const [isPickColorOpen, setIsPickColorOpen] = useState(false)
+    const [projectColor, setProjectColor] = useState('#349989');
+    const [projectColorMap, setProjectColorMap] = useState<Record<string, number>[]>([]);
 
     const fetchAllProjects = async () => {
-        const projects = await getProjects({userId:user._id});
-        setAllProjects(projects);
-    }
+        const tempProjects = await getProjects({ userId: userId });
+        const tempProjectColorMap = [];
+        for (let i = 0; i < tempProjects.length; i++) {
+            tempProjectColorMap[tempProjects[i]._id] = tempProjects[i].color;
+        }
+        // console.log("temp allProjects before set--------->", allProjects);
+        setAllProjects(tempProjects);
+        setProjectColorMap(tempProjectColorMap);
+        // console.log("temp allProjects after--------->", allProjects);
+        return;
+    };
 
     const fetchAllUsers = async () => {
         const users = await getPersonsByOrganization(user?.organization);
@@ -69,9 +87,51 @@ const AddMeeting = ({
     useEffect(() => {
         if (isOpen) {
             fetchAllProjects();
-            fetchAllUsers()
+            fetchAllUsers();
+            if (meetingId !== '') {
+                initilaizeMeetingProperty();
+            }
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        console.log(selectedProject, "selectd Project Id changed")
+        setProjectColor(projectColorMap[selectedProject]);
+    }, [selectedProject, projectColorMap])
+
+    const initilaizeMeetingProperty = async () => {
+        getMeeting(meetingId).then((meeting:Meeting) => {
+            console.log(meeting);
+            if (meeting.summary.split(' - ').length > 1) {
+                setSummary(meeting.summary.split(' - ')?.at(0));
+                setDescription(meeting.summary.split(' - ')?.at(1));
+            } else {
+                setDescription('');
+                setSummary(meeting.summary);    
+            }
+            setStartDate(moment(meeting.date));
+            setEndDate(moment(meeting.date).add(meeting.period, "minutes"));
+            getSelectedPersonEmailsFromAttentdees(meeting);
+            getSelectedProjectIdandColor();
+            setTopic(meeting.topic)
+        })
+    }
+
+    const getSelectedPersonEmailsFromAttentdees = (meeting: Meeting) => {
+        const tempselectedPersonEmailLists = [];
+        const tempAttendees = meeting.members;
+        for (let i = 0; i < tempAttendees?.length; i++) {
+            tempselectedPersonEmailLists.push(tempAttendees[i]?.email);
+            if (i === tempAttendees.length - 1) {
+                setSelectedPersonEmailList(tempselectedPersonEmailLists);
+            }
+        }
+    }
+
+    const getSelectedProjectIdandColor = () => {
+        setSelectedProject(projectId);
+        setProjectColor(projectColorMap[projectId])
+    }
 
     const closeModal = () => {
         setIsOpen(false);
@@ -92,14 +152,16 @@ const AddMeeting = ({
         setDescription("");
         setStartDate(moment().startOf('day'));
         setEndDate(moment().endOf('day'));
-        setPersonName([]);
+        setSelectedProject('');
+        setSelectedPersonEmailList([]);
+        setTopic('');
     }
 
-    const handleSelected = (event: SelectChangeEvent<typeof personName>) => {
+    const handleSelected = (event: SelectChangeEvent<typeof selectedPersonEmailList>) => {
         const {
             target: { value },
         } = event;
-        setPersonName(
+        setSelectedPersonEmailList(
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value,
         );
@@ -134,33 +196,50 @@ const AddMeeting = ({
     }
 
     const onSave = async () => {
-        let attendees = [];
-        for (const user of users) {
-            if (personName.indexOf(user.name) > -1) {
-                attendees.push(user._id);
-            }
+        const personIdList = [];
+        for (const personEmail of selectedPersonEmailList) {
+            personIdList.push((await getPersons({
+                email: personEmail
+            }))?.at(0)?._id);
         }
 
         const meeting = {
             date: startDate.toDate(),
             summary: `${summary} - ${description}`,
-            members: attendees,
-            projectId: selectedProject
+            members: personIdList,
+            projectId: selectedProject,
+            topic: topic,
+            period: moment(endDate).diff(moment(startDate), 'minutes'),
+            updatedAt: new Date(),
+            createdAt: new Date(),
         };
 
-        createMeeting(meeting).then(() => {
+        const resultUpdateProject = await updateProject(selectedProject, {
+            color: projectColor,
+        })
+
+        projectColorMap[selectedProject] = projectColor;
+
+        createMeeting(meeting).then((meeting) => {
+            console.log(meeting, "Created meeting");
             onNewMeeting();
+            saveIntoGoogleCalendar(meeting._id);
         });
-        saveIntoGoogleCalendar();
         setIsOpen(false);
         clearData();
     };
 
-    const saveIntoGoogleCalendar = async () => {
+    const saveIntoGoogleCalendar = async (meetingId) => {
         let attendees = [];
+
         for (const user of users) {
-            if (personName.indexOf(user.name) > -1) {
-                attendees.push({email: user.email, displayName: user.name});
+            if (selectedPersonEmailList.indexOf(user.email) > -1) {
+                attendees.push({
+                    name: user.name,
+                    email: user.email,
+                    responseStatus: "accepted",
+                    self: true,
+                });
             }
         }
 
@@ -187,6 +266,12 @@ const AddMeeting = ({
                     },
                 },
             },
+            extendedProperties: {
+                private: {
+                  projectId: selectedProject,
+                  meetingId: meetingId,
+                }
+              }
         };
 
         const url = new URL(
@@ -197,24 +282,139 @@ const AddMeeting = ({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             url.searchParams.append(key, params[key])
         );
-
-        const eventCreationRes = await fetch(url, {
-            method: "POST",
-            headers: {
+        try {
+            const headers: AxiosRequestConfig["headers"] = {
                 Authorization: "Bearer " + providerToken, // Access token for google
                 "Content-Type": "application/json",
+            };
+            const eventCreationRes = await axios.post(url.toString(),
+                event,
+                { headers });
+            console.log(eventCreationRes.data, "EventCreationReas");
+            const eventCreationResponse: { id: string, hangoutLink: string } = (await eventCreationRes.data) as { id: string, hangoutLink: string };
+
+            const googleEventId = eventCreationResponse.id;
+            const googleMeetingUrl = eventCreationResponse.hangoutLink;
+
+            await updateMeetingDb(meetingId, {
+                googleEventId,
+                googleMeetingUrl,
+            })
+
+            await createEvent({
+                eventId: googleEventId,
+                projectId: selectedProject ? selectedProject : allProjects[0]?._id,
+            });
+        } catch (error) {
+            await deleteMeeting(meetingId);
+            signOut();
+        }
+    }
+
+    const handleSave = () => {
+        if (meetingId === '') {
+            onSave();
+        } else {
+            updateMeeting();
+        }
+    }
+
+    const updateMeeting = async () => {
+        // Todo update db and google calendar
+        let attendees = [];
+
+        for (const user of users) {
+            if (selectedPersonEmailList.indexOf(user.email) > -1) {
+                attendees.push({
+                    name: user.name,
+                    email: user.email,
+                    responseStatus: "accepted",
+                    self: true,
+                });
+            }
+        }
+
+        const timestamp = Date.now().toString();
+        const requestId = "conference-" + timestamp;
+
+
+        const event = {
+            summary: summary,
+            description: description ?? "",
+            start: {
+                dateTime: startDate.format(),
+                timeZone: startDate.format('Z')
             },
-            body: JSON.stringify(event),
-        });
+            end: {
+                dateTime: endDate.format(),
+                timeZone: endDate.format('Z')
+            },
+            ...(attendees?.length && { attendees: attendees }),
+            conferenceData: {
+                createRequest: {
+                    requestId: requestId,
+                    conferenceSolutionKey: {
+                        type: "hangoutsMeet",
+                    },
+                },
+            },
+            extendedProperties: {
+                private: {
+                    meetingId: meetingId,
+                    projectId: selectedProject,
+                }
+            }
+        };
 
-        const eventCreationResponse: { id: string } = (await eventCreationRes.json()) as { id: string };
+        const meeting = await getMeeting(meetingId);
 
-        const eventId = eventCreationResponse.id;
+        const url = new URL(
+            `https://www.googleapis.com/calendar/v3/calendars/primary/events/${meeting.googleEventId}`
+        );
+        const params = { conferenceDataVersion: 1 };
+        Object.keys(params).forEach((key) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            url.searchParams.append(key, params[key])
+        );
 
-        await createEvent({
-            eventId: eventId,
-            projectId: selectedProject ? selectedProject : allProjects[0]?._id,
-        });
+        const headers: AxiosRequestConfig["headers"] = {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + providerToken,
+        };
+        try {
+            const eventCreationRes = await axios.put(url.toString(),
+                event, { headers });
+        } catch (error) {
+            signOut();
+            return;
+        }
+
+        const personIdList = [];
+        
+        users.filter((person:IPerson) => selectedPersonEmailList.includes(person.email)).map((item:IPerson) => {
+            personIdList.push(item._id)
+        })
+
+        console.log("personList", personIdList);
+
+        await updateMeetingDb(meetingId, {
+            summary: summary + ' - ' + description,
+            date: startDate.toDate(),
+            members: personIdList,
+            projectId: selectedProject,
+            period:  moment(endDate).diff(moment(startDate), 'minutes'),
+            updatedAt: new Date(),
+        })
+        const resultUpdateProject = await updateProject(projectId, {
+            color: projectColor,
+        })
+
+        console.log(resultUpdateProject, "Result update Project!!!");
+
+        projectColorMap[projectId] = projectColor;
+
+        setIsOpen(false);
+        clearData();
     }
 
     return (
@@ -223,9 +423,21 @@ const AddMeeting = ({
                 {children}
             </div>
             <Transition appear show={isOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={closeModal}>
+                <Dialog as="div" className="relative z-10" onClose={closeModal}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black/25" />
+                    </Transition.Child>
+
                     <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                        <div className="flex min-h-full items-center justify-center text-center">
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"
@@ -237,7 +449,7 @@ const AddMeeting = ({
                             >
                                 <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
                                     <div className="title text-center text-xl p-1">
-                                        New Event
+                                        {meetingId === '' ? 'New Event' : 'Edit Event'}
                                     </div>
                                     <hr className="border-b-1 border-gray-600" />
 
@@ -250,6 +462,7 @@ const AddMeeting = ({
                                                         labelId="demo-simple-select-label"
                                                         id="demo-simple-select"
                                                         sx={{ height: '32px' }}
+                                                        value={summary}
                                                         onChange={handleChange}
                                                         IconComponent={() => (<span></span>)}
                                                     >
@@ -340,7 +553,7 @@ const AddMeeting = ({
                                                         labelId="demo-multiple-checkbox-label"
                                                         id="demo-multiple-checkbox"
                                                         multiple
-                                                        value={personName}
+                                                        value={selectedPersonEmailList}
                                                         onChange={handleSelected}
                                                         input={<OutlinedInput label="Tag" />}
                                                         renderValue={(selected) => selected.join(', ')}
@@ -350,9 +563,13 @@ const AddMeeting = ({
                                                         IconComponent={() => (<span></span>)}
                                                     >
                                                         {users.map((user, index) => (
-                                                            <MenuItem key={index} value={user.name}>
-                                                                <Checkbox checked={personName.indexOf(user.name) > -1} />
-                                                                <ListItemText primary={user.name} />
+                                                            <MenuItem key={index} value={user.email} sx={{ height: '36px' }}>
+                                                                <Checkbox checked={selectedPersonEmailList.indexOf(user.email) > -1} />
+                                                                <ListItemText>
+                                                                    <Typography variant="body2" sx={{ fontSize: '12px', fontFamily: 'Arial' }}>
+                                                                        {user.name}
+                                                                    </Typography>
+                                                                </ListItemText>
                                                             </MenuItem>
                                                         ))}
                                                     </Select>
@@ -360,34 +577,90 @@ const AddMeeting = ({
                                                 <IconSearch className="absolute right-4 top-2" />
                                             </div>
                                         </div>
-                                        <div className="guests flex flex-col mt-[16px] mb-[24px]">
+                                        <div className="guests flex flex-col ">
                                             <div className="guest-title text-xs font-bold p-1">Project</div>
-                                            <div className="border border-gray-300 rounded-md w-full">
-                                                <FormControl fullWidth variant="standard">
-                                                    <Select
-                                                        id="project-list"
-                                                        onChange={handleProjectChange}
-                                                        value={selectedProject}
-                                                    >
-                                                        {allProjects.map((project) => {
-                                                            return (
-                                                                <MenuItem key={project._id} value={project._id}>{project.name}</MenuItem>
-                                                            )
-                                                        })}
-                                                    </Select>
-                                                </FormControl>
+                                            <div className="flex gap-1 items-center">
+                                                <div className="border border-gray-300 rounded-md w-full">
+                                                    <FormControl fullWidth variant="standard">
+                                                        <Select
+                                                            id="project-list"
+                                                            onChange={handleProjectChange}
+                                                            defaultValue={projectId}
+                                                            value={selectedProject}
+                                                        >
+                                                            {allProjects.map((project) => {
+                                                                return (
+                                                                    <MenuItem key={project._id} value={project._id}>{project.name}</MenuItem>
+                                                                )
+                                                            })}
+                                                        </Select>
+                                                    </FormControl>
+                                                </div>
+                                                <button
+                                                    onClick={() => { setIsPickColorOpen(true) }}
+                                                    className={`relative w-8 h-8 rounded-lg`}
+                                                    style={{ backgroundColor: `${projectColor}` }} >
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="w-full border-1 rounded-md bg-gray-200 my-[6px] flex justify-start h-8">
-                                            <ChevronRightIcon className="pl-2 w-8 h-8" />
-                                            <div className='content text-base'>TBD</div>
+
+                                        <div className="guests flex flex-col mt-[16px]">
+                                            <div className="guest-title text-xs font-bold p-1">Topic</div>
+                                            <input
+                                                value={topic}
+                                                onChange={(e) => { setTopic(e.target.value) }}
+                                                className="w-full border-2 border-gray-300 rounded-md p-1 pl-2 focus:outline-none" />
                                         </div>
                                     </div>
                                     <div className="h-[56px] flex justify-end align-baseline gap-3 mx-[30px]">
                                         <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onCancel}>Cancel</button>
                                         <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onSaveNew}>Save & New</button>
-                                        <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={onSave}>Save</button>
+                                        <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={() => { handleSave() }}>Save</button>
                                     </div>
+
+                                    {
+                                        isPickColorOpen ?
+                                            <>
+                                                <div className="pick-color absolute w-full h-full">
+
+                                                    <div className="h-full w-full">
+                                                        <div className="flex min-h-full items-center justify-center text-center">
+
+                                                            <div className="w-full flex flex-col p-4 justify-center items-center max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                                                                <h1
+                                                                    className="text-xl font-medium leading-6 text-gray-900 m-4"
+                                                                >
+                                                                    Pick your project color!
+                                                                </h1>
+                                                                <div className="mt-2">
+                                                                    <SketchPicker
+                                                                        color={projectColor}
+                                                                        onChange={(color, event) => setProjectColor(color.hex)}
+                                                                    />
+                                                                </div>
+
+                                                                <div className="mt-4 flex gap-2">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                                                        onClick={() => setIsPickColorOpen(false)}
+                                                                    >
+                                                                        OK
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                                                        onClick={() => setIsPickColorOpen(false)}
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </> : <></>
+                                    }
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>

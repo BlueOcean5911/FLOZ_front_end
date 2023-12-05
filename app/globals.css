@@ -414,3 +414,6 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #555; 
 }
+.rmdp-shadow {
+  z-index: 0 !important;
+}

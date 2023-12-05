@@ -1,5 +1,5 @@
 
-import Calendar from "@components/Calendar/Calendar";
+import Calendar from "@components/Calendar/CalendarPage";
 
 export const revalidate = 0;
 

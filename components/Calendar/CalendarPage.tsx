@@ -36,6 +36,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { IPerson, Meeting } from "@models";
 import moment from "moment";
 import CopyClipboard from "@components/CopyClipboard/CopyClipboard";
+import { resolve } from "path";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -125,6 +126,45 @@ interface Event {
   items: Item[];
 }
 
+async function refreshAccessToken(refreshToken: string) {
+  try {
+    const response = await axios.post('https://oauth2.googleapis.com/token', {
+      refresh_token: refreshToken,
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+      client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
+      grant_type: 'refresh_token',
+    });
+
+    const newAccessToken = response.data.access_token;
+    return newAccessToken;
+  } catch (error) {
+    console.error('Error refreshing access token:', error.message);
+    throw error;
+  }
+}
+
+function fetchGoogleEvents(accessToken, refreshToken) {
+  return new Promise((resolve, reject) => {
+    axios.get("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+    }).then((res) => {
+      return resolve(res.data)
+    }).catch((err) => {
+      if (err.response.status === 401) {
+        return refreshAccessToken(refreshToken).then((newAccessToken) => {
+          return fetchGoogleEvents(newAccessToken, refreshToken);
+        }).then(resolve).catch(reject)
+      } else {
+        return reject(err)
+      }
+    });
+    
+  })
+}
+
 export default function CalendarPage() {
   // attencies
   const [selectedPersonEmailList, setSelectedPersonEmailList] = React.useState<string[]>([]);
@@ -161,6 +201,7 @@ export default function CalendarPage() {
   ///////////////////////////////////////////////////////////////////////////
   const calendarRef: any = useRef();
   const providerToken = getCookie("p_token");
+  const refreshToken = getCookie("r_token");
   const INITIAL_EVENTS = [];
 
   const userId = getCookie("user_id");
@@ -194,7 +235,6 @@ export default function CalendarPage() {
   }, [selectedEvent])
 
   const getSelectedProjectIdandColor = () => {
-    console.log(selectedEvent?.event.extendedProps.projectId);
     setSelectedProject(selectedEvent?.event.extendedProps.projectId);
     setProjectColor(projectColorMap[selectedEvent?.event.extendedProps.projectId as string])
   }
@@ -221,6 +261,7 @@ export default function CalendarPage() {
     const url = new URL(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
     );
+
     try {
       await fetch(url, {
         method: "DELETE",
@@ -259,8 +300,10 @@ export default function CalendarPage() {
     for (let i = 0; i < tempProjects.length; i++) {
       tempProjectColorMap[tempProjects[i]._id] = tempProjects[i].color;
     }
+
     setAllProjects(tempProjects);
     setProjectColorMap(tempProjectColorMap);
+
     return;
   };
 
@@ -274,20 +317,11 @@ export default function CalendarPage() {
   async function fetchEvents() {
     try {
 
-      const allEvents = await axios.get(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Bearer " + providerToken, // Access token for google
-          },
-        }
-      );
-      const events: Event = (await allEvents.data) as Event;
+      const allEvents = await fetchGoogleEvents(providerToken, refreshToken);
+      const events: Event = allEvents as Event;
       // Loop through the Google Calendar events and convert them
       const googleEvents = events?.items;
-      console.log(googleEvents, "googleEvents");
-      console.log(events, "events");
+
       for (const googleEvent of googleEvents) {
         const eventId = googleEvent.id; // Event ID
         const title = googleEvent?.summary; // Event summary
@@ -303,6 +337,7 @@ export default function CalendarPage() {
         const ievents = INITIAL_EVENTS.filter(
           (evt: { id: string }) => evt.id === eventId
         );
+
         if (!ievents.length) {
           INITIAL_EVENTS.push({
             id: eventId,
@@ -321,8 +356,8 @@ export default function CalendarPage() {
             // ...googleEvent
           });
         }
-        setInitialEvents(INITIAL_EVENTS);
       }
+      setInitialEvents(INITIAL_EVENTS);
     } catch (error) {
       if ((error?.response?.status & 400) === 400) {
         signOut();
@@ -572,7 +607,6 @@ export default function CalendarPage() {
 
 
   const handleSelectChange = (e) => {
-    console.log(e.target.value, 'selected project id');
     setSelectedProject(e.target.value);
   };
 
@@ -588,7 +622,6 @@ export default function CalendarPage() {
 
   const setStartDate_date = (date) => {
     const start_date = dayjs(date);
-    console.log(new Date(start_date.year(), start_date.month(), start_date.day(), startDate.hour(), startDate.minute(), startDate.second()), "error isostrng")
     // setStartDate(dayjs(new Date(start_date.year(), start_date.month(), start_date.day(), startDate.hour(), startDate.minute(), startDate.second()).toISOString()));
   }
 
@@ -627,7 +660,6 @@ export default function CalendarPage() {
 
   const handleClickedEvent = ((info) => {
     setSelectedEvent(info)
-    console.log(info, "selected info")
   })
 
   const handleUpdate = async () => {
@@ -710,8 +742,6 @@ export default function CalendarPage() {
     const resultUpdateProject = await updateProject(selectedEvent?.event?.extendedProps?.projectId, {
       color: projectColor,
     })
-
-    console.log(resultUpdateProject, "Result update Project!!!");
 
     projectColorMap[selectedEvent?.event?.extendedProps?.projectId as string] = projectColor;
 

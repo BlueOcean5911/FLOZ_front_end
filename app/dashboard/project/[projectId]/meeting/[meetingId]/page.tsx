@@ -143,7 +143,7 @@ const Page = ({ params }: { params: pageProps }) => {
                   </div>
                 </div>
                 <Record audioUrl={audioUrl} />
-                <Transcript transcript={transcript}/>
+                <Transcript transcript={transcript} people={peopleList} />
               </>
             )
           }

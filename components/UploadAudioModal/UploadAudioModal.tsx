@@ -36,7 +36,9 @@ export default function UploadAudioModal({
   const getTime = (date: string) => {
     return moment(date).format('HH:mm:ss');
   }
-
+  const bytes_to_mb = (size_in_bytes) => {
+    return (size_in_bytes / (1024.0 * 1024.0)).toFixed(2);
+  }
   function back() {
     setIsAdded(false);
     setSelectedMeetingId('');
@@ -45,10 +47,30 @@ export default function UploadAudioModal({
   function setUploaded(data) {
     if (data) {
       // Convert FilesType to an array
-      const dataArray = Array.from(data);
+      let dataArray = Array.from(data);
+      dataArray.forEach((file: any, index) => {
 
-      setIsAdded(dataArray.length > 0); // Check if the updated array has elements
-      setUploadedFileData({ files: dataArray, binaryFile: data });
+        if (file?.type.includes('audio') || file?.type.includes('video')) {
+          let reader = new FileReader();
+          reader.readAsDataURL(data[index]);
+          reader.onloadend = function (e) {
+            const result = e.target.result as string;
+            var audioElement = document.createElement(file?.type.includes('audio') ? 'audio' : 'video');
+            audioElement.src = result;
+            audioElement.addEventListener('loadedmetadata', function () {
+              var hours = "0" + parseInt(String(audioElement.duration / 3600), 10);
+              var minutes = "0" + parseInt(String(audioElement.duration / 60), 10);
+              var seconds = "0" + parseInt(String(audioElement.duration % 60));
+              dataArray[index]['duration'] = hours + ':' + minutes + ":" + seconds.slice(-2);
+            });
+          }
+        } else {
+          dataArray[index]['duration'] = '--:--:--';
+        }
+      });
+
+      setIsAdded(dataArray.length > 0);
+      setTimeout(() => { setUploadedFileData({ files: dataArray, binaryFile: data }); }, 500);
     }
   }
 
@@ -140,8 +162,8 @@ export default function UploadAudioModal({
                             <div className="w-[100%] mt-[10px] mb-[10px] flex " key={index}>
                               <div className="w-[100%] grid grid-cols-5 text-left my-1 border-b-[1px] border-[#C3C3C3] " key={index}>
                                 <div className="col-span-2">{file?.name} {`#${index + 1}`}</div>
-                                <div className="col-span-2">{file?.size} byts</div>
-                                <div className="col-span-1">{getTime(file?.lastModifiedDate)}</div>
+                                <div className="col-span-2">{bytes_to_mb(file?.size)} MB</div>
+                                <div className="col-span-1">{file.duration}</div>
                               </div>
                             </div>
                           )

@@ -221,7 +221,6 @@ export default function CalendarPage() {
     const url = new URL(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events/${selectedEvent.event.id}`
     );
-    console.log(selectedEvent.event.id, "---------id");
     try {
       await fetch(url, {
         method: "DELETE",
@@ -260,10 +259,8 @@ export default function CalendarPage() {
     for (let i = 0; i < tempProjects.length; i++) {
       tempProjectColorMap[tempProjects[i]._id] = tempProjects[i].color;
     }
-    // console.log("temp allProjects before set--------->", allProjects);
     setAllProjects(tempProjects);
     setProjectColorMap(tempProjectColorMap);
-    // console.log("temp allProjects after--------->", allProjects);
     return;
   };
 

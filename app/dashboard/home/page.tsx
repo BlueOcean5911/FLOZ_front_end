@@ -19,9 +19,10 @@ export default async function Page() {
   try {
     // Get projects from backend api
     projects = await getProjects({ userId });
-
     // Get meetings from backend api
+    const projectIds = projects.map((project) => project._id);
     meetings = await getUserMeetings(userId);
+    meetings = meetings.filter((meeting) =>meeting.projectId && projectIds.includes(meeting.projectId));
 
     // Get todos from backend api
     todos = await getUserTodos(userId);

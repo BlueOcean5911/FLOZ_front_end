@@ -34,6 +34,7 @@ export const getAllMeetings = async (query: any) => {
     const meetings = resp.data?.data || [];
     return meetings;
 }
+
 export const createMeeting = async (meeting: Meeting) => {
     const resp = await api.post('/meetings', meeting);
     const newMeeting = resp.data?.data;

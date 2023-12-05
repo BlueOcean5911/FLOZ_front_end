@@ -95,13 +95,11 @@ const AddMeeting = ({
     }, [isOpen]);
 
     useEffect(() => {
-        console.log(selectedProject, "selectd Project Id changed")
         setProjectColor(projectColorMap[selectedProject]);
     }, [selectedProject, projectColorMap])
 
     const initilaizeMeetingProperty = async () => {
         getMeeting(meetingId).then((meeting:Meeting) => {
-            console.log(meeting);
             if (meeting.summary.split(' - ').length > 1) {
                 setSummary(meeting.summary.split(' - ')?.at(0));
                 setDescription(meeting.summary.split(' - ')?.at(1));

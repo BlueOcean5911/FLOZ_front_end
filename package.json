@@ -37,6 +37,7 @@
     "dayjs": "^1.11.10",
     "eslint": "8.28.0",
     "eslint-config-next": "^14.0.1",
+    "fluent-ffmpeg": "^2.1.2",
     "fs": "^0.0.1-security",
     "gcp-metadata": "^6.1.0",
     "google-auth-library": "^9.2.0",

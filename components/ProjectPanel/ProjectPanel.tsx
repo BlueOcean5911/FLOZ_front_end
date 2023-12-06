@@ -17,6 +17,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import DialogHeader from "@components/DialogHeader/DialogHeader";
+import ProjectCardList from "@components/ProjectCardList/ProjectCardList";
 
 import { ChevronDownIcon } from "@heroicons/react/20/solid"
 
@@ -162,7 +163,6 @@ export default function ProjectPanel({
       setFormData({ name: project.name, phase: project.phase, dueDate: project.dueDate, userId: data.userId, projectOwner: '' });
       setIsOpenProjectModal({ isOpen: true, action: 'edit', _id: project._id });
     }
-
   }
   const CurrentTimeDynamic = dynamic(
     () => import('../People/ShowingCurrentTime'),
@@ -209,161 +209,168 @@ export default function ProjectPanel({
                 </div>
               </div>
 
-              <div className="mt-4">
-                <div className="rounded-md bg-white">
-                  <div>
-                    <h2 className="title_color mb-4 text-sm font-bold">
-                      This month
-                    </h2>
-                    <div>
-                      {thisMonthProjects?.length === 0 ? (
-                        <p className="my-4" style={{ textAlign: "center" }}>
-                          No Projects
-                        </p>
-                      ) : (
-                        <div>
-                          <div className="text-black-400 text-md grid grid-cols-12 bg-gray-100 px-4 py-2 font-bold">
-                            <div className="col-span-1">
-                              <input
-                                type="checkbox"
-                                className=""
-                                id="checkbox"
-                              />
-                            </div>
-                            <div className="col-span-3">
-                              <span>Name</span>
-                            </div>
-                            <div className="col-span-3">
-                              <span className="m0-important">Phase</span>
-                            </div>
-                            <div className="col-span-2">
-                              <span>Due Date</span>
-                            </div>
-                            <div className="col-span-2">
-                              <span></span>
-                            </div>
-                            <div className="col-span-1">
-                              <span></span>
-                            </div>
-                          </div>
-                          <div>
-                            {thisMonthProjects?.map((project) => (
-                              <div key={project._id} className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"                              >
-                                <div className="col-span-1">
-                                  <input type="checkbox" className="" id="checkbox" />
-                                </div>
-                                <div className="m0-important col-span-3">
-                                  <span className="m0-important f-small">
-                                    {project?.name}
-                                  </span>
-                                </div>
-                                <div className="m0-important f-small col-span-3">
-                                  <span>{project?.phase}</span>
-                                </div>
-                                <div className="m0-important f-small col-span-2">
-                                  <span>{getMonth(project?.dueDate)}</span>
-                                </div>
-                                <div className="m0-important f-small col-span-2">
-                                  <span className="title_color">
-                                    {" "}
-                                    <Link
-                                      href={`/dashboard/project/${project._id}`}
-                                      key={project._id}
-                                    >
-                                      <h4 className="f-small text-sm">
-                                        Go to project
-                                      </h4>
-                                    </Link>
-                                  </span>
-                                </div>
-                                <div className="col-span-1 mx-0">
-                                  <select style={{ float: "right" }} onChange={(e) => { isActionProject(e.target.value, project); }}>
-                                    <option selected disabled value='default'>Action</option>
-                                    <option value="edit">Edit</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="user">User</option>
-                                  </select>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 rounded-md bg-white">
-                  <div>
-                    <h2 className="title_color mb-4 text-sm font-bold">
-                      Next month
-                    </h2>
-                    <div>
-                      {nextMonthProjects?.length === 0 ? (
-                        <p className="my-4" style={{ textAlign: "center" }}>
-                          No Projects
-                        </p>
-                      ) : (
-                        <div>
-                          <div className="text-black-400 text-md grid grid-cols-6 bg-gray-100 px-4 py-2 font-bold">
-                            <div> <input type="checkbox" className="" id="checkbox" /> </div>
-                            <div> <span>Name</span> </div>
-                            <div> <span className="m0-important">Phase</span> </div>
-                            <div> <span>Due Date</span> </div>
-                            <div>  <span></span> </div>
-                            <div>  <span></span> </div>
-                          </div>
-                          <div>
-                            {nextMonthProjects?.map((project) => (
-                              <div key={project._id} className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"                              >
-                                <div className="col-span-1">
-                                  <input type="checkbox" className="" id="checkbox" />
-                                </div>
-                                <div className="m0-important col-span-3">
-                                  <span className="m0-important f-small">
-                                    {project?.name}
-                                  </span>
-                                </div>
-                                <div className="m0-important f-small col-span-3">
-                                  <span>{project?.phase}</span>
-                                </div>
-                                <div className="m0-important f-small col-span-2">
-                                  <span>{getMonth(project?.dueDate)}</span>
-                                </div>
-                                <div className="m0-important f-small col-span-2">
-                                  <span className="title_color">
-                                    {" "}
-                                    <Link
-                                      href={`/dashboard/project/${project._id}`}
-                                      key={project._id}
-                                    >
-                                      <h4 className="f-small text-sm">
-                                        Go to project
-                                      </h4>
-                                    </Link>
-                                  </span>
-                                </div>
-                                <div className="col-span-1 mx-0">
-                                  <select style={{ float: "right" }} onChange={(e) => { isActionProject(e.target.value, project); }} value={isOpenProjectModal._id == project._id ? isOpenProjectModal.action : ''}>
-                                    <option selected disabled value=''>Action</option>
-                                    <option value="edit">Edit</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="user">User</option>
-                                  </select>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              {/* Modified project display component */}
+              <div className="col-span-2 rounded bg-white p-3">
+                <ProjectCardList projects={allProjects}></ProjectCardList>
               </div>
+
+              {/* You can uncomment the following code to restore the previous display component. */}
+
+              {/*<div className="mt-4">*/}
+              {/*  <div className="rounded-md bg-white">*/}
+              {/*    <div>*/}
+              {/*      <h2 className="title_color mb-4 text-sm font-bold">*/}
+              {/*        This month*/}
+              {/*      </h2>*/}
+              {/*      <div>*/}
+              {/*        {thisMonthProjects?.length === 0 ? (*/}
+              {/*          <p className="my-4" style={{ textAlign: "center" }}>*/}
+              {/*            No Projects*/}
+              {/*          </p>*/}
+              {/*        ) : (*/}
+              {/*          <div>*/}
+              {/*            <div className="text-black-400 text-md grid grid-cols-12 bg-gray-100 px-4 py-2 font-bold">*/}
+              {/*              <div className="col-span-1">*/}
+              {/*                <input*/}
+              {/*                  type="checkbox"*/}
+              {/*                  className=""*/}
+              {/*                  id="checkbox"*/}
+              {/*                />*/}
+              {/*              </div>*/}
+              {/*              <div className="col-span-3">*/}
+              {/*                <span>Name</span>*/}
+              {/*              </div>*/}
+              {/*              <div className="col-span-3">*/}
+              {/*                <span className="m0-important">Phase</span>*/}
+              {/*              </div>*/}
+              {/*              <div className="col-span-2">*/}
+              {/*                <span>Due Date</span>*/}
+              {/*              </div>*/}
+              {/*              <div className="col-span-2">*/}
+              {/*                <span></span>*/}
+              {/*              </div>*/}
+              {/*              <div className="col-span-1">*/}
+              {/*                <span></span>*/}
+              {/*              </div>*/}
+              {/*            </div>*/}
+              {/*            <div>*/}
+              {/*              {thisMonthProjects?.map((project) => (*/}
+              {/*                <div key={project._id} className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"                              >*/}
+              {/*                  <div className="col-span-1">*/}
+              {/*                    <input type="checkbox" className="" id="checkbox" />*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important col-span-3">*/}
+              {/*                    <span className="m0-important f-small">*/}
+              {/*                      {project?.name}*/}
+              {/*                    </span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important f-small col-span-3">*/}
+              {/*                    <span>{project?.phase}</span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important f-small col-span-2">*/}
+              {/*                    <span>{getMonth(project?.dueDate)}</span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important f-small col-span-2">*/}
+              {/*                    <span className="title_color">*/}
+              {/*                      {" "}*/}
+              {/*                      <Link*/}
+              {/*                        href={`/dashboard/project/${project._id}`}*/}
+              {/*                        key={project._id}*/}
+              {/*                      >*/}
+              {/*                        <h4 className="f-small text-sm">*/}
+              {/*                          Go to project*/}
+              {/*                        </h4>*/}
+              {/*                      </Link>*/}
+              {/*                    </span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="col-span-1 mx-0">*/}
+              {/*                    <select style={{ float: "right" }} onChange={(e) => { isActionProject(e.target.value, project); }}>*/}
+              {/*                      <option selected disabled value='default'>Action</option>*/}
+              {/*                      <option value="edit">Edit</option>*/}
+              {/*                      <option value="admin">Admin</option>*/}
+              {/*                      <option value="user">User</option>*/}
+              {/*                    </select>*/}
+              {/*                  </div>*/}
+              {/*                </div>*/}
+              {/*              ))}*/}
+              {/*            </div>*/}
+              {/*          </div>*/}
+              {/*        )}*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*  <div className="mt-4 rounded-md bg-white">*/}
+              {/*    <div>*/}
+              {/*      <h2 className="title_color mb-4 text-sm font-bold">*/}
+              {/*        Next month*/}
+              {/*      </h2>*/}
+              {/*      <div>*/}
+              {/*        {nextMonthProjects?.length === 0 ? (*/}
+              {/*          <p className="my-4" style={{ textAlign: "center" }}>*/}
+              {/*            No Projects*/}
+              {/*          </p>*/}
+              {/*        ) : (*/}
+              {/*          <div>*/}
+              {/*            <div className="text-black-400 text-md grid grid-cols-6 bg-gray-100 px-4 py-2 font-bold">*/}
+              {/*              <div> <input type="checkbox" className="" id="checkbox" /> </div>*/}
+              {/*              <div> <span>Name</span> </div>*/}
+              {/*              <div> <span className="m0-important">Phase</span> </div>*/}
+              {/*              <div> <span>Due Date</span> </div>*/}
+              {/*              <div>  <span></span> </div>*/}
+              {/*              <div>  <span></span> </div>*/}
+              {/*            </div>*/}
+              {/*            <div>*/}
+              {/*              {nextMonthProjects?.map((project) => (*/}
+              {/*                <div key={project._id} className="grid grid-cols-12 space-x-4 border-b px-4 py-2 text-sm font-normal"                              >*/}
+              {/*                  <div className="col-span-1">*/}
+              {/*                    <input type="checkbox" className="" id="checkbox" />*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important col-span-3">*/}
+              {/*                    <span className="m0-important f-small">*/}
+              {/*                      {project?.name}*/}
+              {/*                    </span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important f-small col-span-3">*/}
+              {/*                    <span>{project?.phase}</span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important f-small col-span-2">*/}
+              {/*                    <span>{getMonth(project?.dueDate)}</span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="m0-important f-small col-span-2">*/}
+              {/*                    <span className="title_color">*/}
+              {/*                      {" "}*/}
+              {/*                      <Link*/}
+              {/*                        href={`/dashboard/project/${project._id}`}*/}
+              {/*                        key={project._id}*/}
+              {/*                      >*/}
+              {/*                        <h4 className="f-small text-sm">*/}
+              {/*                          Go to project*/}
+              {/*                        </h4>*/}
+              {/*                      </Link>*/}
+              {/*                    </span>*/}
+              {/*                  </div>*/}
+              {/*                  <div className="col-span-1 mx-0">*/}
+              {/*                    <select style={{ float: "right" }} onChange={(e) => { isActionProject(e.target.value, project); }} value={isOpenProjectModal._id == project._id ? isOpenProjectModal.action : ''}>*/}
+              {/*                      <option selected disabled value=''>Action</option>*/}
+              {/*                      <option value="edit">Edit</option>*/}
+              {/*                      <option value="admin">Admin</option>*/}
+              {/*                      <option value="user">User</option>*/}
+              {/*                    </select>*/}
+              {/*                  </div>*/}
+              {/*                </div>*/}
+              {/*              ))}*/}
+              {/*            </div>*/}
+              {/*          </div>*/}
+              {/*        )}*/}
+              {/*      </div>*/}
+              {/*    </div>*/}
+              {/*  </div>*/}
+              {/*</div>*/}
             </div>
 
             <div className="title_color view-all">
               <Link href="/dashboard/project">
-                <h4 className="f-small text-sm">View All</h4>
+                <h4 className="text-base text-blue-500">View All</h4>
               </Link>
             </div>
           </div>
@@ -579,6 +586,7 @@ export default function ProjectPanel({
                               placeholder="Choose people"
                               className={`w-full rounded-md border p-2 px-4 outline-none `}
                             >
+                              <option value="656fd5b339918211edf36747">相眠</option>
                               {
                                 people.map(person => (
                                   <option value={person._id}>{person.name}</option>

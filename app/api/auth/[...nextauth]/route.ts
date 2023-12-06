@@ -12,6 +12,9 @@ const handler = NextAuth({
               prompt: 'consent',
               scope: "profile email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.send",
             }
+          },
+          httpOptions:{
+            timeout:60000,
           }
         }),
     ],

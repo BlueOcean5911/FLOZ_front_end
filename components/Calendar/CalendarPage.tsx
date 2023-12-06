@@ -41,7 +41,9 @@ import { Item, Event } from "types/Calendar.type"
 
 import refreshAccessToken from "@utils/refreshGoogleOAuthToken"
 import AddMeeting from "@components/Meeting/AddMeeting";
-import { fetchGoogleEvents } from "@utils/googlecalendar.utils";
+import { fetchGoogleEvents, updateGoogleCalendarMeeting } from "@utils/googlecalendar.utils";
+import { success } from "@utils/nitification.utils";
+import { getPeriod } from "@utils/dateFunc.utils";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -62,6 +64,10 @@ export default function CalendarPage() {
   // Selected Date by clicking on the calendar with user
   const [currentDateTime, setCurrentDateTime] = useState<Date | null>(new Date());
   // Attributes for the calendar
+  const [startAndEndDate, setStartAndEndDate] = useState<{ start: string, end: string }>({
+    start: new Date().toISOString(),
+    end: moment(new Date()).add(30, 'minutes').toISOString()
+  });
   const [initialEvents, setInitialEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedEventMeetingId, setSelectedEventMeetingId] = useState('');
@@ -76,8 +82,9 @@ export default function CalendarPage() {
   const [isEditCompShow, setIsEditCompShow] = useState(false);
   ///////////////////////////////////////////////////////////////////////////
   const { signOut } = useAuthContext();
-
+  
   const calendarRef: any = useRef();
+  const [titleDate, setTitleDate] = useState(calendarRef.current?.getApi().view.title);
   // Google OAuth Token
   const providerToken = getCookie("p_token");
   const refreshToken = getCookie("r_token");
@@ -95,6 +102,8 @@ export default function CalendarPage() {
 
   useEffect(() => {
     updateProjectColorMap();
+    getCalendarTitle();
+    fetchEvents();
   }, [isOpen]);
 
   useEffect(() => {
@@ -173,6 +182,10 @@ export default function CalendarPage() {
   const addEvent = async (selectInfo: { start: string; end: string }) => {
     setSelectedEventMeetingId('');
     setSelectedEventProjectId('');
+    setStartAndEndDate({
+      start: selectInfo.start,
+      end: selectInfo.end,
+    })
     setIsOpen(true);
   };
 
@@ -184,11 +197,21 @@ export default function CalendarPage() {
     fetchAllProjects();
   }
 
+  const handleResizeEvent = async (info) => {
+    const updatedMeeting = await updateMeeting(info?.event?.extendedProps?.meetingId, {
+      date: new Date(info?.event.start),
+      period: getPeriod(info?.event?.start.toISOString(), info?.event?.end.toISOString()),
+      updatedAt: new Date(),
+    })
+    updateGoogleCalendarMeeting(updatedMeeting, providerToken, refreshToken);
+  }
+
   const removeEvent = () => {
     deleteMeeting(selectedEvent?.event?.extendedProps?.meetingId);
     selectedEvent?.event?.remove();
     deleteEventFromCalendar();
     setIsEditCompShow(false)
+    success('Successfully the event is deleted!');
   }
 
   const deleteEventFromCalendar = async () => {
@@ -210,7 +233,9 @@ export default function CalendarPage() {
   }
 
   const getCalendarTitle = () => {
-    return calendarRef.current?.getApi().view.title;
+    const title = calendarRef.current?.getApi().view.title;
+    setTitleDate(title);
+    return title;
   }
 
   const goTOMeetingPage = () => {
@@ -240,32 +265,32 @@ export default function CalendarPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center my-[14px] text-[13px]">
+      <div className="flex items-center p-4 bg-[#DDF1EE] text-[13px]">
         <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           <div onClick={() => { setIsOpen(true); console.log("Create clicked!!1") }}>Create</div>
         </div>
-        <div className="flex justify-center w-[85px] h-[32px] mx-[12px] border-2 border-[#349989] rounded-md text-[#349989]">
+        <div className="flex justify-center w-[85px] h-[32px] mx-[12px] bg-white border-2 border-[#349989] rounded-md text-[#349989]">
           <select className="focus:border-none selected:border-none focus:outline-none" defaultValue={'timeGridWeek'} onChange={(e) => { calendarRef.current.getApi().changeView(e.target.value) }}>
             <option value={'timeGridDay'} >Day</option>
             <option value={'timeGridWeek'}>Week</option>
             <option value={'dayGridMonth'}>Month</option>
           </select>
         </div>
-        <button className="w-8 h-8 justify-center border-2 mr-[5px] rounded-md border-[#349989] flex items-center" onClick={() => calendarRef.current.getApi().prev()}>
+        <button className="w-8 h-8 justify-center border-2 mr-[5px] rounded-md bg-white border-[#349989] flex items-center" onClick={() => {calendarRef.current.getApi().prev();getCalendarTitle()}}>
           <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M7.69141 0.553519L7.69141 11.4458C7.69141 11.7535 7.29141 11.9689 7.01448 11.7227L0.491406 6.39967C0.245252 6.21506 0.245252 5.81506 0.491406 5.63044L7.01448 0.245827C7.29141 0.030442 7.69141 0.215057 7.69141 0.553519Z" fill="#349989" />
           </svg>
         </button>
-        <button className="w-8 h-8 justify-center flex items-center border-2 rounded-md border-[#349989]" onClick={() => calendarRef.current.getApi().next()}>
+        <button className="w-8 h-8 justify-center flex items-center bg-white border-2 rounded-md border-[#349989]" onClick={() => {calendarRef.current.getApi().next();getCalendarTitle()}}>
           <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M0.308594 11.4465L0.308593 0.554174C0.308593 0.246483 0.708593 0.0310983 0.985516 0.277252L7.50859 5.60033C7.75475 5.78494 7.75475 6.18494 7.50859 6.36956L0.985517 11.7542C0.708594 11.9696 0.308594 11.7849 0.308594 11.4465Z" fill="#349989" />
           </svg>
 
         </button>
-        <div className="text-base px-[12px]">{getCalendarTitle()}</div>
+        <div className="text-base px-[12px]">{titleDate}</div>
       </div>
       <div className="grow flex gap-4">
 
@@ -293,18 +318,8 @@ export default function CalendarPage() {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 //@ts-ignore No overload matches this call.
                 select={addEvent}
-                eventResize={(info) => {
-                  updateMeeting(info?.event?.extendedProps?.meetingId, {
-                    date: new Date(info?.event.start),
-                    updatedAt: new Date(),
-                  })
-                }}
-                eventDrop={(info) => {
-                  updateMeeting(info?.event?.extendedProps?.meetingId, {
-                    date: new Date(info?.event.start),
-                    updatedAt: new Date(),
-                  })
-                }}
+                eventResize={handleResizeEvent}
+                eventDrop={handleResizeEvent}
                 eventClick={handleFullCalendarClicked}
               />
             </div>
@@ -318,6 +333,7 @@ export default function CalendarPage() {
             meetingId={selectedEventMeetingId}
             projectId={selectedEventProjectId}
             updateProjectColorMap={setProjectColorMap}
+            startAndEndDate={startAndEndDate}
           />
         </div>
         <div className="flex-[15%] mt-4">

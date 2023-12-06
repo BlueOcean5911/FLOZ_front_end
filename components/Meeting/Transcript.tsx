@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SelectForPeople from "./SelectForPeople";
 
-const Transcript = ({ transcript: content, people }) => {
+const Transcript = ({ transcript: content, people, assignPeopleMap, setAssignPeopleMap }) => {
 
   const [transcript, setTranscript] = useState([]);
 
@@ -26,8 +26,11 @@ const Transcript = ({ transcript: content, people }) => {
     processTranscript();
   }, [content])
 
-  const handleChange = (val, speakerName)  => {
+  const handleChange = (val, speakerName) => {
     // TODO handle change assigned name
+    const tempAssignPeopleMap = {...assignPeopleMap};
+    tempAssignPeopleMap[speakerName] = val;
+    setAssignPeopleMap(tempAssignPeopleMap);
   }
 
   return (
@@ -36,7 +39,12 @@ const Transcript = ({ transcript: content, people }) => {
         <div key={index}>
           <div className="flex gap-2">
             <h3 className="text-xl font-bold">{item.name}</h3>
-            <SelectForPeople people={people} onChange={(val) => handleChange(val, item.name)} />
+            <SelectForPeople
+              people={people}
+              value={assignPeopleMap[item.name]}
+              defaultValue={assignPeopleMap[item.name]}
+              name={item.name}
+              onChange={(val) => handleChange(val, item.name)} />
           </div>
           <p>{item.content}</p>
         </div>

@@ -2,6 +2,8 @@ import AuthProvider from "@middlewares/AuthProvider";
 import NextAuthProvider from "../contexts/NextAuthContext";
 import "./globals.css";
 import "./index.css"
+import { ToastContainer } from "react-toastify";
+
 
 export const metadata = {
   title: "FLOZ Cost",
@@ -17,6 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <NextAuthProvider>
+          <ToastContainer />
           <AuthProvider>{children}</AuthProvider>
         </NextAuthProvider>
       </body>

@@ -54,7 +54,7 @@ const TaskList = ({ data: todoList, assignedPersonList, editTask, handleClick, h
   );
 };
 
-const TodoList = ({ todoListData, meetingId, projectId }) => {
+const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap }) => {
 
   const [formData, setFormData] = useState({ _id: '', assignedPerson: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenAddTask, setIsOpenAddTask] = useState({ modalType: 'add', isOpen: false });
@@ -70,13 +70,19 @@ const TodoList = ({ todoListData, meetingId, projectId }) => {
 
   useEffect(() => {
     const tempAssignList = [];
-    todoList.forEach((todo, index) => {
+    todoList.forEach((todo:Todo, index) => {
+      todo.assignedPerson = assignPeopleMap[todo.assignedPerson] ? assignPeopleMap[todo.assignedPerson] : todo.assignedPerson;
+      console.log(assignPeopleMap, "assignedPeopleMap");
       if (!tempAssignList.includes(todo.assignedPerson)) {
-        tempAssignList.push(todo.assignedPerson);
+        if (assignPeopleMap[todo.assignedPerson]) {
+          tempAssignList.push(assignPeopleMap[todo.assignedPerson])
+        } else {
+          tempAssignList.push(todo.assignedPerson);
+        }
       }
     })
     setAssignedPersonList(tempAssignList);
-  }, [todoList])
+  }, [todoList, assignPeopleMap])
 
   const handleClickedTodo = (id) => {
     setSelectedTodoId(id);

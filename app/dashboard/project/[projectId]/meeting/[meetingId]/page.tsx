@@ -7,13 +7,13 @@ import TodoList from "@components/Meeting/TodoList";
 import MemberList from "@components/Meeting/MemberList";
 import MeetingSummary from "@components/Meeting/MeetingSummary";
 import Record from "@components/Record/Record";
-import { getMeetingData } from '@service/meeting.service';
+import { getMeeting, getMeetingData, updateMeeting } from '@service/meeting.service';
 import { useRouter } from "next/navigation";
 import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
 import { useAuthContext } from '@contexts/AuthContext';
 import { getPersons } from '@service/person.service';
 import { getProjects } from "@service/project.service";
-import { IUser } from '@models';
+import { IUser, Meeting } from '@models';
 import { ToastContainer } from 'react-toastify';
 
 import { getTodosByMeetingId } from '@service/todo.service';
@@ -35,6 +35,7 @@ const Page = ({ params }: { params: pageProps }) => {
   const [isUploadAudioModal, setIsUploadAudioModal] = useState(false);
   const [peopleList, setPeopleList] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [assignPeopleMap, setAssignPeopleMap] = useState({});
   let pollingInterval;
 
   const getTrascriptData = async () => {
@@ -88,8 +89,14 @@ const Page = ({ params }: { params: pageProps }) => {
     }
   }
 
+  const getAssignPeopleMap = async () => {
+    const meeting:Meeting = await getMeeting(params.meetingId);
+    setAssignPeopleMap(meeting.assignPeopleMap);
+  }
+
   useEffect(() => {
     getTrascriptData()
+    getAssignPeopleMap();
     // Polling mechanism with a 5-second interval
     pollingInterval = setInterval(() => {
       getTrascriptData();
@@ -106,6 +113,17 @@ const Page = ({ params }: { params: pageProps }) => {
       getIntialData(user);
     }
   }, [user])
+
+  useEffect(() => {
+    (async() => {
+      if(Object.keys(assignPeopleMap).length > 0) {
+        console.log(assignPeopleMap, "before update meeting");
+        await updateMeeting(params.meetingId, {
+          assignPeopleMap:assignPeopleMap
+        })
+      }
+    })()
+  }, [assignPeopleMap])
 
   const onUploadComplete = () => {
     setIsSummaryLoading(true);
@@ -143,7 +161,7 @@ const Page = ({ params }: { params: pageProps }) => {
                   </div>
                 </div>
                 <Record audioUrl={audioUrl} />
-                <Transcript transcript={transcript} people={peopleList} />
+                <Transcript transcript={transcript} people={peopleList} assignPeopleMap={assignPeopleMap} setAssignPeopleMap={setAssignPeopleMap}  />
               </>
             )
           }
@@ -160,7 +178,7 @@ const Page = ({ params }: { params: pageProps }) => {
             :
             (
               <>
-                <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} />
+                <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} assignPeopleMap={assignPeopleMap} />
                 <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
               </>
             )

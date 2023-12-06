@@ -1,9 +1,12 @@
 import { IPerson } from "@models";
 import { useState } from "react";
 
-const SelectForPeople = ({people, onChange:change}:{
+const SelectForPeople = ({people, name, value, onChange:change, defaultValue,}:{
   people: IPerson[],
   onChange: (val:string) => void,
+  defaultValue:string,
+  name:string,
+  value:string,
 }) => {
   const [selectedPerosn, setSelectedPerson] = useState('');
 
@@ -13,10 +16,11 @@ const SelectForPeople = ({people, onChange:change}:{
   }
 
   return (
-    <select className="border rounded-md focus:outline-none" value={selectedPerosn} onChange={handleChange}>
+    <select className="border rounded-md focus:outline-none" defaultValue={defaultValue} value={value} onChange={handleChange}>
+      <option value=""></option>
       {
         people.map(person => (
-          <option value={person._id}>{person.name}</option>
+          <option value={person.name}>{person.name}</option>
         ))
       }
     </select>

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { setCookie } from "cookies-next";
 
 export default async function refreshAccessToken(refreshToken: string) {
   try {
@@ -10,6 +11,9 @@ export default async function refreshAccessToken(refreshToken: string) {
     });
 
     const newAccessToken = response.data.access_token;
+    setCookie("p_token", response.data.access_token);
+    setCookie("r_token", response.data.refresh_token);
+    
     return newAccessToken;
   } catch (error) {
     console.error('Error refreshing access token:', error.message);

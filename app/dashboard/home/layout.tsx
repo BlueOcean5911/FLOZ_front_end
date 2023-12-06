@@ -1,4 +1,5 @@
 import Header from "@components/Header/Header";
+import Footer from "@components/Footer";
 
 export const metadata = {
   title: "FLOZ Cost",
@@ -15,6 +16,7 @@ export default function RootLayout({
       <div className="p-6 bg-slate-300 bg-opacity-20">
         {children}  
       </div>
+        <Footer/>
     </main>
   );
 }

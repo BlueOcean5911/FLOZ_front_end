@@ -13,7 +13,7 @@ import { useSearchParams } from "next/navigation";
 const PeopleList = () => {
 
   const [people, setpeople] = useState<IPerson[]>([])
-  const [isNewContactModalOpen, setIsNewContactModalOpen] = useState(false)
+  const [isNewContactModalOpen, setIsNewContactModalOpen] = useState({ isOpen: false, action: 'create' })
   const [searchPeople, setSearchPeople] = useState('');
   const [selectedPersonId, setSelectedPersonId] = useState('')
   const user = useAuthContext().user;
@@ -27,43 +27,34 @@ const PeopleList = () => {
     fetchPeople();
   }, [isNewContactModalOpen])
 
-  useEffect(() => {
-    (async () => {
-      if (projectId) {
-        const personIds:string[] = await getPersonByProject(projectId)
-        const uniquePersonIds:string[] = [];
-        for(let i = 0; i < personIds.length; i++) {
-          if( !uniquePersonIds.includes(personIds[i]) ) {
-            uniquePersonIds.push(personIds[i])
-          }
-        }
-        console.log(uniquePersonIds);
-        setpeople(people.filter(person => uniquePersonIds.includes(person._id)));
-      }
-    })();
-  }, [people])
-
   const fetchPeople = async () => {
-    setpeople(await getPersonsByOrganization(user.organization));
+    const tempPeople = await getPersonsByOrganization(user.organization)
+    if (projectId) {
+      const personIds:string[] = await getPersonByProject(projectId)
+      const uniquePersonIds:string[] = [];
+      for(let i = 0; i < personIds.length; i++) {
+        if( !uniquePersonIds.includes(personIds[i]) ) {
+          uniquePersonIds.push(personIds[i])
+        }
+      }
+      console.log(uniquePersonIds);
+      setpeople(tempPeople.filter(person => uniquePersonIds.includes(person._id)));
+    } else {
+      setpeople(tempPeople);
+    }
   }
 
   const formatDate = (dateString) => {
+
     const date = new Date(dateString);
-    const monthNames = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const day = date.getDate();
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
-
     return `${month} ${day}, ${year}`;
   };
 
-  const CurrentTimeDynamic = dynamic(
-    () => import('./ShowingCurrentTime'),
-    { ssr: false }
-  );
+  const CurrentTimeDynamic = dynamic(() => import('./ShowingCurrentTime'), { ssr: false });
 
   const deleteSelectedPerson = async (id) => {
     await deletePerson(id);
@@ -77,8 +68,7 @@ const PeopleList = () => {
           <img src="/import-icon.png" alt="Export" className="w-6 h-6" />
           Import
         </button>
-
-        <button className="flex  text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1" onClick={() => { setSelectedPersonId(''); setIsNewContactModalOpen(true) }}>
+        <button className="flex  text-white bg-[#349989] items-center rounded-md justify-center p-2 gap-1" onClick={() => { setSelectedPersonId(''); setIsNewContactModalOpen({ isOpen: true, action: 'create' }) }}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
@@ -154,7 +144,7 @@ const PeopleList = () => {
                         <td className="px-4 py-2 border border-slate-300"></td>
                         <td className="flex justify-center gap-1 items-center py-2" >
                           <svg
-                            onClick={(e) => { setSelectedPersonId(e.currentTarget.id); setIsNewContactModalOpen(true); }}
+                            onClick={(e) => { setSelectedPersonId(person._id); setIsNewContactModalOpen({ isOpen: true, action: 'edit' }); }}
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                           </svg>
@@ -173,8 +163,8 @@ const PeopleList = () => {
             </div>
           </div>
           <>
-            {isNewContactModalOpen ?
-              <NewContact setShow={setIsNewContactModalOpen} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={user.organization} /> : <></>}
+            {isNewContactModalOpen.isOpen ?
+              <NewContact setShow={setIsNewContactModalOpen} action={isNewContactModalOpen.action} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={user?.organization} /> : <></>}
           </>
         </div>
       </div>

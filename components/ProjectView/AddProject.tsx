@@ -33,7 +33,7 @@ const AddProject = ({ isOpen=false, closeModal }: {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
-                  Hello world!!!
+                  
                 </Dialog.Panel>
               </Transition.Child>
             </div>

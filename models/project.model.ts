@@ -8,6 +8,7 @@ interface IProject {
     userId?: string;
     updatedAt?: Date;
     createdAt?: Date;
+    favourite?:boolean;
 }
 
 export type  { IProject };

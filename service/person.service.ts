@@ -40,9 +40,14 @@ export const getPersonsByOrganization = async (organization: string) => {
     return persons;
 }
 
+export const getPersonByProject = async (projectId : string) => {
+    const resp: IResponse = await api.get(`/persons/project/${projectId}`)
+    const personIds:string[] = resp?.data && resp.data.data as string[];
+    return personIds;
+}
+
 export const deletePerson = async (id: string) => {
     const resp: IResponse = await api.delete(`/persons/${id}`);
     const Person: IPerson = resp?.data && resp.data.data as IPerson;
     return Person;
-
 }

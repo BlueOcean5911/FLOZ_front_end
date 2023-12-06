@@ -17,7 +17,7 @@ export const getProject = async (id: string) => {
 
 export const createProject = async (body: IProject) => {
     const resp: IResponse = await api.post('/projects', body);
-    const data: IProject | null = resp?.data && resp.data as IProject;
+    const data: IProject | null = resp?.data && resp.data.data as IProject;
     return data;
 }
 

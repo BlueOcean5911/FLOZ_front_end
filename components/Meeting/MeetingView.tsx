@@ -246,7 +246,7 @@ const MeetingView = ({
                   <div className="flex">
                     <div className="w-1/2">All Meetings</div>
                     <div className="w-1/2 flex">
-                      <div className="w-6/12">Topic</div>
+                      <div className="w-6/12">Meeting with</div>
                       <div className="w-5/12">Time</div>
                       <div className="w-1/12">Edit</div>
                     </div>

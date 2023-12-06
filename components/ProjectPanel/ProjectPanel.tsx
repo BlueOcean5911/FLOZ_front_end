@@ -20,6 +20,7 @@ import DialogHeader from "@components/DialogHeader/DialogHeader";
 import ProjectCardList from "@components/ProjectCardList/ProjectCardList";
 
 import { ChevronDownIcon } from "@heroicons/react/20/solid"
+import { useRouter } from "next/navigation";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -104,6 +105,8 @@ export default function ProjectPanel({
     setMeetingsByDays(setMeetingsDay(meetings.filter((meeting) => (searchMeeting !== '' ? meeting.summary.search(new RegExp(`(${searchMeeting})`, "i")) !== -1 : true))))
   }, [searchMeeting])
 
+  const router = useRouter();
+
   function closeModal() {
     setIsOpenProjectModal({ isOpen: false, action: 'add', _id: '' });
   }
@@ -141,12 +144,14 @@ export default function ProjectPanel({
 
         if (isOpenProjectModal.action === 'add') {
           const savedProject = await createProject({ name: projectName.toString(), userId: data.userId, phase: formData.phase, dueDate: formData.dueDate, color: projectColor });
+          router.push(`/dashboard/project/${savedProject._id}`);
           if (savedProject) {
             const projects = await getProjects({ userId: data.userId });
             if (projects) setAllProjects(projects);
           }
-        } else {
+        } else {;
           const savedProject = await updateProject(isOpenProjectModal._id, { name: projectName.toString(), userId: data.userId, phase: formData.phase, dueDate: formData.dueDate, color: projectColor });
+
           if (savedProject) {
             const projects = await getProjects({ userId: data.userId });
             if (projects) setAllProjects(projects);

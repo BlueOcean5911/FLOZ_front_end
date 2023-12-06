@@ -51,7 +51,7 @@ const AddMeeting = ({
     projectId?: string;
     meetingId?: string;
     isOpen?: boolean;
-    updateProjectColorMap: (val) => void
+    updateProjectColorMap?: (val) => void
     setIsOpen?: (val: boolean) => void;
     onNewMeeting?: () => void
 }) => {

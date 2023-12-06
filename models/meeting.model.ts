@@ -4,6 +4,7 @@ interface Meeting {
     audioURL?: string;
     summary?: string;
     members?: Array<any>;
+    assignPeopleMap?:Object;
     favourite?:boolean;
     topic?:string;
     period?:number;

@@ -22,6 +22,9 @@ import axios, { AxiosRequestConfig } from "axios";
 import { SketchPicker } from 'react-color'
 import { IPerson, Meeting } from "@models";
 import { getUserByEmail } from "@service/user.service";
+import { success } from "@utils/nitification.utils";
+import { updateGoogleCalendarMeeting } from "@utils/googlecalendar.utils";
+import { getCookie } from "cookies-next";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -41,6 +44,7 @@ const AddMeeting = ({
     projectId,
     meetingId = '',
     isOpen: isAddMeetingModalOpen = false,
+    startAndEndDate,
     updateProjectColorMap,
     setIsOpen: setIsAddmeetingModalOpen,
     onNewMeeting
@@ -51,10 +55,15 @@ const AddMeeting = ({
     projectId?: string;
     meetingId?: string;
     isOpen?: boolean;
-    updateProjectColorMap: (val) => void
+    startAndEndDate?: {
+        start: string,
+        end: string,
+    },
+    updateProjectColorMap?: (val) => void
     setIsOpen?: (val: boolean) => void;
     onNewMeeting?: () => void
 }) => {
+
     const [isOpen, setIsOpen] = useState(isAddMeetingModalOpen);
     const [selectedPersonEmailList, setSelectedPersonEmailList] = useState<string[]>([]);
     const { user } = useAuthContext();
@@ -73,6 +82,8 @@ const AddMeeting = ({
     const [projectColor, setProjectColor] = useState('#349989');
     const [projectColorMap, setProjectColorMap] = useState<Record<string, number>[]>([]);
 
+    const refreshToken = getCookie("r_token");
+
     const fetchAllProjects = async () => {
         const tempProjects = await getProjects({ userId: userId });
         const tempProjectColorMap = [];
@@ -86,12 +97,12 @@ const AddMeeting = ({
         return;
     };
 
+
     const fetchAllUsers = async () => {
         const users = await getPersonsByOrganization(user?.organization);
         setUsers(users);
     }
     useEffect(() => {
-        console.log("is Open Add new meeting")
         if (isOpen) {
             fetchAllProjects();
             fetchAllUsers();
@@ -102,6 +113,10 @@ const AddMeeting = ({
     }, [isOpen]);
 
     useEffect(() => {
+        if (startAndEndDate) {
+            setStartDate(moment(startAndEndDate.start));
+            setEndDate(moment(startAndEndDate.end));
+        }
         setIsOpen(isAddMeetingModalOpen);
     }, [isAddMeetingModalOpen])
 
@@ -240,6 +255,7 @@ const AddMeeting = ({
         updateProjectColorMap(projectColorMap);
         closeModal();
         clearData();
+        success('Successfully created the meeting!')
     };
 
     const saveIntoGoogleCalendar = async (meetingId) => {
@@ -333,74 +349,6 @@ const AddMeeting = ({
     }
 
     const updateMeeting = async () => {
-        // Todo update db and google calendar
-        let attendees = [];
-
-        for (const user of users) {
-            if (selectedPersonEmailList.indexOf(user.email) > -1) {
-                attendees.push({
-                    name: user.name,
-                    email: user.email,
-                    responseStatus: "accepted",
-                    self: true,
-                });
-            }
-        }
-
-        const timestamp = Date.now().toString();
-        const requestId = "conference-" + timestamp;
-
-
-        const event = {
-            summary: summary,
-            description: description ?? "",
-            start: {
-                dateTime: startDate.format(),
-                timeZone: startDate.format('Z')
-            },
-            end: {
-                dateTime: endDate.format(),
-                timeZone: endDate.format('Z')
-            },
-            ...(attendees?.length && { attendees: attendees }),
-            conferenceData: {
-                createRequest: {
-                    requestId: requestId,
-                    conferenceSolutionKey: {
-                        type: "hangoutsMeet",
-                    },
-                },
-            },
-            extendedProperties: {
-                private: {
-                    meetingId: meetingId,
-                    projectId: selectedProject,
-                }
-            }
-        };
-
-        const meeting = await getMeeting(meetingId);
-
-        const url = new URL(
-            `https://www.googleapis.com/calendar/v3/calendars/primary/events/${meeting.googleEventId}`
-        );
-        const params = { conferenceDataVersion: 1 };
-        Object.keys(params).forEach((key) =>
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            url.searchParams.append(key, params[key])
-        );
-
-        const headers: AxiosRequestConfig["headers"] = {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + providerToken,
-        };
-        try {
-            const eventCreationRes = await axios.put(url.toString(),
-                event, { headers });
-        } catch (error) {
-            signOut();
-            return;
-        }
 
         const personIdList = [];
 
@@ -408,9 +356,7 @@ const AddMeeting = ({
             personIdList.push(item._id)
         })
 
-        console.log("personList", personIdList);
-
-        await updateMeetingDb(meetingId, {
+        const updateMeeting = await updateMeetingDb(meetingId, {
             summary: summary + ' - ' + description,
             date: startDate.toDate(),
             members: personIdList,
@@ -418,15 +364,16 @@ const AddMeeting = ({
             period: moment(endDate).diff(moment(startDate), 'minutes'),
             updatedAt: new Date(),
         })
-        const resultUpdateProject = await updateProject(projectId, {
+
+        updateGoogleCalendarMeeting(updateMeeting, providerToken, refreshToken);
+
+        await updateProject(projectId, {
             color: projectColor,
         })
 
-        console.log(resultUpdateProject, "Result update Project!!!");
-
         projectColorMap[projectId] = projectColor;
 
-        closeModal()
+        closeModal();
         clearData();
     }
 

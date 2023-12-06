@@ -3,7 +3,7 @@ import UserCard from "@components/UserCard/UserCard";
 import { getProjects } from "@service/project.service";
 import { cookies } from "next/headers";
 import { getUserMeetings, getUserTodos } from "@service/user.service";
-import { IProject, Meeting, Todo } from "@models";
+import { IProject, Meeting, Todo, IPerson } from "@models";
 
 export const revalidate = 0;
 
@@ -15,6 +15,7 @@ export default async function Page() {
   let projects: IProject[] = [];
   let meetings: Meeting[] = [];
   let todos: Todo[] = [];
+  let people: IPerson[] = [];
 
   try {
     // Get projects from backend api

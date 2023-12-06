@@ -40,16 +40,22 @@ const AddMeeting = ({
     userId,
     projectId,
     meetingId = '',
+    isOpen: isAddMeetingModalOpen = false,
+    updateProjectColorMap,
+    setIsOpen: setIsAddmeetingModalOpen,
     onNewMeeting
 }: {
-    children: React.ReactNode;
+    children?: React.ReactNode;
     providerToken?: string;
     userId?: string;
     projectId?: string;
     meetingId?: string;
+    isOpen?: boolean;
+    updateProjectColorMap?: (val) => void
+    setIsOpen?: (val: boolean) => void;
     onNewMeeting?: () => void
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(isAddMeetingModalOpen);
     const [selectedPersonEmailList, setSelectedPersonEmailList] = useState<string[]>([]);
     const { user } = useAuthContext();
     const { signOut } = useAuthContext();
@@ -85,6 +91,7 @@ const AddMeeting = ({
         setUsers(users);
     }
     useEffect(() => {
+        console.log("is Open Add new meeting")
         if (isOpen) {
             fetchAllProjects();
             fetchAllUsers();
@@ -95,17 +102,21 @@ const AddMeeting = ({
     }, [isOpen]);
 
     useEffect(() => {
+        setIsOpen(isAddMeetingModalOpen);
+    }, [isAddMeetingModalOpen])
+
+    useEffect(() => {
         setProjectColor(projectColorMap[selectedProject]);
     }, [selectedProject, projectColorMap])
 
     const initilaizeMeetingProperty = async () => {
-        getMeeting(meetingId).then((meeting:Meeting) => {
+        getMeeting(meetingId).then((meeting: Meeting) => {
             if (meeting.summary.split(' - ').length > 1) {
                 setSummary(meeting.summary.split(' - ')?.at(0));
                 setDescription(meeting.summary.split(' - ')?.at(1));
             } else {
                 setDescription('');
-                setSummary(meeting.summary);    
+                setSummary(meeting.summary);
             }
             setStartDate(moment(meeting.date));
             setEndDate(moment(meeting.date).add(meeting.period, "minutes"));
@@ -133,11 +144,14 @@ const AddMeeting = ({
 
     const closeModal = () => {
         setIsOpen(false);
+        if (setIsAddmeetingModalOpen) {
+            setIsAddmeetingModalOpen(false);
+        }
     }
 
     const onCancel = () => {
         clearData()
-        setIsOpen(false);
+        closeModal();
     }
 
     const onSaveNew = () => {
@@ -223,7 +237,8 @@ const AddMeeting = ({
             onNewMeeting();
             saveIntoGoogleCalendar(meeting._id);
         });
-        setIsOpen(false);
+        updateProjectColorMap(projectColorMap);
+        closeModal();
         clearData();
     };
 
@@ -266,10 +281,10 @@ const AddMeeting = ({
             },
             extendedProperties: {
                 private: {
-                  projectId: selectedProject,
-                  meetingId: meetingId,
+                    projectId: selectedProject,
+                    meetingId: meetingId,
                 }
-              }
+            }
         };
 
         const url = new URL(
@@ -388,8 +403,8 @@ const AddMeeting = ({
         }
 
         const personIdList = [];
-        
-        users.filter((person:IPerson) => selectedPersonEmailList.includes(person.email)).map((item:IPerson) => {
+
+        users.filter((person: IPerson) => selectedPersonEmailList.includes(person.email)).map((item: IPerson) => {
             personIdList.push(item._id)
         })
 
@@ -400,7 +415,7 @@ const AddMeeting = ({
             date: startDate.toDate(),
             members: personIdList,
             projectId: selectedProject,
-            period:  moment(endDate).diff(moment(startDate), 'minutes'),
+            period: moment(endDate).diff(moment(startDate), 'minutes'),
             updatedAt: new Date(),
         })
         const resultUpdateProject = await updateProject(projectId, {
@@ -411,7 +426,7 @@ const AddMeeting = ({
 
         projectColorMap[projectId] = projectColor;
 
-        setIsOpen(false);
+        closeModal()
         clearData();
     }
 

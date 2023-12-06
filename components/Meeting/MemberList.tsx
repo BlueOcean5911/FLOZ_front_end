@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ToggleButton from "@components/button/ToogleButton";
 import Member from "./Member"
 import AddMemberLayout from './AddMember';
-import { getMeeting, generateEmail } from '@service/meeting.service';
+import { getMeeting, generateEmail, updateMeeting } from '@service/meeting.service';
 import { IPerson, Meeting } from '@models';
 import { getPerson } from '@service/person.service';
 
@@ -115,10 +115,6 @@ const MemberList = ({ setGenerateEmail, todolistStr, params }) => {
       <div className="projects-members TodoList rounded-md mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
         <div className="todolist-header flex justify-between w-full p-4 items-center">
           <h2 className="font-bold text-[21px]">Meeting related:</h2>
-          <div className="flex items-center gap-4">
-            <p className="text-[12px]">Matching by AI</p>
-            <ToggleButton />
-          </div>
         </div>
         <div className="grow flex flex-col overflow-auto">
           {

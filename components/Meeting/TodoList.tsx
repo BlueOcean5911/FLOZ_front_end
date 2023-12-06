@@ -161,10 +161,6 @@ const TodoList = ({ todoListData, meetingId, projectId }) => {
       style={{ scrollbarWidth: 'none' }}>
       <div className="todolist-header flex justify-between w-full p-4 items-center">
         <h2 className="font-bold text-[21px]">To do list:</h2>
-        <div className="flex items-center gap-4">
-          <p className="text-[12px]">Matching tasks by AI</p>
-          <ToggleButton />
-        </div>
       </div>
       <div className="grow todolist-tasks flex flex-col gap-1 px-6 overflow-auto">
         <TaskList data={todoList} handleClick={handleClickedTodo} editTask={ onEditTask} assignedPersonList={assignedPersonList} handleRemove={handleRemove} />

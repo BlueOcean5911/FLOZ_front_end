@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import SelectForPeople from "./SelectForPeople";
 
-const Transcript = ({ transcript: content }) => {
+const Transcript = ({ transcript: content, people }) => {
 
   const [transcript, setTranscript] = useState([]);
 
@@ -25,14 +26,21 @@ const Transcript = ({ transcript: content }) => {
     processTranscript();
   }, [content])
 
+  const handleChange = (val, speakerName)  => {
+    // TODO handle change assigned name
+  }
+
   return (
     <div className="flex font-[13px] h-full flex-col space-y-2  mb-[26px] overflow-auto leading-5 shadow-sm p-10">
       {transcript.map((item, index) => (
-              <div key={index}>
-                <h3 className="text-xl font-bold">{item.name}</h3>
-                <p>{item.content}</p>
-              </div>
-        ))}
+        <div key={index}>
+          <div className="flex gap-2">
+            <h3 className="text-xl font-bold">{item.name}</h3>
+            <SelectForPeople people={people} onChange={(val) => handleChange(val, item.name)} />
+          </div>
+          <p>{item.content}</p>
+        </div>
+      ))}
     </div>
   )
 }

@@ -5,7 +5,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
-import { IProject } from "@models";
+import { IProject, IPerson } from "@models";
 import moment from "moment";
 import { createProject, getProjects, updateProject } from "@./service/project.service";
 import { Meeting } from "@models/meeting.model";
@@ -16,6 +16,9 @@ import { SketchPicker } from 'react-color';
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import DialogHeader from "@components/DialogHeader/DialogHeader";
+
+import { ChevronDownIcon } from "@heroicons/react/20/solid"
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -71,11 +74,13 @@ export default function ProjectPanel({
   const [projectColor, setProjectColor] = useState('#349989');
   const [phases, setPhases] = useState(["25% SD", "50% SD", "75% SD", "100% SD", "25% DD", "50% DD", "75% DD", "100% DD", "25% CD", "50% CD", "75% CD", "100% CD"]);
   const [isSubmit, setIsSubmit] = useState(false);
+  const [people, setPeople] = useState<IPerson[]>([])
   // const [dueDate, setDueDate] = useState<Date | any>(null);
   const [checkedId, setCheckedId] = useState('Today');
   const [formData, setFormData] = useState({
     name: '',
     phase: '',
+    projectOwner: '',
     dueDate: null,
     userId: data.userId
   });
@@ -103,7 +108,7 @@ export default function ProjectPanel({
   }
 
   function openModal() {
-    setFormData({ name: '', phase: '', dueDate: null, userId: data.userId });
+    setFormData({ name: '', phase: '', dueDate: null, userId: data.userId, projectOwner: '' });
     setIsOpenProjectModal({ isOpen: true, action: 'add', _id: '' });
   }
 
@@ -147,14 +152,14 @@ export default function ProjectPanel({
           }
         }
         setIsSubmit(false);
-        setFormData({ name: '', phase: '', dueDate: null, userId: data.userId });
+        setFormData({ name: '', phase: '', dueDate: null, userId: data.userId, projectOwner: '' });
         setIsOpenProjectModal({ isOpen: false, action: 'add', _id: '' });
       }
     }
   };
   const isActionProject = (action, project) => {
     if (action === 'edit') {
-      setFormData({ name: project.name, phase: project.phase, dueDate: project.dueDate, userId: data.userId });
+      setFormData({ name: project.name, phase: project.phase, dueDate: project.dueDate, userId: data.userId, projectOwner: '' });
       setIsOpenProjectModal({ isOpen: true, action: 'edit', _id: project._id });
     }
 
@@ -481,7 +486,7 @@ export default function ProjectPanel({
           <Transition appear show={isOpenProjectModal.isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={() => { }}>
               <div className="fixed inset-0 overflow-y-auto">
-                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <div className="flex min-h-full items-center justify-center text-center" onClick={() => { setIsOpenProjectModal({ ...isOpenProjectModal, isOpen: false }) }}>
                   <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -491,19 +496,19 @@ export default function ProjectPanel({
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                      <Dialog.Title
-                        as="h3"
-                        className="text-lg font-medium leading-6 text-gray-900"
-                      >
-                        Create new Project
-                      </Dialog.Title>
-                      <div className="my-10">
-                        <form onSubmit={handleSubmit}>
-                          <label className="text-sm font-bold">
-                            Project Name
+                    <Dialog.Panel className="w-1/3 transform overflow-hidden rounded-2xl bg-white py-6 text-left align-middle shadow-xl transition-all">
+                      <DialogHeader text={'New Project'} closeModal={() => { setIsOpenProjectModal({ ...isOpenProjectModal, isOpen: false }) }} />
+                      <div className="p-6">
+                        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                          <div className="bg-gray-200 flex rounded-md px-4 py-2 text-md">
+                            <ChevronDownIcon className="w-6 h-6" />
+                            About
+                          </div>
+                          <label htmlFor="name">
+                            <span className="text-red-400">*</span>
+                            <span>Project Name</span>
                           </label>
-                          <div className="flex align-middle items-center gap-1 justify-between mt-3">
+                          <div className="flex align-middle items-center gap-1 justify-between">
                             <input
                               type="text"
                               id="name"
@@ -530,23 +535,66 @@ export default function ProjectPanel({
                                 <option value={phase}>{phase}</option>
                               ))}
                             </select>
-
-                            <LocalizationProvider dateAdapter={AdapterMoment}>
-                              <DemoContainer components={['DatePicker']}>
-                                <div className="m-w-[100px]">
-                                  <DatePicker
-                                    className="px-2 py-2"  // Adjust the padding here (e.g., px-2 for horizontal padding and py-2 for vertical padding)
-                                    value={!isSubmit && formData.dueDate == null ? null : moment(formData.dueDate)}
-                                    slotProps={{ textField: { placeholder: 'Due Date' } }}
-                                    onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
-                                  />
-                                </div>
-                              </DemoContainer>
-                            </LocalizationProvider>
+                            <div className="flex gap-2 mt-2">
+                              <div className="flex flex-col">
+                                <div className="">Start date</div>
+                                <LocalizationProvider dateAdapter={AdapterMoment}>
+                                  <DemoContainer components={['DatePicker']}>
+                                    <div className="m-w-[100px]">
+                                      <DatePicker
+                                        className="px-2 py-2"  // Adjust the padding here (e.g., px-2 for horizontal padding and py-2 for vertical padding)
+                                        value={!isSubmit && formData.dueDate == null ? null : moment(formData.dueDate)}
+                                        slotProps={{ textField: { placeholder: 'Due Date' } }}
+                                        onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
+                                      />
+                                    </div>
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </div>
+                              <div className="flex flex-col">
+                                <div className="">End date</div>
+                                <LocalizationProvider dateAdapter={AdapterMoment}>
+                                  <DemoContainer components={['DatePicker']}>
+                                    <div className="m-w-[100px]">
+                                      <DatePicker
+                                        className="px-2 py-2"  // Adjust the padding here (e.g., px-2 for horizontal padding and py-2 for vertical padding)
+                                        value={!isSubmit && formData.dueDate == null ? null : moment(formData.dueDate)}
+                                        slotProps={{ textField: { placeholder: 'Due Date' } }}
+                                        onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
+                                      />
+                                    </div>
+                                  </DemoContainer>
+                                </LocalizationProvider>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label htmlFor="projectOwner">Project Owner</label>
+                            <select
+                              id="projectOwner"
+                              name="projectOwner"
+                              value={formData.projectOwner}
+                              required
+                              onChange={(e) => setFormData({ ...formData, projectOwner: e.target.value })}
+                              placeholder="Choose people"
+                              className={`w-full rounded-md border p-2 px-4 outline-none `}
+                            >
+                              {
+                                people.map(person => (
+                                  <option value={person._id}>{person.name}</option>
+                                ))
+                              }
+                            </select>
+                            <div className="">Note</div>
+                            <textarea 
+                              rows={4}
+                              className="border border-gray-300 
+                                rounded-md  p-2
+                                focus:outline-none focus:border-gray-500" />
                           </div>
                           <button
                             type="submit"
-                            className="mt-3 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            className="mt-3 py-2 inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                           >
                             Submit
                           </button>

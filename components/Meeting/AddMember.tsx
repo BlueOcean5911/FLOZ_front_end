@@ -33,7 +33,7 @@ const AddMemberLayout = ({ show, setShow, selectedlMemberIds, setSelectedMembers
   useEffect(() => {
     const initialize = async () => {
 
-      const meetings: any = await getAllMeetings({ projectId: params?.projectId ? params?.projectId : '655d220b2128b99ad7088376' });
+      const meetings: any = await getAllMeetings({ projectId: params?.projectId});
       console.log(meetings, "=======================");
       const tempPeopleIds = [];
 
@@ -63,7 +63,7 @@ const AddMemberLayout = ({ show, setShow, selectedlMemberIds, setSelectedMembers
     }
 
     initialize();
-  }, []);
+  }, [setPeople, setOrganizationPeople]);
 
   useEffect(() => {
     setOrganizationPeople(organizationPeople.filter(person => !selectedPeople.includes(person._id)));
@@ -80,8 +80,9 @@ const AddMemberLayout = ({ show, setShow, selectedlMemberIds, setSelectedMembers
 
 
   useEffect(() => {
+    console.log(selectedlMemberIds, "selected memeber ids", people.filter((person) => selectedlMemberIds.includes(person._id)))
     setSelectedPeople(people.filter((person) => selectedlMemberIds.includes(person._id)));
-  }, [selectedlMemberIds])
+  }, [selectedlMemberIds, people])
 
 
   const addMemberInMeeting = async () => {
@@ -89,7 +90,7 @@ const AddMemberLayout = ({ show, setShow, selectedlMemberIds, setSelectedMembers
     for (let i = 0; i < selectedPeople.length; i++) {
       selectedIds.push(selectedPeople[i]._id);
       if (i === selectedPeople.length - 1) {
-        updateMeeting('655d242b2128b99ad7088381', {
+        updateMeeting(params.meetingId, {
           members: selectedIds,
         });
         setSelectedMembersIds(selectedIds);
@@ -98,7 +99,7 @@ const AddMemberLayout = ({ show, setShow, selectedlMemberIds, setSelectedMembers
     for (let i = 0; i < selectedOrganizationPeople.length; i++) {
       selectedIds.push(selectedOrganizationPeople[i]._id);
       if (i === selectedOrganizationPeople.length - 1) {
-        updateMeeting('655d242b2128b99ad7088381', {
+        updateMeeting(params.meetingId, {
           members: selectedIds,
         });
         setSelectedMembersIds(selectedIds);

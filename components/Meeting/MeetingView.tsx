@@ -10,13 +10,6 @@ import { useEffect, useState } from "react";
 import AddMeeting from "./AddMeeting";
 import { deleteMeeting, getAllMeetings, updateMeeting } from "@service/meeting.service";
 import moment from "moment";
-import next from "next";
-import dayjs, { Dayjs } from 'dayjs';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers-pro';
-import { AdapterDayjs } from '@mui/x-date-pickers-pro/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DateCalendar, StaticDatePicker, TimeField, TimePicker } from "@mui/x-date-pickers";
 import CalendarMUI from '@components/Calendar/Calendar'
 import UploadAudioModal from "@components/UploadAudioModal/UploadAudioModal";
 import { useRouter } from "next/navigation";
@@ -48,19 +41,7 @@ const MeetingView = ({
   const [documents, setDocuments] = useState([]);
 
   useEffect(() => {
-    let tempMeetings = [...meetings].filter(meeting => (new Date(meeting.date)).toISOString() < (new Date()).toISOString());
-    if (tempMeetings.length > 0) {
-      setPreviousMeeting(tempMeetings?.at(0));
-
-    } else {
-      setPreviousMeeting(null);
-    }
-    tempMeetings = [...meetings].filter(meeting => (new Date(meeting.date)).toISOString() > (new Date()).toISOString());
-    if (tempMeetings.length > 0) {
-      setNextMeeting(tempMeetings?.at(tempMeetings.length - 1));
-    } else {
-      setNextMeeting(null);
-    }
+    sortMeeting();
   }, [meetings])
 
   useEffect(() => {
@@ -69,6 +50,44 @@ const MeetingView = ({
     }
   }, [user]);
 
+  const sortMeeting = () => {
+    const tempMeetings = [...meetings];
+    // set todo meetings
+    let tempTodoMeetings = tempMeetings.filter(meeting => (new Date(meeting.date)).toISOString() > (new Date()).toISOString());
+    // set previous meeting data
+    if (tempMeetings.length > 0) {
+      setPreviousMeeting(tempMeetings?.at(0));
+    } else {
+      setPreviousMeeting(null);
+    }
+    // sort previous meetings 
+    tempTodoMeetings = sortMeetingsByFavourite(tempTodoMeetings);
+    // set Done meetings
+    let tempDoneMeetings = tempMeetings.filter(meeting => (new Date(meeting.date)).toISOString() < (new Date()).toISOString());
+    // set next meeting data
+    if (tempDoneMeetings.length > 0) {
+      setNextMeeting(tempDoneMeetings?.at(tempDoneMeetings.length - 1));
+    } else {
+      setNextMeeting(null);
+    }
+    // sort next meetings
+    tempDoneMeetings = sortMeetingsByFavourite(tempDoneMeetings);
+    // set meetins sorted by favourite
+    setMeetings([...tempTodoMeetings, ...tempDoneMeetings]);
+  }
+
+  const sortMeetingsByFavourite = (meetings: Meeting[]) => {
+    meetings.sort((a, b) => {
+      if (a.favourite && !b.favourite) {
+        return -1;
+      } else if (b.favourite && !a.favourite) {
+        return 1;
+      } else { 
+        return 0;
+      }
+    })
+    return meetings;
+  }
 
   const getIntialData = async (user: IUser) => {
     try {
@@ -130,6 +149,14 @@ const MeetingView = ({
 
       const tempMeetings = [...meetings];
       tempMeetings[index].favourite = !meeting.favourite;
+      tempMeetings.sort((a, b) => {
+        if (a.favourite && b.favourite || !a.favourite && !b.favourite) {
+          if (a.date > b.date) return -1;
+          else return 1;
+        }
+        if (a.favourite && !b.favourite) return -1;
+        if (a.favourite && b.favourite) return 1;
+      })
       setMeetings([...tempMeetings]);
     } catch (error) {
       console.log(error, "schedule toggle favourite error")
@@ -145,6 +172,16 @@ const MeetingView = ({
       getAllDocument(data.project._id, { projectId: data.project._id }).then(resp => {
         setDocuments(resp);
       })
+    }
+  }
+
+  const handleClickedMeeting = (meeting: Meeting) => {
+    if (new Date(meeting.date).toDateString() < new Date().toDateString()) {
+      window.open(`\\dashboard\\project\\${meeting.projectId}\\meeting\\${meeting._id}`, '_self');
+    }
+    else {
+      window.open(meeting.googleMeetingUrl, '_blank');
+
     }
   }
 
@@ -230,10 +267,10 @@ const MeetingView = ({
                             </div>
                             <div className="w-1/2 flex  items-center">
                               <div className="w-6/12">
-                                <p
-                                  className="p-1 mx-2 border-2border-transparent rounded-md text-white text-center font-bold"
-                                  style={{ backgroundColor: `${projectIdToColorMap[meeting.projectId]}` }}
-                                >{meeting.topic || 'Topic'}</p>
+                                {
+                                  (new Date(meeting.date)).toISOString() > (new Date()).toISOString() ? <p className="mr-8 p-1 border-2 border-gray-100 bg-gray-50 rounded-md">{truncateSummary(meeting.summary, 4)}</p> :
+                                    <p className="mr-8 p-1 border-2  border-gray-300 bg-gray-200 rounded-md">{meeting.topic}</p>
+                                }
                               </div>
                               <div className="w-5/12">{moment(meeting.date).format("MMM D, YYYY h:mm a")}</div>
                               <div className="w-1/12 flex justify-evenly items-center" >
@@ -342,7 +379,7 @@ const MeetingView = ({
 
                     <div key={index} className={`schedule-meeting flex justify-between p-2  border-2 rounded-md ${(new Date(meeting.date)) < (new Date()) ? 'bg-[#DDF1EE] border-gray-200 ' : 'bg-white border-[#DDF1EE]'} select-none`}>
                       <div className="grow flex flex-col text-xs hover:cursor-pointer"
-                        onClick={() => { window.open(meeting.googleMeetingUrl, '_blank'); }}>
+                        onClick={() => { handleClickedMeeting(meeting); }}>
                         <p className="text-gray-500">{meeting.topic || 'Topic'}</p>
                         <p>{meeting.summary}</p>
                       </div>

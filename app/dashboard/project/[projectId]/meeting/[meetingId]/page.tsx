@@ -93,7 +93,10 @@ const Page = ({ params }: { params: pageProps }) => {
 
   const getAssignPeopleMap = async () => {
     const meeting:Meeting = await getMeeting(params.meetingId);
-    setAssignPeopleMap(meeting.assignPeopleMap);
+    if (meeting.assignPeopleMap)
+      setAssignPeopleMap(meeting.assignPeopleMap);
+    else 
+      setAssignPeopleMap({});
   }
 
   useEffect(() => {

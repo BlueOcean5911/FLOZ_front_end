@@ -40,6 +40,19 @@ export default {
         // sans: 'var(--font-inter)',
         display: ['Cabinet Grotesk', ...defaultTheme.fontFamily.sans],
       },
+      backgroundColor: {
+        'tone': '#349989'
+      },
+      borderColor: {
+        'tone': '#349989'
+      },
+      textColor: {
+        'tone': '#349989',
+        'link': '#0B5CAB'
+      },
+      boxShadow: {
+        'blue' : '0px 0px 2px 2px #1B96FF'
+      }
     },
   },
 } satisfies Config;

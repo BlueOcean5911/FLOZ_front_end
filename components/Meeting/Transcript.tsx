@@ -30,7 +30,7 @@ const Transcript = ({ transcript: content, people, assignPeopleMap, setAssignPeo
     // TODO handle change assigned name
     const tempAssignPeopleMap = {...assignPeopleMap};
     tempAssignPeopleMap[speakerName] = val;
-    setAssignPeopleMap(tempAssignPeopleMap);
+    setAssignPeopleMap({...tempAssignPeopleMap});
   }
 
   return (

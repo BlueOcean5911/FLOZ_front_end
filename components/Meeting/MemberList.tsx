@@ -8,7 +8,7 @@ import { IPerson, Meeting } from '@models';
 import { getPerson } from '@service/person.service';
 
 // members component
-const MemberList = ({ setGenerateEmail, todolistStr, params }) => {
+const MemberList = ({ setGenerateEmail, todolistStr, setPeopleList, params }) => {
 
   // state value
   const [persons, setPersons] = useState<IPerson[]>([])
@@ -56,7 +56,11 @@ const MemberList = ({ setGenerateEmail, todolistStr, params }) => {
     updateMembers();
   }, [memberIds]);
 
-  
+  useEffect(() => {
+    setPeopleList([...persons]);
+  }, [persons])
+
+    
 
   // add the user into the database
   const addMember = async () => {

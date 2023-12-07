@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IProject } from "@./models/project.model";
 import { updateProject, deleteProject, getProjects } from "@./service/project.service";
@@ -10,6 +10,7 @@ import MessageIcon from "@components/icons/message.icon";
 import SetttingIcon from "@components/icons/setting.icon";
 import PeopleIcon from "@components/icons/people.icon";
 import StarToogleIcon from "@components/icons/startToggle.icon";
+import { Dialog, Transition } from "@headlessui/react";
 
 export default function ProjectItems({
   projects,
@@ -28,6 +29,37 @@ export default function ProjectItems({
   const handleChangeStar = async (val: boolean, data: any) => {
     await updateProject(data.projectId, { favourite: val });
     setAllProjects(await getProjects({}));
+  }
+
+  const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
+
+  function closeEditModal() {
+    setIsEditOpen(false);
+  }
+
+  function openModal(project: IProject) {
+    setSelectedProject(project);
+    setIsEditOpen(true);
+  }
+
+  async function updateProjectName(name: string) {
+    const project: IProject = { ...selectedProject };
+    const totalProjects = allProjects && [...allProjects];
+    const p = totalProjects?.find((pjt) => pjt._id === project._id);
+    p.name = name;
+    project.name = name;
+    setSelectedProject(project);
+    await updateProject(project._id, { name: name });
+    return totalProjects;
+  }
+
+  async function handleDeleteProject(project: IProject) {
+    const id = project._id;
+    await deleteProject(id);
+    const remainingProjects =
+      allProjects && [...allProjects].filter((p) => p._id !== id);
+    setAllProjects(remainingProjects);
+    return remainingProjects;
   }
   
 
@@ -87,7 +119,7 @@ export default function ProjectItems({
                   <option value={0}>Unassigned</option>
                 </select>
                 <div className="flex gap-1">
-                  <SetttingIcon />
+                  <SetttingIcon  onClick={() => openModal(project)} />
                   <PeopleIcon onClick={() => {router.push(`/dashboard/people?projectId=${project._id}`)}}/>
                   <MessageIcon />
                   <StarToogleIcon state={project.favourite} data={{ projectId: project._id }} onChange={handleChangeStar} />
@@ -100,6 +132,62 @@ export default function ProjectItems({
 
       <AddProject isOpen={isOpen} closeModal={closeModal} />
 
+      <Transition appear show={isEditOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={closeEditModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    Edit Project
+                  </Dialog.Title>
+                  <div className="my-10">
+                    <label className="text-sm font-bold">Project Name</label>
+                    <input
+                      type="text"
+                      placeholder="Project X"
+                      value={selectedProject?.name ?? ""}
+                      onChange={(e) => updateProjectName(e.target.value)}
+                      className="w-full rounded-md border border-neutral-200 p-2 px-4 outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    onClick={closeEditModal}
+                  >
+                    Submit
+                  </button>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+      
     </div>
   );
 }

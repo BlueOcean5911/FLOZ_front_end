@@ -348,6 +348,7 @@ export default function CalendarPage() {
         color={projectColorMap[selectedEvent?.event.extendedProps.projectId]}
         selectedEvent={selectedEvent}
         removeEvent={removeEvent}
+        meetingId={selectedEventMeetingId}
         closeModal={closeEventModal}
         editSelectedEvent={editSelectedEvent}
         goTOMeetingPage={goTOMeetingPage} />

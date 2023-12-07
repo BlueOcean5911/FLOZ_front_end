@@ -1,7 +1,5 @@
 
-const SetttingIcon = ({...rest}: {
-  rest?:any
-}) => {
+const SetttingIcon = ({...rest}) => {
   return (
     <svg {...rest} width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="0.5" y="0.5" width="39" height="31" rx="3.5" fill="white" />

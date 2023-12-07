@@ -29,21 +29,17 @@ const testData = [
 ]
 
 // the list of tasks in the meeting summary
-const TaskList = ({ data: todoList, assignedPersonList, editTask, handleClick, handleRemove }) => {
-  const [personList, setPersonList] = useState([]);
-  useEffect(() => {
-    setPersonList(assignedPersonList)
-  }, [])
-  console.log(assignedPersonList, "assignedpersonList");
+const TaskList = ({ data: todoList, assignPeopleMap, editTask, handleClick, handleRemove }) => {
+
   return (
     <>
       {
 
-        assignedPersonList.map((assignedPerson, index) => (
+        Object.keys(assignPeopleMap).map((assignedPerson, index) => (
           <Task
             editTask={editTask}
             key={index}
-            personName={assignedPerson}
+            personName={assignPeopleMap[assignedPerson] === '' ? assignedPerson : assignPeopleMap[assignedPerson]}
             taskList={(todoList?.filter((task) => task.assignedPerson === assignedPerson))}
             handleRemove={handleRemove}
             handleClick={handleClick} />
@@ -54,11 +50,11 @@ const TaskList = ({ data: todoList, assignedPersonList, editTask, handleClick, h
   );
 };
 
-const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap }) => {
+const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap: assignMap }) => {
 
   const [formData, setFormData] = useState({ _id: '', assignedPerson: '', title: '', description: '', meetingId: '', dueDate: null });
   const [isOpenAddTask, setIsOpenAddTask] = useState({ modalType: 'add', isOpen: false });
-  const [assignedPersonList, setAssignedPersonList] = useState([]);
+  const [assignPeopleMap, setAssignPeopleMap] = useState(assignMap);
   const [isSubmit, setIsSubmit] = useState(false);
   const [todoList, setTodoList] = useState([]);
   const [selectedId, setSelectedTodoId] = useState(-1);
@@ -69,20 +65,8 @@ const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap }) => {
   }, []);
 
   useEffect(() => {
-    const tempAssignList = [];
-    todoList.forEach((todo:Todo, index) => {
-      todo.assignedPerson = assignPeopleMap[todo.assignedPerson] ? assignPeopleMap[todo.assignedPerson] : todo.assignedPerson;
-      console.log(assignPeopleMap, "assignedPeopleMap");
-      if (!tempAssignList.includes(todo.assignedPerson)) {
-        if (assignPeopleMap[todo.assignedPerson]) {
-          tempAssignList.push(assignPeopleMap[todo.assignedPerson])
-        } else {
-          tempAssignList.push(todo.assignedPerson);
-        }
-      }
-    })
-    setAssignedPersonList(tempAssignList);
-  }, [todoList, assignPeopleMap])
+    setAssignPeopleMap({ ...assignMap });
+  }, [assignMap])
 
   const handleClickedTodo = (id) => {
     setSelectedTodoId(id);
@@ -158,7 +142,7 @@ const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap }) => {
     setDueDate(new Date(task.dueDate));
     setSelectedTodoId(task._id);
     setIsOpenAddTask({ modalType: 'edit', isOpen: true });
-    setFormData({ _id: task._id,assignedPerson:task.assignedPerson, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
+    setFormData({ _id: task._id, assignedPerson: task.assignedPerson, title: task.title, description: task.description, meetingId: task.meetingId, dueDate: task.dueDate });
   }
 
   return (
@@ -169,7 +153,7 @@ const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap }) => {
         <h2 className="font-bold text-[21px]">To do list:</h2>
       </div>
       <div className="grow todolist-tasks flex flex-col gap-1 px-6 overflow-auto">
-        <TaskList data={todoList} handleClick={handleClickedTodo} editTask={ onEditTask} assignedPersonList={assignedPersonList} handleRemove={handleRemove} />
+        <TaskList data={todoList} handleClick={handleClickedTodo} editTask={onEditTask} assignPeopleMap={assignPeopleMap} handleRemove={handleRemove} />
       </div>
       <div className="todolist-footer flex justify-between px-6 my-2">
         <button className="text-[13px] text-[#06A59A]  hover:text-[#A8EFEA]" onClick={() => onAddTask()}>Add taks</button>

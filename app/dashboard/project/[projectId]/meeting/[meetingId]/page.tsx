@@ -75,7 +75,9 @@ const Page = ({ params }: { params: pageProps }) => {
 
   const getIntialData = async (user: IUser) => {
     try {
-      const dbPersons = await getPersons({ organization: user.organization});
+      let dbPersons = await getPersons({ organization: user.organization});
+      const meeting:Meeting = await getMeeting(params.meetingId);
+      dbPersons = dbPersons.filter((person) => meeting.members.includes(person._id));
       if (dbPersons.length > 0) {
         setPeopleList(dbPersons);
       }
@@ -179,7 +181,7 @@ const Page = ({ params }: { params: pageProps }) => {
             (
               <>
                 <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} assignPeopleMap={assignPeopleMap} />
-                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} />
+                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} setPeopleList={setPeopleList} />
               </>
             )
           }

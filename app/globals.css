@@ -1,8 +1,7 @@
-/* Tailwind Configuration */
+@import "react-multi-date-picker/styles/colors/teal.css"; /* Tailwind Configuration */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 * {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -416,4 +415,11 @@
 }
 .rmdp-shadow {
   z-index: 0 !important;
+}
+
+.rmpd-panel {
+  width: 100% !important;
+  display: flex;
+  align-content: center;
+  justify-content: center;
 }

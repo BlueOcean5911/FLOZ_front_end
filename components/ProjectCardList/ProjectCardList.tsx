@@ -2,7 +2,7 @@
 
 import {IProject} from "@./models/project.model";
 import {useState} from "react";
-import ProjectCardItem from "@components/ProjectCardItem/ProjectCardItem";
+import ProjectCardItem from "@components/ProjectCardList/ProjectCardItem";
 
 // home page project card list component
 export default function ProjectCardList({

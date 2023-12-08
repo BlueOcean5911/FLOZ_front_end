@@ -16,20 +16,21 @@ export default function Header() {
 
   return (
     <>
-      <div className="p-4 flex items-center justify-between">
+      <div className="flex items-center justify-between p-2">
         <div className="flex items-center">
         </div>
 
-        <div className="flex py-1 px-[135px] items-center justify-center border border-solid border-gray-400 rounded-md">
+        <div className="search-design-manager h-8 w-96 flex items-center justify-center border border-solid border-gray-400 rounded-md">
           <button className="flex p-1 pr-2 rounded-md text-white">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path fillRule="evenodd" clipRule="evenodd" d="M15.2649 13.9304L11.1429 9.8403C11.9734 8.67171 12.4041 7.1956 12.1888 5.62723C11.8196 2.98252 9.66632 0.891363 6.99006 0.645344C3.36019 0.276315 0.284031 3.35155 0.65317 7.01109C0.899263 9.65579 2.99105 11.8392 5.63655 12.2082C7.20539 12.4235 8.68195 11.993 9.85089 11.1627L13.9422 15.2527C14.1268 15.4372 14.4036 15.4372 14.5882 15.2527L15.2342 14.6069C15.4187 14.4224 15.4187 14.1149 15.2649 13.9304ZM2.46809 6.4271C2.46809 4.24368 4.25227 2.46004 6.43634 2.46004C8.62042 2.46004 10.4046 4.24368 10.4046 6.4271C10.4046 8.61052 8.62042 10.3942 6.43634 10.3942C4.25227 10.3942 2.46809 8.64127 2.46809 6.4271Z" fill="#349989" />
             </svg>
           </button>
           <input
+            id='search-design-manager'
             type="text"
-            className="flex bg-transparent focus:outline-none p-2 w-[100px] text-teal-600"
-            placeholder="Search Floz"
+            className="flex bg-transparent focus:outline-none text-teal-600 w-1/2 hover:w-full foucs:w-full text-center transition-all duration-300"
+            placeholder="Search Design Manager"
           />
         </div>
 

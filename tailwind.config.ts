@@ -52,6 +52,9 @@ export default {
       },
       boxShadow: {
         'blue' : '0px 0px 2px 2px #1B96FF'
+      },
+      transition: {
+        'width' : 'width 0.2s ease-in-out',
       }
     },
   },

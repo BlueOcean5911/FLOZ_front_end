@@ -9,6 +9,7 @@ import { useAuthContext } from '@contexts/AuthContext'
 
 import dynamic from 'next/dynamic';
 import { useSearchParams } from "next/navigation";
+import { getCookie } from "cookies-next";
 
 const PeopleList = () => {
 
@@ -16,7 +17,7 @@ const PeopleList = () => {
   const [isNewContactModalOpen, setIsNewContactModalOpen] = useState({ isOpen: false, action: 'create' })
   const [searchPeople, setSearchPeople] = useState('');
   const [selectedPersonId, setSelectedPersonId] = useState('')
-  const user = useAuthContext().user;
+  const userOrganization = getCookie('user_organization');
   const projectId = useSearchParams().get("projectId");
 
   useEffect(() => {
@@ -28,7 +29,7 @@ const PeopleList = () => {
   }, [isNewContactModalOpen])
 
   const fetchPeople = async () => {
-    const tempPeople = await getPersonsByOrganization(user.organization)
+    const tempPeople = await getPersonsByOrganization(userOrganization)
     if (projectId) {
       const personIds:string[] = await getPersonByProject(projectId)
       const uniquePersonIds:string[] = [];
@@ -164,7 +165,7 @@ const PeopleList = () => {
           </div>
           <>
             {isNewContactModalOpen.isOpen ?
-              <NewContact setShow={setIsNewContactModalOpen} action={isNewContactModalOpen.action} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={user?.organization} /> : <></>}
+              <NewContact setShow={setIsNewContactModalOpen} action={isNewContactModalOpen.action} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={userOrganization} /> : <></>}
           </>
         </div>
       </div>

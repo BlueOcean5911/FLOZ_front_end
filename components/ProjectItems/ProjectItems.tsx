@@ -121,7 +121,7 @@ export default function ProjectItems({
                 <div className="flex gap-1">
                   <SetttingIcon  onClick={() => openModal(project)} />
                   <PeopleIcon onClick={() => {router.push(`/dashboard/people?projectId=${project._id}`)}}/>
-                  <MessageIcon />
+                  <MessageIcon onClick={()=>router.push(`/dashboard/project/${project._id}/meeting`)}/>
                   <StarToogleIcon state={project.favourite} data={{ projectId: project._id }} onChange={handleChangeStar} />
                 </div>
               </div>

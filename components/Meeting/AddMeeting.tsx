@@ -109,6 +109,7 @@ const AddMeeting = ({
             if (meetingId !== '') {
                 initilaizeMeetingProperty();
             }
+            console.log(123);
         }
     }, [isOpen]);
 
@@ -118,9 +119,11 @@ const AddMeeting = ({
             setEndDate(moment(startAndEndDate.end));
         }
         setIsOpen(isAddMeetingModalOpen);
+        console.log("isaddmeeting")
     }, [isAddMeetingModalOpen])
 
     useEffect(() => {
+        console.log("selected project")
         setProjectColor(projectColorMap[selectedProject]);
     }, [selectedProject, projectColorMap])
 

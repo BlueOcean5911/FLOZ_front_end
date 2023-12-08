@@ -66,15 +66,15 @@ export default function UserCard({
       <div className="grid grid-cols-2 gap-4">
 
         {toDoList.map(todo => (
-          <div key={todo._id} className="flex justify-between items-start border rounded border-stone-300 px-3 py-3 bg-white" >
+          <div key={todo._id} className="flex  justify-between items-start border rounded border-stone-300 px-3 py-3 bg-white" >
             <div className="pr-2">
               <input type="checkbox" checked={(todo._id == isOpenConfirmModal.todo?._id) && isOpenConfirmModal.modalType != 'delete' ? true : false} className="border-gray-300 cursor-pointer rounded " onChange={(e) => {
                 setIsOpenConfirmModal({ modalType: 'update', isOpen: true, todo: todo })
               }} />
             </div>
-            <div className="flex-1">
+            <div className="w-10/12 pr-2">
               <h3 className="font-bold text-sm">{truncateSummary(todo?.title, 5)}</h3>
-              <p className="text-sm" >{typeof todo.meetingId === 'string' ? "" : truncateSummary(todo?.description, 10) || ""}</p>
+              <p className="text-sm overflow-hidden whitespace-nowrap text-ellipsis" >{typeof todo.meetingId === 'string' ? "" : (todo?.description) || ""}</p>
             </div>
             <div className="flex flex-col justify-between items-end text-right">
               <div>

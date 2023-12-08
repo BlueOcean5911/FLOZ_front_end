@@ -16,7 +16,6 @@ export default function RootLayout({
       <div className="grow p-6 bg-slate-300 bg-opacity-20 overflow-auto">
         {children}  
       </div>
-      <Footer />
     </main>
   );
 }

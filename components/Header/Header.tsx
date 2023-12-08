@@ -118,7 +118,7 @@ export default function Header() {
         </div>
       </div>
 
-      <nav className="bg-white border-b-2 border-green">
+      <nav className="bg-white border-b-4 border-green">
         <div className="flex flex-wrap items-center justify-left mx-auto px-4">
           <Link href={`/dashboard/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
             FLOZ

@@ -51,7 +51,8 @@ export default {
         'link': '#0B5CAB'
       },
       boxShadow: {
-        'blue' : '0px 0px 2px 2px #1B96FF'
+        'blue' : '0px 0px 2px 2px #1B96FF',
+        'dark' : '0px 0px 4px 4px #808080',
       },
       transition: {
         'width' : 'width 0.2s ease-in-out',

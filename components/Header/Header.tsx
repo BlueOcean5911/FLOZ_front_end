@@ -29,7 +29,7 @@ export default function Header() {
           <input
             id='search-design-manager'
             type="text"
-            className="flex bg-transparent focus:outline-none text-teal-600 w-1/2 hover:w-full foucs:w-full text-center transition-all duration-300"
+            className="flex bg-transparent focus:outline-none text-teal-600 w-1/2 focus:w-full text-center transition-all duration-300"
             placeholder="Search Design Manager"
           />
         </div>

@@ -41,7 +41,8 @@ export default {
         display: ['Cabinet Grotesk', ...defaultTheme.fontFamily.sans],
       },
       backgroundColor: {
-        'tone': '#349989'
+        'tone': '#349989',
+        'lightTone' : '#DDF1EE'
       },
       borderColor: {
         'tone': '#349989'

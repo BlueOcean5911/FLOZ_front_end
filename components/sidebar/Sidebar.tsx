@@ -2,11 +2,12 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { Bars3Icon, ChevronDownIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
 import { useAuthContext } from "@/contexts/AuthContext";
 import { getProjects } from '@service/project.service';
 import { IPerson, IProject } from '@models';
+import SidebarTreeView from '@components/treeview/SidebarTreeview';
 
 type TreeNode = {
   label: string;
@@ -89,13 +90,13 @@ const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
           </Link>
         ),
         children: [
-        {
-          label: (
-            <Link href={`/dashboard/project/${item._id}/meeting`}>
-              {"Manage Meetings"}
-            </Link>
-          )
-        }
+          {
+            label: (
+              <Link href={`/dashboard/project/${item._id}/meeting`}>
+                {"Manage Meetings"}
+              </Link>
+            )
+          }
         ],
       })) : [],
     },
@@ -128,28 +129,43 @@ const Sidebar: React.FC<SidebarProps> = ({ persons, projects }) => {
                 {item.name}
               </Link>
             ),
-            children: [{ label: (
-              <Link href={`/dashboard/project/${item._id}/meeting`}>
-                {"Manage Meeting"}
-              </Link>
-            ) }],
+            children: [{
+              label: (
+                <Link href={`/dashboard/project/${item._id}/meeting`}>
+                  {"Manage Meeting"}
+                </Link>
+              )
+            }],
           })) : [],
         },
       ])
     }
   }, [persons, projects])
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className='sidebar flex flex-col p-4 gap-4'>
+    <>
+      <button className='fixed bottom-16  left-4 sm:hidden bg-lightTone p-1 rounded-md' onClick={() => setIsMobileOpen(true)}><Bars3Icon className='w-6 h-6' /></button>
+      <div className={`${isMobileOpen ? "fixed w-full h-full" : "hidden sm:block sm:col-span-1 "} border rounded border-stone-300 px-3 py-3 bg-white card_shadow overflow-auto`}>
+        <div className='flex justify-end'>
+          <button className='relative top-4 right-4 sm:hidden' onClick={() => setIsMobileOpen(false)}><XMarkIcon className='w-6 h-6' /></button>
+        </div>
+        <div className='sidebar flex flex-col p-4 gap-4'>
 
-      <div className='sidebar-title text-lg font-bold'>Main Workspace</div>
-      <input type="text" placeholder="Search project/team name" className="w-11/12 p-1 rounded-md border-2 border-solid border-gray-400" />
+          <div className='sidebar-title text-lg font-bold'>Main Workspace</div>
+          <input type="text" placeholder="Search project/team name" className="w-11/12 p-1 rounded-md border-2 border-solid border-gray-400" />
 
-      <div className='sidebar-main flex flex-col'>
-        <TreeView nodes={treeData} />
+          <div className='sidebar-main flex flex-col'>
+            {/* <TreeView nodes={treeData} /> */}
+            <SidebarTreeView data={{
+              people:peoples as [{_id:string, name:string}],
+              projects:projects as [{_id:string, name:string}]
+              }}/>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

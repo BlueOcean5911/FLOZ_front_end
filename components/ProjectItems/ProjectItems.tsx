@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IProject } from "@./models/project.model";
 import { updateProject, deleteProject, getProjects } from "@./service/project.service";
@@ -11,6 +11,7 @@ import SetttingIcon from "@components/icons/setting.icon";
 import PeopleIcon from "@components/icons/people.icon";
 import StarToogleIcon from "@components/icons/startToggle.icon";
 import { Dialog, Transition } from "@headlessui/react";
+import Pagination from "@components/Pagination/Pagination";
 
 export default function ProjectItems({
   projects,
@@ -21,6 +22,17 @@ export default function ProjectItems({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<IProject>({});
   const [allProjects, setAllProjects] = useState<IProject[] | null>(projects);
+
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const currentPageProjects = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * pageSize;
+    const lastPageIndex = firstPageIndex + pageSize;
+    return allProjects.slice(firstPageIndex, lastPageIndex);
+  }, [currentPage, projects, pageSize]);  
+
+
 
   function closeModal() {
     setIsOpen(false);
@@ -96,7 +108,7 @@ export default function ProjectItems({
       </div>
       <div className="overflow-auto">
         {
-          allProjects.map((project, index) => (
+          currentPageProjects.map((project, index) => (
             <div key={index} className='projects-create-new flex justify-between items-center p-2 m-1 border-2 border-gray-300 rounded-md bg-gray-200'>
               <div className="flex flex-col">
                 <div className="flex items-center">
@@ -128,6 +140,21 @@ export default function ProjectItems({
             </div>
           ))
         }
+        <div className="pagination flex justify-end px-12 py-4">
+            <select className="border-2 border-gray-200 rounded-md
+              focus:outline-none focus:border-gray-400" defaultValue={10} value={pageSize} onChange={(e) => {setPageSize(parseInt(e.target.value))}}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <Pagination
+              className="pagination-bar"
+              currentPage={currentPage}
+              totalCount={allProjects.length}
+              pageSize={pageSize}
+              onPageChange={page => setCurrentPage(page)}
+              />
+          </div>
       </div>
 
       <AddProject isOpen={isOpen} closeModal={closeModal} />

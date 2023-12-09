@@ -1,5 +1,6 @@
 import AuthProvider from "@middlewares/AuthProvider";
 import NextAuthProvider from "../contexts/NextAuthContext";
+
 import "./globals.css";
 import "./index.css"
 import { ToastContainer } from "react-toastify";

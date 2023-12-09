@@ -3,24 +3,32 @@
 import { Fragment } from 'react'
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
-import { Menu, Transition } from '@headlessui/react'
-import { ArrowRightOnRectangleIcon } from "@heroicons/react/20/solid";
+import { Disclosure, Menu, Transition } from '@headlessui/react'
+import { ArrowRightOnRectangleIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/20/solid";
 import { useAuthContext } from "@contexts/AuthContext";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
+
+const navigation = [
+  { name: 'Dashboard', href: '#', current: true },
+  { name: 'Team', href: '#', current: false },
+  { name: 'Projects', href: '#', current: false },
+  { name: 'Calendar', href: '#', current: false },
+]
+
 export default function Header() {
   const { signOut } = useAuthContext();
   const pathname = usePathname();
 
   return (
     <>
-      <div className="flex items-center justify-between p-2">
+      <div className="flex flex-col gap-2 sm:flex sm:flex-row justify-between p-2">
         <div className="flex items-center">
         </div>
 
-        <div className="search-design-manager h-8 w-96 flex items-center justify-center border border-solid border-gray-400 rounded-md">
+        <div className="search-design-manager h-8 w-full sm:w-96 flex items-center justify-center border border-solid border-gray-400 rounded-md">
           <button className="flex p-1 pr-2 rounded-md text-white">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path fillRule="evenodd" clipRule="evenodd" d="M15.2649 13.9304L11.1429 9.8403C11.9734 8.67171 12.4041 7.1956 12.1888 5.62723C11.8196 2.98252 9.66632 0.891363 6.99006 0.645344C3.36019 0.276315 0.284031 3.35155 0.65317 7.01109C0.899263 9.65579 2.99105 11.8392 5.63655 12.2082C7.20539 12.4235 8.68195 11.993 9.85089 11.1627L13.9422 15.2527C14.1268 15.4372 14.4036 15.4372 14.5882 15.2527L15.2342 14.6069C15.4187 14.4224 15.4187 14.1149 15.2649 13.9304ZM2.46809 6.4271C2.46809 4.24368 4.25227 2.46004 6.43634 2.46004C8.62042 2.46004 10.4046 4.24368 10.4046 6.4271C10.4046 8.61052 8.62042 10.3942 6.43634 10.3942C4.25227 10.3942 2.46809 8.64127 2.46809 6.4271Z" fill="#349989" />
@@ -34,7 +42,7 @@ export default function Header() {
           />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex justify-end sm:justify-between">
           {/* <div className="inline-flex rounded-md border-gray-200 mx-2" role="group">
             <button type="button" className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-s-lg">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -74,7 +82,7 @@ export default function Header() {
           </div> */}
 
 
-          <div className="mx-2 flex items-center">
+          <div className="flex items-center">
             <button>
               <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24" fill="none">
                 <path fillRule="evenodd" clipRule="evenodd" d="M21.2305 15.2312H20.9998C20.1229 15.2312 19.3844 14.4928 19.3844 13.6158V8.30802C19.3844 4.10793 15.8767 0.738638 11.6305 0.923257C7.66131 1.10788 4.61516 4.52333 4.61516 8.53879V13.662C4.61516 14.5389 3.8767 15.2312 2.99977 15.2312H2.76901C1.75362 15.2312 0.922852 16.1082 0.922852 17.1236V17.8159C0.922852 18.139 1.24593 18.4621 1.61516 18.4621H22.3844C22.7536 18.4621 23.0767 18.139 23.0767 17.7697V17.0774C23.0767 16.062 22.2459 15.2312 21.2305 15.2312ZM14.261 20.3078H9.73797C9.46104 20.3078 9.23027 20.5847 9.27643 20.8617C9.5072 22.154 10.661 23.0771 11.9995 23.0771C13.338 23.0771 14.4918 22.1078 14.7226 20.8617C14.7687 20.5847 14.538 20.3078 14.261 20.3078Z" fill="#747474" />
@@ -82,7 +90,7 @@ export default function Header() {
             </button>
           </div>
 
-          <Menu as="div" className="relative ml-3">
+          <Menu as="div" className="relative mx-1">
             <div>
               <Menu.Button className="relative flex rounded-full p-2 bg-teal-600 text-sm focus:outline-none">
                 <span className="absolute -inset-1.5" />
@@ -117,15 +125,18 @@ export default function Header() {
           </Menu>
         </div>
       </div>
+      <nav>
 
-      <nav className="bg-white border-b-4 border-green">
-        <div className="flex flex-wrap items-center justify-left mx-auto px-4">
-          <Link href={`/dashboard/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
-            FLOZ
-          </Link>
+        <div className="hidden sm:flex items-center justify-left mx-auto px-0 sm:px-4">
+          <div className='flex'>
+            <Link href={`/dashboard/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
+              FLOZ
+            </Link>
+
+          </div>
 
           <div className="w-full md:block md:w-auto" id="navbar-default">
-            <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 md:flex-row md:mt-0">
+            <ul className="font-medium flex flex-col md:p-0 mt-4 md:flex-row md:mt-0">
               <li>
                 <Link href={`/dashboard/home`} className={pathname.search("/home") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'}>Home</Link>
               </li>
@@ -143,12 +154,59 @@ export default function Header() {
               </li>
 
               {/* <li>
-                <a href="#" className="block text-black px-3 py-2" aria-current="page">More</a>
-              </li> */}
+                  <a href="#" className="block text-black px-3 py-2" aria-current="page">More</a>
+                </li> */}
             </ul>
           </div>
         </div>
       </nav>
+
+      <Disclosure as="nav" className="bg-white border-b-4 border-green">
+        {({ open }) => (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-left mx-auto px-0 sm:px-4">
+            <div className='flex justify-between items-center'>
+              <Link href={`/dashboard/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
+                FLOZ
+              </Link>
+              <Disclosure.Button className="relative inline-flex sm:hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                <span className="absolute -inset-0.5" />
+                <span className="sr-only">Open main menu</span>
+                {open ? (
+                  <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                )}
+              </Disclosure.Button>
+            </div>
+            <Disclosure.Panel className="sm:hidden">
+
+              <div className="w-full md:block md:w-auto" id="navbar-default">
+                <ul className="font-medium flex flex-col md:p-0 mt-4 md:flex-row md:mt-0">
+                  <li>
+                    <Link href={`/dashboard/home`} className={pathname.search("/home") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'}>Home</Link>
+                  </li>
+
+                  <li>
+                    <Link href={`/dashboard/project`} className={pathname.search("/project") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Project</Link>
+                  </li>
+
+                  <li>
+                    <Link href={'/dashboard/calendar'} className={pathname.search("/calendar") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">Calender</Link>
+                  </li>
+
+                  <li>
+                    <Link href={'/dashboard/people'} className={pathname.search("/people") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'} aria-current="page">People</Link>
+                  </li>
+
+                  {/* <li>
+                  <a href="#" className="block text-black px-3 py-2" aria-current="page">More</a>
+                </li> */}
+                </ul>
+              </div>
+            </Disclosure.Panel>
+          </div>
+        )}
+      </Disclosure>
 
 
       {/* <nav className="bg-white shadow">

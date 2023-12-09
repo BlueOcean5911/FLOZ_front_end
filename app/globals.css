@@ -424,3 +424,40 @@
   align-content: center;
   justify-content: center;
 }
+
+.disabled {
+  pointer-events: none;
+
+  &:hover {
+    background-color: transparent;
+    cursor: default;
+  }
+}
+
+.pagination-item {
+  padding: 0 12px;
+  height: 32px;
+  text-align: center;
+  margin: auto 4px;
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  letter-spacing: 0.01071em;
+  border-radius: 8px;
+  line-height: 1.43;
+  font-size: 12px;
+  min-width: 32px;
+}
+.pagination-item .dots:hover {
+    background-color: transparent;
+    cursor: default;
+  }
+  .pagination-item:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+  }
+
+  .pagination-item.selected {
+    border:1px solid #0066ff;
+    border-radius: 8px;
+  }

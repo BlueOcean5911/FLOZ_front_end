@@ -194,7 +194,7 @@ export default function ProjectView({
 
   return (
     <div className="w-full items-center justify-between">
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
           <Sidebar persons={peopleList} projects={projects} />
         </div>

@@ -90,12 +90,12 @@ const PeopleList = () => {
         </button>
       </div>
     </div>
-    <div className="people-list grow p-6 bg-slate-300 bg-opacity-20 overflow-auto">
+    <div className="people-list grow sm:p-6 bg-slate-300 bg-opacity-20 overflow-auto">
       <div className="flex flex-col gap-1 overflow-auto h-full">
 
         <div className="w-full flex flex-col bg-white rounded shadow border border-stone-300 h-full overflow-auto">
           <div className="flex justify-between items-center flex-col sm:flex-row p-3">
-            <div className="flex gap-3 my-5 sm:my-0">
+            <div className="hidden  sm:flex gap-3 my-5 sm:my-0">
               <h3 className="font-bold">All People</h3>
               <h4>As of today at <CurrentTimeDynamic /> </h4>
               <button className="text-blue-500 underline" onClick={fetchPeople}>refresh</button>
@@ -110,8 +110,7 @@ const PeopleList = () => {
               </div>
             </div>
           </div>
-          <div className="w-full grow overflow-auto">
-            <div>
+          <div className="w-full grow overflow-x-auto">
               <table className="border-collapse border w-full my-5">
                 <thead>
                   <tr className="bg-emerald-300 bg-opacity-20">
@@ -174,7 +173,6 @@ const PeopleList = () => {
                   }
                 </tbody>
               </table>
-            </div>
           </div>
           <div className="pagination flex justify-end px-12 py-4">
             <select className="border-2 border-gray-200 rounded-md
@@ -192,8 +190,7 @@ const PeopleList = () => {
               />
           </div>
           <>
-            {isNewContactModalOpen.isOpen ?
-              <NewContact setShow={setIsNewContactModalOpen} action={isNewContactModalOpen.action} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={userOrganization} /> : <></>}
+              <NewContact isShow={isNewContactModalOpen.isOpen} setShow={setIsNewContactModalOpen} action={isNewContactModalOpen.action} setPeople={setpeople} people={people} selectedPersonId={selectedPersonId} organization={userOrganization} />
           </>
         </div>
       </div>

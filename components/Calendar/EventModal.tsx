@@ -44,7 +44,7 @@ const EventModal =  ({isOpen:isEditCompShow, color: projectColor, selectedEvent,
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xs   transform overflow-hidden absolute rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+              <Dialog.Panel className="w-full max-w-xs   transform overflow-hidden md:absolute rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
                 style={{ left: `${selectedEvent?.jsEvent.x}px`, top: `${selectedEvent?.jsEvent.y}px` }}>
                 <div className="flex justify-end gap-1 &>svg:hover:bg-gray-500" onClick={closeModal}>
                   <svg

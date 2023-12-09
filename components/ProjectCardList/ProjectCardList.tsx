@@ -13,7 +13,7 @@ export default function ProjectCardList({
     const [pros, setPros] = useState<IProject[] | null>(projects)
     //console.log(pros)
     return (
-        <div className="flex flex-nowrap overflow-x-auto">
+        <div className="flex flex-col sm:flex-row sm:flex-nowrap overflow-x-auto">
             {
                 pros.map((pro)=>{
                     return <ProjectCardItem project={pro} key={pro._id}></ProjectCardItem>

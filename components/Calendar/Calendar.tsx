@@ -1,5 +1,6 @@
 import { Calendar, DateObject } from "react-multi-date-picker"
 import { Meeting } from "@models/meeting.model"
+import "react-multi-date-picker/styles/layouts/mobile.css"
 
 
 const CalendarMUI = ({ meetings=[], handleChangeDate, currDate }: {
@@ -16,7 +17,8 @@ const handleMonthChange = (newValue: DateObject) =>  {
 
   return (
     <Calendar
-      className="drop-shadow-none"
+
+      className="drop-shadow-none rmdp-mobile"
       headerOrder={["LEFT_BUTTON", "MONTH_YEAR", "RIGHT_BUTTON"]}
 
       mapDays={({ date }) => {

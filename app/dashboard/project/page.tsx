@@ -17,11 +17,9 @@ export default async function Page() {
 
   return (
     <>
-      <div className="w-full items-center justify-between h-full">
-        <div className="grid grid-cols-5 gap-4 h-full">
-          <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
-            <Sidebar persons={persons} projects={projects} />
-          </div>
+      <div className="w-full items-center justify-between grow sm:h-full">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 h-full">
+          <Sidebar persons={persons} projects={projects} />
 
           <div className="col-span-3 overflow-auto">
             <ProjectItems projects={projects} />

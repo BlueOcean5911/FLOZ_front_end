@@ -32,7 +32,7 @@ export default function ProjectCardItem({
   // TODO Add collect function
   // TODO Add todo interaction
   return (
-    <div className="mb-4 w-1/3 flex-none px-3">
+    <div className="mb-4 w-full sm:w-1/3 flex-none px-3">
       <div className="bg-gray rounded-lg border-2 p-3">
         <div className="flex items-center justify-between">
           <div className="text-xl font-bold">{pro.name}</div>

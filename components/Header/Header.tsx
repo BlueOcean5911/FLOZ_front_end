@@ -135,8 +135,8 @@ export default function Header() {
 
           </div>
 
-          <div className="w-full md:block md:w-auto" id="navbar-default">
-            <ul className="font-medium flex flex-col md:p-0 mt-4 md:flex-row md:mt-0">
+          <div className="w-full">
+            <ul className="font-medium flex md:p-0 mt-4 md:mt-0">
               <li>
                 <Link href={`/dashboard/home`} className={pathname.search("/home") !== -1 ? 'block text-black px-3 py-2 nav-active' : 'block text-black px-3 py-2'}>Home</Link>
               </li>
@@ -165,7 +165,7 @@ export default function Header() {
         {({ open }) => (
           <div className="flex flex-col sm:flex-row sm:items-center justify-left mx-auto px-0 sm:px-4">
             <div className='flex justify-between items-center'>
-              <Link href={`/dashboard/home`} className="font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
+              <Link href={`/dashboard/home`} className="block sm:hidden font-bold text-black text-lg font-['Segoe UI'] leading-[27px] mr-6">
                 FLOZ
               </Link>
               <Disclosure.Button className="relative inline-flex sm:hidden items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">

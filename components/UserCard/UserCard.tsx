@@ -54,7 +54,7 @@ export default function UserCard({
 
   }
   return (
-    <div className="w-full justify-around bg-emerald-300 bg-opacity-20 py-16 px-10 rounded shadow border border-stone-300 mb-5 grid grid-cols-2">
+    <div className="w-full justify-around bg-emerald-300 bg-opacity-20 py-16 px-10 rounded shadow border border-stone-300 mb-5 grid grid-cols-1 md:grid-cols-2">
       <div className="flex items-center">
         <div className="flex flex-col">
           <h1 className="font-bold text-3xl">Welcome{currentUser?.name ? `, ${currentUser?.name}` : ''}</h1>
@@ -62,8 +62,7 @@ export default function UserCard({
         </div>
       </div>
 
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {toDoList.map(todo => (
           <div key={todo._id} className="flex  justify-between items-start border rounded border-stone-300 px-3 py-3 bg-white" >
@@ -72,7 +71,7 @@ export default function UserCard({
                 setIsOpenConfirmModal({ modalType: 'update', isOpen: true, todo: todo })
               }} />
             </div>
-            <div className="w-10/12 pr-2">
+            <div className="w-10/12 md:w-8/12 lg:w-10/12 pr-2">
               <h3 className="font-bold text-sm">{truncateSummary(todo?.title, 5)}</h3>
               <p className="text-sm overflow-hidden whitespace-nowrap text-ellipsis" >{typeof todo.meetingId === 'string' ? "" : (todo?.description) || ""}</p>
             </div>

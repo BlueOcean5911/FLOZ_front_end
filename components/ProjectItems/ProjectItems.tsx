@@ -76,7 +76,7 @@ export default function ProjectItems({
   
 
   return (
-    <div className="flex flex-col t-box border rounded border-stone-300 bg-white px-3 py-3 h-full overflow-auto" >
+    <div className="flex flex-col t-box border rounded border-stone-300 bg-white px-3 py-3 grow sm:h-full overflow-auto" >
       <div className='title text-xl font-bold'>Manage Projects</div>
       <div className='projects-create-new flex justify-between items-center p-2 border-2 border-gray-300 rounded-md bg-gray-200'>
         <div className="flex items-center gap-4">
@@ -94,17 +94,19 @@ export default function ProjectItems({
         <button className="rounded-md border-gray-500 text-white p-2 bg-[#349989] hover:cursor-pointer" onClick={() => { setIsOpen(true) }}>Create New</button>
       </div>
       <div className="h-1 my-2 bg-gray-300 rounded-full"></div>
-      <div className="filter flex justify-end items-center gap-2">
+      <div className="filter flex flex-col sm:flex-row justify-end sm:items-center gap-2">
         <div className="title text-md text-gray-800">Sorted by:</div>
-        <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm">
-          <option value={0}>Project Type</option>
-        </select>
-        <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm">
-          <option value={0}>Team</option>
-        </select>
-        <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm">
-          <option value={2023}>2023</option>
-        </select>
+        <div className="flex">
+          <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm">
+            <option value={0}>Project Type</option>
+          </select>
+          <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm">
+            <option value={0}>Team</option>
+          </select>
+          <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm">
+            <option value={2023}>2023</option>
+          </select>
+        </div>
       </div>
       <div className="overflow-auto">
         {
@@ -130,7 +132,7 @@ export default function ProjectItems({
                 <select className="border-2 border-gray-300 p-2 rounded-md w-32 text-sm text-[#349989]">
                   <option value={0}>Unassigned</option>
                 </select>
-                <div className="flex gap-1">
+                <div className="flex gap-2 sm:gap-1">
                   <SetttingIcon  onClick={() => openModal(project)} />
                   <PeopleIcon onClick={() => {router.push(`/dashboard/people?projectId=${project._id}`)}}/>
                   <MessageIcon onClick={()=>router.push(`/dashboard/project/${project._id}/meeting`)}/>

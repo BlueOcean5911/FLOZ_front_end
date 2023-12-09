@@ -82,7 +82,7 @@ const MeetingView = ({
         return -1;
       } else if (b.favourite && !a.favourite) {
         return 1;
-      } else { 
+      } else {
         return 0;
       }
     })
@@ -188,14 +188,12 @@ const MeetingView = ({
 
   return (
     <div className="h-full items-center justify-between">
-      <div className="grid grid-cols-5 gap-4 h-full">
-        <div className="col-span-1 border rounded border-stone-300 px-3 py-3 bg-white card_shadow">
-          <Sidebar persons={peopleList} projects={projects} />
-        </div>
-        <div className="col-span-3 overflow-auto">
-          <div className="flex flex-col gap-2 h-full overflow-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 grow sm:h-full">
+        <Sidebar persons={peopleList} projects={projects} />
+        <div className="col-span-3 sm:overflow-auto">
+          <div className="flex flex-col gap-2 h-fit sm:h-full overflow-auto">
 
-            <div className="flex flex-col manage-project-box border rounded border-stone-300 px-3 py-3 bg-white h-[65%] " >
+            <div className="flex flex-col sm:manage-project-box border rounded border-stone-300 p-3 bg-white h-[65%] " >
               <div className="flex justify-between">
                 <h3 className="my-auto pr-2 pb-3 font-bold text-lg">Manage your meeting</h3>
                 <Link href={`/dashboard/project/${data.project._id}/meeting`}>
@@ -206,7 +204,7 @@ const MeetingView = ({
                 </Link>
               </div>
               <div className="flex flex-col">
-                <div className="grow flex justify-between">
+                <div className="grow flex flex-col sm:flex-row justify-between">
                   <div className="grow grid grid-cols px-3 m-4">
                     <div className="flex border rounded border-stone-300 px-3 py-4 bg-white card_shadow" >
                       <div className="flex meeting-card">
@@ -222,7 +220,7 @@ const MeetingView = ({
                       </AddMeeting>
                     </div>
                   </div>
-                  <div className="horizontal-bar w-1 rounded-full bg-gray-200"></div>
+                  <div className="hidden sm:block horizontal-bar w-1 rounded-full bg-gray-200"></div>
                   <div className="grow grid grid-cols px-3 m-4">
                     <div className="flex border rounded border-stone-300 px-3 py-4 bg-white card_shadow" >
                       <div className="flex meeting-card">
@@ -257,36 +255,37 @@ const MeetingView = ({
                     {
                       meetings.map((meeting, index) => {
                         return (
-                          <div key={index} className="flex text-sm">
-                            <div className="w-1/2 my-1">
+                          <div key={index} className="flex flex-col sm:flex-row text-sm justify-end border-2 border-gray-300 rounded-md gap-2 p-1">
+                            <div className="w-full sm:w-1/2 my-1">
                               {
                                 (new Date(meeting.date)).toISOString() > (new Date()).toISOString() ? <p className="mr-8 p-1 border-2 border-dashed border-gray-400 rounded-md">{truncateSummary(meeting.summary, 4)}</p> :
                                   <p className="mr-8 p-1 border-2  border-gray-300 bg-gray-200 rounded-md">{truncateSummary(meeting.summary, 4)}</p>
                               }
 
                             </div>
-                            <div className="w-1/2 flex  items-center">
+                            <div className="w-full sm:w-1/2 flex flex-wrap justify-start  items-center">
                               <div className="w-6/12">
                                 {
                                   (new Date(meeting.date)).toISOString() > (new Date()).toISOString() ? <p className="mr-8 p-1 border-2 border-gray-100 bg-gray-50 rounded-md">{truncateSummary(meeting.summary, 4)}</p> :
                                     <p className="mr-8 p-1 border-2  border-gray-300 bg-gray-200 rounded-md">{meeting.topic}</p>
                                 }
                               </div>
-                              <div className="w-5/12">{moment(meeting.date).format("MMM D, YYYY h:mm a")}</div>
-                              <div className="w-1/12 flex justify-evenly items-center" >
+                              <div className="w-6/12 sm:w-5/12">{moment(meeting.date).format("MMM D, YYYY h:mm a")}</div>
+                              <div className="w-full sm:w-1/12 flex justify-end sm:justify-evenly items-center gap-1" >
                                 <div onClick={() => toggleFavourite(meeting, index)}>
                                   {
-                                    meeting.favourite ? <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    meeting.favourite ? <svg 
+                                    className="w-8 h-8 sm:w-6 sm:h-6" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                                       <path fillRule="evenodd" clipRule="evenodd" d="M7.81949 0.338873L9.23488 4.95426C9.29641 5.13887 9.48103 5.23118 9.66564 5.23118H14.281C14.7426 5.23118 14.9272 5.84657 14.558 6.12349L10.8041 8.89272C10.6503 9.0158 10.5887 9.23118 10.6503 9.4158L12.4349 14.1543C12.558 14.585 12.0964 14.9543 11.7272 14.6773L7.69641 11.662C7.54257 11.5389 7.32718 11.5389 7.14257 11.662L3.08103 14.6773C2.7118 14.9543 2.21949 14.585 2.37334 14.1543L4.09641 9.4158C4.15795 9.23118 4.09641 9.0158 3.94257 8.89272L0.188722 6.12349C-0.180509 5.84657 0.0348759 5.23118 0.465645 5.23118H5.08103C5.29641 5.23118 5.45026 5.16964 5.5118 4.95426L6.95795 0.308104C7.08103 -0.122665 7.69641 -0.0918959 7.81949 0.338873Z" fill="#747474" />
                                     </svg> :
-                                      <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <svg className="w-8 h-8 sm:w-6 sm:h-6" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path fillRule="evenodd" clipRule="evenodd" d="M8.81949 1.33887L10.2349 5.95426C10.2964 6.13887 10.481 6.23118 10.6656 6.23118H15.281C15.7426 6.23118 15.9272 6.84657 15.558 7.12349L11.8041 9.89272C11.6503 10.0158 11.5887 10.2312 11.6503 10.4158L13.4349 15.1543C13.558 15.585 13.0964 15.9543 12.7272 15.6773L8.69641 12.662C8.54257 12.5389 8.32718 12.5389 8.14257 12.662L4.08103 15.6773C3.7118 15.9543 3.21949 15.585 3.37334 15.1543L5.09641 10.4158C5.15795 10.2312 5.09641 10.0158 4.94257 9.89272L1.18872 7.12349C0.819491 6.84657 1.03488 6.23118 1.46565 6.23118H6.08103C6.29641 6.23118 6.45026 6.16964 6.5118 5.95426L7.95795 1.3081C8.08103 0.877335 8.69641 0.908104 8.81949 1.33887Z" fill="white" stroke="#747474" strokeWidth="1.5" />
                                       </svg>
                                   }
                                 </div>
                                 <AddMeeting providerToken={data.providerToken} userId={data.userId} meetingId={`${meeting._id}`} projectId={`${meeting.projectId}`} onNewMeeting={refreshMeetings}>
                                   <svg
-                                    width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    className="w-8 h-8 sm:w-6 sm:h-6" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path fillRule="evenodd" clipRule="evenodd" d="M7.02025 5.34225C5.79486 5.34225 4.82084 6.31627 4.82084 7.54165C4.82084 8.76703 5.79486 9.74106 7.02025 9.74106C8.24563 9.74106 9.21965 8.76703 9.21965 7.54165C9.21965 6.31627 8.24563 5.34225 7.02025 5.34225ZM13.6179 9.52028L12.4553 8.54626C12.5182 8.20064 12.5496 7.8236 12.5496 7.47798C12.5496 7.13236 12.5182 6.75532 12.4553 6.4097L13.6179 5.43567C13.9949 5.12147 14.1206 4.55591 13.8692 4.11603L13.3665 3.23627C13.178 2.92207 12.8324 2.73355 12.4553 2.73355C12.3296 2.73355 12.204 2.76497 12.1097 2.79639L10.6644 3.33053C10.0988 2.82781 9.47042 2.48219 8.8106 2.26225L8.55923 0.785502C8.46497 0.282781 8.02509 0 7.52237 0H6.51693C6.01421 0 5.57433 0.282781 5.48007 0.785502L5.22871 2.23083C4.53747 2.45077 3.90906 2.82781 3.3435 3.29911L1.89818 2.76497C1.7725 2.73355 1.67824 2.70213 1.55256 2.70213C1.17552 2.70213 0.829897 2.89065 0.641376 3.20485L0.138655 4.08461C-0.112705 4.52449 -0.018445 5.09005 0.390016 5.40425L1.55256 6.37828C1.48972 6.7239 1.4583 7.10094 1.4583 7.44656C1.4583 7.8236 1.48972 8.16922 1.55256 8.51484L0.390016 9.48886C0.012975 9.80307 -0.112705 10.3686 0.138655 10.8085L0.641376 11.6883C0.829897 12.0025 1.17552 12.191 1.55256 12.191C1.67824 12.191 1.80392 12.1596 1.89818 12.1281L3.3435 11.594C3.90906 12.0967 4.53747 12.4424 5.19729 12.6623L5.44865 14.1705C5.54291 14.6732 5.95137 15.0188 6.48551 15.0188H7.49095C7.99367 15.0188 8.43355 14.6418 8.52781 14.139L8.77918 12.6309C9.50184 12.3795 10.1617 12.0025 10.7272 11.4683L12.0783 12.0025C12.204 12.0339 12.3296 12.0653 12.4553 12.0653C12.8324 12.0653 13.178 11.8768 13.3665 11.5626L13.8378 10.7457C14.1206 10.4 13.9949 9.83448 13.6179 9.52028ZM7.01998 10.997C5.10336 10.997 3.56378 9.45744 3.56378 7.54082C3.56378 5.62419 5.10336 4.08461 7.01998 4.08461C8.93661 4.08461 10.4762 5.62419 10.4762 7.54082C10.4762 9.45744 8.93661 10.997 7.01998 10.997Z" fill="#747474" />
                                   </svg>
                                 </AddMeeting>
@@ -300,7 +299,7 @@ const MeetingView = ({
                 </div>
               </div>
             </div>
-            <div className="milestone manage-project-box border rounded border-stone-300 bg-white h-[35%]">
+            <div className="milestone manage-project-box border rounded border-stone-300 bg-white h-fit sm:h-[35%]">
               <h3 className="my-auto font-bold text-lg">Milestone:</h3>
               <div>
                 <Milestone meetings={meetings} />
@@ -326,7 +325,7 @@ const MeetingView = ({
             </div>
           </div>
         </div>
-        <div className="col-span-1 border rounded border-stone-300 bg-white card_shadow h-full" >
+        <div className="col-span-1 border rounded-md border-stone-300 bg-white card_shadow h-fit sm:h-full sm:overflow-auto mb-4 pr-0 mr-0 w-full" >
           <div className="flex flex-col justify-between h-full">
 
             <div className="title text-lg font-bold">Calendar:</div>

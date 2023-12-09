@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <main className="h-full flex flex-col">
-      <div className="grow p-6 bg-slate-300 bg-opacity-20 overflow-auto">
+      <div className="grow sm:p-6 bg-slate-300 bg-opacity-20 overflow-auto">
         {children}  
       </div>
     </main>

@@ -82,7 +82,7 @@ export default function CalendarPage() {
   const [isEditCompShow, setIsEditCompShow] = useState(false);
   ///////////////////////////////////////////////////////////////////////////
   const { signOut } = useAuthContext();
-  
+
   const calendarRef: any = useRef();
   const [titleDate, setTitleDate] = useState(calendarRef.current?.getApi().view.title);
   // Google OAuth Token
@@ -264,7 +264,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="grow md:h-full flex flex-col">
       <div className="flex items-center p-4 bg-[#DDF1EE] text-[13px]">
         <div className="flex w-[94px] h-[32px] text-[13px] text-white bg-[#349989] items-center rounded-md justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
@@ -279,12 +279,12 @@ export default function CalendarPage() {
             <option value={'dayGridMonth'}>Month</option>
           </select>
         </div>
-        <button className="w-8 h-8 justify-center border-2 mr-[5px] rounded-md bg-white border-[#349989] flex items-center" onClick={() => {calendarRef.current.getApi().prev();getCalendarTitle()}}>
+        <button className="w-8 h-8 justify-center border-2 mr-[5px] rounded-md bg-white border-[#349989] flex items-center" onClick={() => { calendarRef.current.getApi().prev(); getCalendarTitle() }}>
           <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M7.69141 0.553519L7.69141 11.4458C7.69141 11.7535 7.29141 11.9689 7.01448 11.7227L0.491406 6.39967C0.245252 6.21506 0.245252 5.81506 0.491406 5.63044L7.01448 0.245827C7.29141 0.030442 7.69141 0.215057 7.69141 0.553519Z" fill="#349989" />
           </svg>
         </button>
-        <button className="w-8 h-8 justify-center flex items-center bg-white border-2 rounded-md border-[#349989]" onClick={() => {calendarRef.current.getApi().next();getCalendarTitle()}}>
+        <button className="w-8 h-8 justify-center flex items-center bg-white border-2 rounded-md border-[#349989]" onClick={() => { calendarRef.current.getApi().next(); getCalendarTitle() }}>
           <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M0.308594 11.4465L0.308593 0.554174C0.308593 0.246483 0.708593 0.0310983 0.985516 0.277252L7.50859 5.60033C7.75475 5.78494 7.75475 6.18494 7.50859 6.36956L0.985517 11.7542C0.708594 11.9696 0.308594 11.7849 0.308594 11.4465Z" fill="#349989" />
           </svg>
@@ -292,13 +292,14 @@ export default function CalendarPage() {
         </button>
         <div className="text-base px-[12px]">{titleDate}</div>
       </div>
-      <div className="grow flex gap-4">
+      <div className="grow flex flex-col-reverse md:flex-row gap-4">
 
-        <div className="flex-[85%] h-full flex flex-col">
+        <div className="w-full grow md:flex-[85%] md:h-full flex flex-col h-fit">
 
-          <div className="grow">
-            <div className="h-full text-[10px]">
+          <div className="grow flex flex-col">
+            <div className="grow md:h-full text-[10px]">
               <FullCalendar
+                height={'auto'}
                 ref={calendarRef}
                 key={initialEvents.length}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -336,8 +337,11 @@ export default function CalendarPage() {
             startAndEndDate={startAndEndDate}
           />
         </div>
-        <div className="flex-[15%] mt-4">
-          <Calendar handleChangeDate={handleChangeDateOfCalendar} currDate={currentDateTime} meetings={meetingList} />
+        <div className="w-full md:flex-[15%] mt-4 flex flex-col justify-items-center-center text-center">
+          <div className="flex flex-col items-center justify-center">
+
+            <Calendar handleChangeDate={handleChangeDateOfCalendar} currDate={currentDateTime} meetings={meetingList} />
+          </div>
           <div
             className="text-center text-xs cursor-pointer text-[#0B5CAB]"
             onClick={() => { setCurrentDateTime(new Date()); calendarRef.current.getApi().gotoDate(new Date()) }}>Today</div>

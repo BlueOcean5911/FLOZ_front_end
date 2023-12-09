@@ -176,11 +176,11 @@ export default function ProjectPanel({
 
   return (
     <div className="mb-5 w-full items-center justify-between">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="col-span-2 rounded border border-stone-300 bg-white p-3">
           <div className="flex h-full flex-col justify-between">
             <div>
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row justify-between">
                 <div className="flex">
                   <h3 className="my-auto pr-2 text-sm font-bold">Project</h3>
                   <p className="my-auto text-sm">
@@ -508,7 +508,7 @@ export default function ProjectPanel({
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-1/3 transform overflow-hidden rounded-2xl bg-white py-6 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Panel className="w-full md:w-1/3 transform overflow-hidden rounded-2xl bg-white py-6 text-left align-middle shadow-xl transition-all">
                       <DialogHeader text={'New Project'} closeModal={() => { setIsOpenProjectModal({ ...isOpenProjectModal, isOpen: false }) }} />
                       <div className="p-6">
                         <form onSubmit={handleSubmit} className="flex flex-col gap-2">

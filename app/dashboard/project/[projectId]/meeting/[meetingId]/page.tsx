@@ -39,7 +39,7 @@ const Page = ({ params }: { params: pageProps }) => {
   let pollingInterval;
 
   const getTrascriptData = async () => {
-    try{
+    try {
       const meetingData = await getMeetingData(params.meetingId);
       if (meetingData.transcriptSummary || meetingData.todos || meetingData.emailSummary) {
         if (meetingData.transcriptSummary) {
@@ -75,8 +75,8 @@ const Page = ({ params }: { params: pageProps }) => {
 
   const getIntialData = async (user: IUser) => {
     try {
-      let dbPersons = await getPersons({ organization: user.organization});
-      const meeting:Meeting = await getMeeting(params.meetingId);
+      let dbPersons = await getPersons({ organization: user.organization });
+      const meeting: Meeting = await getMeeting(params.meetingId);
       dbPersons = dbPersons.filter((person) => meeting.members.includes(person._id));
       if (dbPersons.length > 0) {
         setPeopleList(dbPersons);
@@ -92,10 +92,10 @@ const Page = ({ params }: { params: pageProps }) => {
   }
 
   const getAssignPeopleMap = async () => {
-    const meeting:Meeting = await getMeeting(params.meetingId);
+    const meeting: Meeting = await getMeeting(params.meetingId);
     if (meeting.assignPeopleMap)
       setAssignPeopleMap(meeting.assignPeopleMap);
-    else 
+    else
       setAssignPeopleMap({});
   }
 
@@ -120,11 +120,11 @@ const Page = ({ params }: { params: pageProps }) => {
   }, [user])
 
   useEffect(() => {
-    (async() => {
-      if(Object.keys(assignPeopleMap).length > 0) {
+    (async () => {
+      if (Object.keys(assignPeopleMap).length > 0) {
         console.log(assignPeopleMap, "before update meeting");
         await updateMeeting(params.meetingId, {
-          assignPeopleMap:assignPeopleMap
+          assignPeopleMap: assignPeopleMap
         })
       }
     })()
@@ -142,51 +142,49 @@ const Page = ({ params }: { params: pageProps }) => {
   }
 
   return (
-    <div className="projects-layout bg-gray-100 flex flex-row h-full">
-      <div className="sidebar shadow-md w-[21%] rounded-md mx-[26px] flex flex-col  bg-white">
-        <div className="grow ">
+    <div className="projects-layout grow bg-gray-100 flex flex-col gap-2 sm:flex-row sm:h-full">
+      <div className="w-3/12 sm:border rounded-xl border-stone-300 sm:p-3 bg-white sm:shadow-md overflow-auto">
           <Sidebar persons={peopleList} projects={projects} />
-        </div>
       </div>
-      <div className="main-layout shadow-md rounded-md w-[52%]  flex flex-col  bg-white">
-        <div className="flex w-full h-full flex-col pt-[46px] gap-4 p-4 mb-[26px] shadow-md px-[43px] 2xl:px-[80px]">
+      <div className="main-layout shadow-md rounded-xl w-full md:w-[52%]  flex flex-col  bg-white">
+        <div className="flex w-full h-full flex-col  gap-4 mb-[26px] pt-[46px] p-4 md:px-[43px] 2xl:px-[80px]">
           {
             isSummaryLoading ? (
               <div className="flex flex-col justify-center items-center">
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Processing your audio for transcription...</div>
               </div>
             )
-            :
-            (
-              <>
-                <div className="flex justify-between items-center">
-                  <div className='text-2xl font-bold'>Meeting summary by Floz:</div>
-                  <div>
-                    <button onClick={() => setIsUploadAudioModal(true)} className='bg-[#06A59A] hover:bg-[#28C3BB] text-white font-bold py-2 px-4 rounded'>Re-upload Audio</button>
+              :
+              (
+                <>
+                  <div className="flex justify-between items-center">
+                    <div className='text-xl font-bold'>Meeting summary by Floz:</div>
+                    <div>
+                      <button onClick={() => setIsUploadAudioModal(true)} className='bg-[#06A59A] hover:bg-[#28C3BB] text-white font-bold py-2 px-4 rounded'>Re-upload Audio</button>
+                    </div>
                   </div>
-                </div>
-                <Record audioUrl={audioUrl} />
-                <Transcript transcript={transcript} people={peopleList} assignPeopleMap={assignPeopleMap} setAssignPeopleMap={setAssignPeopleMap}  />
-              </>
-            )
+                  <Record audioUrl={audioUrl} />
+                  <Transcript transcript={transcript} people={peopleList} assignPeopleMap={assignPeopleMap} setAssignPeopleMap={setAssignPeopleMap} />
+                </>
+              )
           }
         </div>
       </div>
-      <div className="beside-layout flex flex-col h-full mr-[20px] ml-[27px] w-[28%] overflow-auto">
-        <div className="grow flex flex-col overflow-auto justify-between">
+      <div className="beside-layout flex flex-col grow md:h-full md:mr-[20px] md:ml-[27px] w-full md:w-[28%] overflow-auto">
+        <div className="grow flex flex-col gap-2 overflow-auto justify-between">
           {
             isTodosLoading ? (
               <div className="flex flex-col justify-center items-center">
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Loading tasks from meeting...</div>
               </div>
             )
-            :
-            (
-              <>
-                <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} assignPeopleMap={assignPeopleMap} />
-                <MemberList  setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} setPeopleList={setPeopleList} />
-              </>
-            )
+              :
+              (
+                <>
+                  <TodoList todoListData={todoList} meetingId={params.meetingId} projectId={params.projectId} assignPeopleMap={assignPeopleMap} />
+                  <MemberList setGenerateEmail={setGeneratedEmail} todolistStr={JSON.stringify(todoList)} params={params} setPeopleList={setPeopleList} />
+                </>
+              )
           }
           {
             isEmailSummaryLoading ? (
@@ -194,17 +192,17 @@ const Page = ({ params }: { params: pageProps }) => {
                 <div className='text-[20px] text-bold text-gray-500 text-center'>Loading meeting summary...</div>
               </div>
             )
-            :
-            (
-              <MeetingSummary email={generatedEmail} peoples={peopleList}/>
-            )
+              :
+              (
+                <MeetingSummary email={generatedEmail} peoples={peopleList} />
+              )
           }
         </div>
       </div>
       {
-        isUploadAudioModal ? 
-          <UploadAudioModal modalType="audio" projectId={params.projectId} meetingId={params.meetingId} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} /> 
-        : 
+        isUploadAudioModal ?
+          <UploadAudioModal modalType="audio" projectId={params.projectId} meetingId={params.meetingId} isShow={isUploadAudioModal} setShow={setIsUploadAudioModal} onUploadComplete={onUploadComplete} />
+          :
           <></>
       }
 

@@ -116,9 +116,9 @@ const MemberList = ({ setGenerateEmail, todolistStr, setPeopleList, params }) =>
   return (
     <>
       <AddMemberLayout show={isOpen} setShow={setIsOpen} selectedlMemberIds={memberIds} setSelectedMembersIds={setMemberIds} params={params} />
-      <div className="projects-members TodoList rounded-md mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
+      <div className="projects-members TodoList rounded-xl mx-2 px-2 flex flex-col h-[25%] bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
         <div className="todolist-header flex justify-between w-full p-4 items-center">
-          <h2 className="font-bold text-[21px]">Meeting related:</h2>
+          <h2 className="font-bold text-xl">Meeting related:</h2>
         </div>
         <div className="grow flex flex-col overflow-auto">
           {

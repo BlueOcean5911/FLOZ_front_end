@@ -91,7 +91,7 @@ const PeopleList = () => {
       </div>
     </div>
     <div className="people-list grow sm:p-6 bg-slate-300 bg-opacity-20 overflow-auto">
-      <div className="flex flex-col gap-1 overflow-auto h-full">
+      <div className="flex flex-col gap-1 overflow-auto h-full rounded-xl shadow-md">
 
         <div className="w-full flex flex-col bg-white rounded shadow border border-stone-300 h-full overflow-auto">
           <div className="flex justify-between items-center flex-col sm:flex-row p-3">

@@ -255,7 +255,9 @@ const AddMeeting = ({
             onNewMeeting();
             saveIntoGoogleCalendar(meeting._id);
         });
-        updateProjectColorMap(projectColorMap);
+        if (updateProjectColorMap) {
+            updateProjectColorMap(projectColorMap);
+        }
         closeModal();
         clearData();
         success('Successfully created the meeting!')
@@ -410,175 +412,181 @@ const AddMeeting = ({
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-[719px] h-[741px] flex flex-col transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
+                                <Dialog.Panel className="w-fit h-fit flex flex-col transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ">
                                     <div className="title text-center text-xl p-1">
                                         {meetingId === '' ? 'New Event' : 'Edit Event'}
                                     </div>
                                     <hr className="border-b-1 border-gray-600" />
+                                    <div className="addmeeting-main-layout grow flex flex-col justify-between">
 
-                                    <div className="body px-[30px] py-[40px] flex flex-col">
-                                        <div className="subject">
-                                            <div className="subject-title text-xs font-bold p-1"><span className="text-red-500">*</span> Subject</div>
-                                            <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
-                                                <FormControl fullWidth variant="standard">
-                                                    <Select
-                                                        labelId="demo-simple-select-label"
-                                                        id="demo-simple-select"
-                                                        sx={{ height: '32px' }}
-                                                        value={summary}
-                                                        onChange={handleChange}
-                                                        IconComponent={() => (<span></span>)}
-                                                    >
-                                                        <MenuItem key={0} value={'Call'}>Call</MenuItem>
-                                                        <MenuItem key={1} value={'Meeting'}>Meeting</MenuItem>
-                                                        <MenuItem key={2} value={'Send letter/Quote'}>Send letter/Quote</MenuItem>
-                                                        <MenuItem key={3} value={'Other'}>Other</MenuItem>
-                                                    </Select>
-                                                </FormControl>
-                                                <IconSearch className="absolute right-4 top-2" />
-                                            </div>
-                                        </div>
-                                        <div className="description flex flex-col mt-[30px]">
-                                            <div className="description-title text-xs">Description</div>
-                                            <textarea className=" max-h-[659px] h-[80px] border-2 border-gray-300 rounded-md" value={description} onChange={(e) => onChangeDescription(e)}></textarea>
-                                        </div>
-                                        <div className="period flex mt-[31px] justify-between">
-                                            <div className="start-date flex flex-col  w-[303px] h-[82px] justify-between" >
-                                                <div className="title text-xs font-bold">Start</div>
-                                                <div className="date flex gap-1">
-                                                    <div className="flex flex-col">
-                                                        <div className="date-title text-xs">Date</div>
-                                                        <LocalizationProvider dateAdapter={AdapterMoment}>
-                                                            <DemoContainer components={['DatePicker']}>
-                                                                <div className="m-w-[100px]">
-                                                                    <DatePicker
-                                                                        value={startDate}
-                                                                        onChange={(newValue) => setStartDate_date(newValue)}
-                                                                    />
-                                                                </div>
-                                                            </DemoContainer>
-                                                        </LocalizationProvider>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <div className="date-title text-xs">Time</div>
-                                                        <LocalizationProvider dateAdapter={AdapterMoment}>
-                                                            <DemoContainer components={['TimePicker']}>
-                                                                <div className="m-w-[100px] ">
-                                                                    <TimePicker
-                                                                        value={startDate}
-                                                                        onChange={(newValue) => setStartDate_time(newValue)}
-                                                                    />
-                                                                </div>
-                                                            </DemoContainer>
-                                                        </LocalizationProvider>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="end-date flex flex-col w-[303px] h-[82px] justify-between" >
-                                                <div className="title text-xs font-bold">End</div>
-                                                <div className="date flex gap-1">
-                                                    <div className="flex flex-col">
-                                                        <div className="date-title text-xs">Date</div>
-                                                        <LocalizationProvider dateAdapter={AdapterMoment}>
-                                                            <DemoContainer components={['DatePicker']}>
-                                                                <div className="m-w-[100px]">
-
-                                                                    <DatePicker
-                                                                        value={endDate}
-                                                                        onChange={(newValue) => setEndDate_date(newValue)}
-                                                                    />
-                                                                </div>
-                                                            </DemoContainer>
-                                                        </LocalizationProvider>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <div className="date-title text-xs">Time</div>
-                                                        <LocalizationProvider dateAdapter={AdapterMoment}>
-                                                            <DemoContainer components={['TimePicker']}>
-                                                                <div className="m-w-[100px]">
-
-                                                                    <TimePicker
-                                                                        value={endDate}
-                                                                        onChange={(newValue) => setEndDate_time(newValue)}
-                                                                    />
-                                                                </div>
-                                                            </DemoContainer>
-                                                        </LocalizationProvider>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="guests flex flex-col mt-[32px] mb-[12px]">
-                                            <div className="guest-title text-xs font-bold p-1">Guests</div>
-                                            <div className="relative border-gray-300 rounded-md w-full">
-                                                <FormControl fullWidth variant="standard">
-                                                    <Select
-                                                        labelId="demo-multiple-checkbox-label"
-                                                        id="demo-multiple-checkbox"
-                                                        multiple
-                                                        value={selectedPersonEmailList}
-                                                        onChange={handleSelected}
-                                                        input={<OutlinedInput label="Tag" />}
-                                                        renderValue={(selected) => selected.join(', ')}
-                                                        MenuProps={MenuProps}
-
-                                                        sx={{ height: '32px', fontSize: '12px' }}
-                                                        IconComponent={() => (<span></span>)}
-                                                    >
-                                                        {users.map((user, index) => (
-                                                            <MenuItem key={index} value={user.email} sx={{ height: '36px' }}>
-                                                                <Checkbox checked={selectedPersonEmailList.indexOf(user.email) > -1} />
-                                                                <ListItemText>
-                                                                    <Typography variant="body2" sx={{ fontSize: '12px', fontFamily: 'Arial' }}>
-                                                                        {user.name}
-                                                                    </Typography>
-                                                                </ListItemText>
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                                <IconSearch className="absolute right-4 top-2" />
-                                            </div>
-                                        </div>
-                                        <div className="guests flex flex-col ">
-                                            <div className="guest-title text-xs font-bold p-1">Project</div>
-                                            <div className="flex gap-1 items-center">
-                                                <div className="border border-gray-300 rounded-md w-full">
+                                        <div className="body px-[30px] py-[40px] flex flex-col">
+                                            <div className="subject">
+                                                <div className="subject-title text-xs font-bold p-1"><span className="text-red-500">*</span> Subject</div>
+                                                <div className="input-search relative border-2 border-gray-300 m1  rounded-md w-full">
                                                     <FormControl fullWidth variant="standard">
                                                         <Select
-                                                            id="project-list"
-                                                            onChange={handleProjectChange}
-                                                            defaultValue={projectId}
-                                                            value={selectedProject}
+                                                            labelId="demo-simple-select-label"
+                                                            id="demo-simple-select"
+                                                            sx={{ height: '32px' }}
+                                                            value={summary}
+                                                            onChange={handleChange}
+                                                            IconComponent={() => (<span></span>)}
                                                         >
-                                                            {allProjects.map((project) => {
-                                                                return (
-                                                                    <MenuItem key={project._id} value={project._id}>{project.name}</MenuItem>
-                                                                )
-                                                            })}
+                                                            <MenuItem key={0} value={'Call'}>Call</MenuItem>
+                                                            <MenuItem key={1} value={'Meeting'}>Meeting</MenuItem>
+                                                            <MenuItem key={2} value={'Send letter/Quote'}>Send letter/Quote</MenuItem>
+                                                            <MenuItem key={3} value={'Other'}>Other</MenuItem>
                                                         </Select>
                                                     </FormControl>
+                                                    <IconSearch className="absolute right-4 top-2" />
                                                 </div>
-                                                <button
-                                                    onClick={() => { setIsPickColorOpen(true) }}
-                                                    className={`relative w-8 h-8 rounded-lg`}
-                                                    style={{ backgroundColor: `${projectColor}` }} >
-                                                </button>
                                             </div>
-                                        </div>
+                                            <div className="description flex flex-col mt-[30px]">
+                                                <label htmlFor="description" className="description-title text-xs">Description</label>
+                                                <textarea
+                                                    id="description"
+                                                    className=" max-h-[659px] h-[80px] border-2 border-gray-300 rounded-md hover:border-gray-400 focus:outline-none"
+                                                    value={description}
+                                                    onChange={(e) => onChangeDescription(e)}></textarea>
+                                            </div>
+                                            <div className="period flex flex-col sm:flex-row mt-[31px] justify-between">
+                                                <div className="start-date flex flex-col  w-[303px] h-[82px] justify-between" >
+                                                    <div className="title text-xs font-bold">Start</div>
+                                                    <div className="date flex gap-1">
+                                                        <div className="flex flex-col">
+                                                            <div className="date-title text-xs">Date</div>
+                                                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                                                <DemoContainer components={['DatePicker']}>
+                                                                    <div className="m-w-[100px]">
+                                                                        <DatePicker
+                                                                            value={startDate}
+                                                                            onChange={(newValue) => setStartDate_date(newValue)}
+                                                                        />
+                                                                    </div>
+                                                                </DemoContainer>
+                                                            </LocalizationProvider>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <div className="date-title text-xs">Time</div>
+                                                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                                                <DemoContainer components={['TimePicker']}>
+                                                                    <div className="m-w-[100px] ">
+                                                                        <TimePicker
+                                                                            value={startDate}
+                                                                            onChange={(newValue) => setStartDate_time(newValue)}
+                                                                        />
+                                                                    </div>
+                                                                </DemoContainer>
+                                                            </LocalizationProvider>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="end-date flex flex-col w-[303px] h-[82px] justify-between" >
+                                                    <div className="title text-xs font-bold">End</div>
+                                                    <div className="date flex gap-1">
+                                                        <div className="flex flex-col">
+                                                            <div className="date-title text-xs">Date</div>
+                                                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                                                <DemoContainer components={['DatePicker']}>
+                                                                    <div className="m-w-[100px]">
 
-                                        <div className="guests flex flex-col mt-[16px]">
+                                                                        <DatePicker
+                                                                            value={endDate}
+                                                                            onChange={(newValue) => setEndDate_date(newValue)}
+                                                                        />
+                                                                    </div>
+                                                                </DemoContainer>
+                                                            </LocalizationProvider>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <div className="date-title text-xs">Time</div>
+                                                            <LocalizationProvider dateAdapter={AdapterMoment}>
+                                                                <DemoContainer components={['TimePicker']}>
+                                                                    <div className="m-w-[100px]">
+
+                                                                        <TimePicker
+                                                                            value={endDate}
+                                                                            onChange={(newValue) => setEndDate_time(newValue)}
+                                                                        />
+                                                                    </div>
+                                                                </DemoContainer>
+                                                            </LocalizationProvider>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="guests flex flex-col mt-[32px] mb-[12px]">
+                                                <div className="guest-title text-xs font-bold p-1">Guests</div>
+                                                <div className="relative border-gray-300 rounded-md w-full">
+                                                    <FormControl fullWidth variant="standard">
+                                                        <Select
+                                                            labelId="demo-multiple-checkbox-label"
+                                                            id="demo-multiple-checkbox"
+                                                            multiple
+                                                            value={selectedPersonEmailList}
+                                                            onChange={handleSelected}
+                                                            input={<OutlinedInput label="Tag" />}
+                                                            renderValue={(selected) => selected.join(', ')}
+                                                            MenuProps={MenuProps}
+
+                                                            sx={{ height: '32px', fontSize: '12px' }}
+                                                            IconComponent={() => (<span></span>)}
+                                                        >
+                                                            {users.map((user, index) => (
+                                                                <MenuItem key={index} value={user.email} sx={{ height: '36px' }}>
+                                                                    <Checkbox checked={selectedPersonEmailList.indexOf(user.email) > -1} />
+                                                                    <ListItemText>
+                                                                        <Typography variant="body2" sx={{ fontSize: '12px', fontFamily: 'Arial' }}>
+                                                                            {user.name}
+                                                                        </Typography>
+                                                                    </ListItemText>
+                                                                </MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                    <IconSearch className="absolute right-4 top-2" />
+                                                </div>
+                                            </div>
+                                            <div className="guests flex flex-col ">
+                                                <div className="guest-title text-xs font-bold p-1">Project</div>
+                                                <div className="flex gap-1 items-center">
+                                                    <div className="border border-gray-300 rounded-md w-full">
+                                                        <FormControl fullWidth variant="standard">
+                                                            <Select
+                                                                id="project-list"
+                                                                onChange={handleProjectChange}
+                                                                defaultValue={projectId}
+                                                                value={selectedProject}
+                                                            >
+                                                                {allProjects.map((project) => {
+                                                                    return (
+                                                                        <MenuItem key={project._id} value={project._id}>{project.name}</MenuItem>
+                                                                    )
+                                                                })}
+                                                            </Select>
+                                                        </FormControl>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => { setIsPickColorOpen(true) }}
+                                                        className={`relative w-8 h-8 rounded-lg`}
+                                                        style={{ backgroundColor: `${projectColor}` }} >
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* <div className="guests flex flex-col mt-[16px]">
                                             <div className="guest-title text-xs font-bold p-1">Topic</div>
                                             <input
                                                 value={topic}
                                                 onChange={(e) => { setTopic(e.target.value) }}
                                                 className="w-full border-2 border-gray-300 rounded-md p-1 pl-2 focus:outline-none" />
+                                        </div> */}
                                         </div>
-                                    </div>
-                                    <div className="h-[56px] flex justify-end align-baseline gap-3 mx-[30px]">
-                                        <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onCancel}>Cancel</button>
-                                        <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onSaveNew}>Save & New</button>
-                                        <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={() => { handleSave() }}>Save</button>
+                                        <div className="h-[56px] flex justify-end align-baseline gap-3 mx-[30px]">
+                                            <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onCancel}>Cancel</button>
+                                            <button className="text-[#0176D3] w-fit m-w-[10px] h-[32px] px-2 border-2 border-gray-300 rounded-md" onClick={onSaveNew}>Save & New</button>
+                                            <button className="bg-[#0176D3] text-white w-fit m-w-[10px] h-[32px] px-2 border-1 border-gray-300 rounded-md" onClick={() => { handleSave() }}>Save</button>
+                                        </div>
                                     </div>
 
                                     {

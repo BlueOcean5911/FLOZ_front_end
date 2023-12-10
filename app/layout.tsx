@@ -19,8 +19,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <NextAuthProvider>
           <ToastContainer />
+        <NextAuthProvider>
           <AuthProvider>{children}</AuthProvider>
         </NextAuthProvider>
       </body>

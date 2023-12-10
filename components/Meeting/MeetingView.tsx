@@ -42,7 +42,7 @@ const MeetingView = ({
 
   useEffect(() => {
     sortMeeting();
-  }, [meetings])
+  }, [])
 
   useEffect(() => {
     if (user && user.organization) {
@@ -189,11 +189,13 @@ const MeetingView = ({
   return (
     <div className="h-full items-center justify-between">
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 grow sm:h-full">
-        <Sidebar persons={peopleList} projects={projects} />
+        <div className="grid-cols-1 sm:border rounded-xl border-stone-300 sm:p-3 bg-white sm:shadow-md overflow-auto">
+          <Sidebar persons={peopleList} projects={projects} />
+        </div>
         <div className="col-span-3 sm:overflow-auto">
-          <div className="flex flex-col gap-2 h-fit sm:h-full overflow-auto">
+          <div className="flex flex-col justify-between gap-6 h-fit sm:h-full overflow-auto">
 
-            <div className="flex flex-col sm:manage-project-box border rounded border-stone-300 p-3 bg-white h-[65%] " >
+            <div className="flex flex-col sm:p-[13px_32px_24px_32px] border rounded-xl border-stone-300 p-3 bg-white h-[60%] shadow-md" >
               <div className="flex justify-between">
                 <h3 className="my-auto pr-2 pb-3 font-bold text-lg">Manage your meeting</h3>
                 <Link href={`/dashboard/project/${data.project._id}/meeting`}>
@@ -205,7 +207,7 @@ const MeetingView = ({
               </div>
               <div className="flex flex-col">
                 <div className="grow flex flex-col sm:flex-row justify-between">
-                  <div className="grow grid grid-cols px-3 m-4">
+                  <div className="grow grid grid-cols px-3 m-4 hover:cursor-pointer">
                     <div className="flex border rounded border-stone-300 px-3 py-4 bg-white card_shadow" >
                       <div className="flex meeting-card">
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="32" viewBox="0 0 30 32" fill="none">
@@ -221,7 +223,7 @@ const MeetingView = ({
                     </div>
                   </div>
                   <div className="hidden sm:block horizontal-bar w-1 rounded-full bg-gray-200"></div>
-                  <div className="grow grid grid-cols px-3 m-4">
+                  <div className="grow grid grid-cols px-3 m-4  hover:cursor-pointer">
                     <div className="flex border rounded border-stone-300 px-3 py-4 bg-white card_shadow" >
                       <div className="flex meeting-card">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -255,7 +257,7 @@ const MeetingView = ({
                     {
                       meetings.map((meeting, index) => {
                         return (
-                          <div key={index} className="flex flex-col sm:flex-row text-sm justify-end border-2 border-gray-300 rounded-md gap-2 p-1">
+                          <div key={index} className="flex flex-col sm:flex-row text-sm justify-end px-1">
                             <div className="w-full sm:w-1/2 my-1">
                               {
                                 (new Date(meeting.date)).toISOString() > (new Date()).toISOString() ? <p className="mr-8 p-1 border-2 border-dashed border-gray-400 rounded-md">{truncateSummary(meeting.summary, 4)}</p> :
@@ -274,8 +276,8 @@ const MeetingView = ({
                               <div className="w-full sm:w-1/12 flex justify-end sm:justify-evenly items-center gap-1" >
                                 <div onClick={() => toggleFavourite(meeting, index)}>
                                   {
-                                    meeting.favourite ? <svg 
-                                    className="w-8 h-8 sm:w-6 sm:h-6" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    meeting.favourite ? <svg
+                                      className="w-8 h-8 sm:w-6 sm:h-6" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                                       <path fillRule="evenodd" clipRule="evenodd" d="M7.81949 0.338873L9.23488 4.95426C9.29641 5.13887 9.48103 5.23118 9.66564 5.23118H14.281C14.7426 5.23118 14.9272 5.84657 14.558 6.12349L10.8041 8.89272C10.6503 9.0158 10.5887 9.23118 10.6503 9.4158L12.4349 14.1543C12.558 14.585 12.0964 14.9543 11.7272 14.6773L7.69641 11.662C7.54257 11.5389 7.32718 11.5389 7.14257 11.662L3.08103 14.6773C2.7118 14.9543 2.21949 14.585 2.37334 14.1543L4.09641 9.4158C4.15795 9.23118 4.09641 9.0158 3.94257 8.89272L0.188722 6.12349C-0.180509 5.84657 0.0348759 5.23118 0.465645 5.23118H5.08103C5.29641 5.23118 5.45026 5.16964 5.5118 4.95426L6.95795 0.308104C7.08103 -0.122665 7.69641 -0.0918959 7.81949 0.338873Z" fill="#747474" />
                                     </svg> :
                                       <svg className="w-8 h-8 sm:w-6 sm:h-6" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -299,36 +301,38 @@ const MeetingView = ({
                 </div>
               </div>
             </div>
-            <div className="milestone manage-project-box border rounded border-stone-300 bg-white h-fit sm:h-[35%]">
-              <h3 className="my-auto font-bold text-lg">Milestone:</h3>
-              <div>
-                <Milestone meetings={meetings} />
-              </div>
-              <div className="milestone-main flex gap-2 items-center ml-1">
-                <p className="inline-block font-bold text-sm text-gray-500">Previous Meeting:&nbsp;</p>
-                {previousMeeting !== null ?
-                  <>
-                    <p className="inline-block min-w-[30px] border-2 border-gray-300 rounded-md bg-gray-200 text-sm">{previousMeeting.summary}</p>
-                    <p className="text-sm">{moment(previousMeeting.date).format("MMM D, YYYY h:mm a")}</p>
-                  </>
-                  : <></>}
-              </div>
-              <div className="milestone-main flex items-center gap-2 ml-1">
-                <p className="inline-block font-bold text-sm text-gray-500">Next Meeting:&nbsp;</p>
-                {nextMeeting !== null ?
-                  <>
-                    <p className="inline-block min-w-[30px] border-2 border-gray-300 rounded-md bg-gray-200   text-sm">{nextMeeting.summary}</p>
-                    <p className="text-sm">{moment(nextMeeting.date).format("MMM D, YYYY h:mm a")}</p>
-                  </>
-                  : <></>}
+            <div className="milestone flex flex-col relative -top-2 p-[13px_32px_24px_32px] border rounded-xl border-stone-300 bg-white sm:h-2/6 shadow-md">
+              <div className="flex flex-col">
+                <h3 className="my-auto font-bold text-lg">Milestone:</h3>
+                <div>
+                  <Milestone meetings={meetings} />
+                </div>
+                <div className="milestone-main flex gap-2 items-center ml-1">
+                  <p className="inline-block font-bold text-sm text-gray-500">Previous Meeting:&nbsp;</p>
+                  {previousMeeting !== null ?
+                    <>
+                      <p className="inline-block min-w-[30px] border-2 border-gray-300 rounded-md bg-gray-200 text-sm">{previousMeeting.summary}</p>
+                      <p className="text-sm">{moment(previousMeeting.date).format("MMM D, YYYY h:mm a")}</p>
+                    </>
+                    : <></>}
+                </div>
+                <div className="milestone-main flex items-center gap-2 ml-1">
+                  <p className="inline-block font-bold text-sm text-gray-500">Next Meeting:&nbsp;</p>
+                  {nextMeeting !== null ?
+                    <>
+                      <p className="inline-block min-w-[30px] border-2 border-gray-300 rounded-md bg-gray-200   text-sm">{nextMeeting.summary}</p>
+                      <p className="text-sm">{moment(nextMeeting.date).format("MMM D, YYYY h:mm a")}</p>
+                    </>
+                    : <></>}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="col-span-1 border rounded-md border-stone-300 bg-white card_shadow h-fit sm:h-full sm:overflow-auto mb-4 pr-0 mr-0 w-full" >
+        <div className="col-span-1 border rounded-xl border-stone-300 bg-white shadow-md h-fit sm:h-full sm:overflow-auto mb-4 pr-0 mr-0 w-full" >
           <div className="flex flex-col justify-between h-full">
 
-            <div className="title text-lg font-bold">Calendar:</div>
+            <div className="title text-lg font-bold px-4">Calendar:</div>
             <div className="flex justify-end relative -top-2">
               <div className=" bg-gray-100 rounded-md mr-1 flex items-center px-1">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -353,7 +357,7 @@ const MeetingView = ({
             <div className="schedule h-1/2 grow m-1 mt-2 flex flex-col">
               <div className="heading flex justify-between">
 
-                <div className="title text-lg font-bold">Schedule:</div>
+                <div className="title text-lg font-bold px-4">Schedule:</div>
                 <div className="date flex items-center justify-center">
                   <svg
                     onClick={() => { handleDateOfSchedule(-1) }}
@@ -374,7 +378,7 @@ const MeetingView = ({
 
               <div className="schedule-meetingList grow mt-2 flex flex-col gap-1 overflow-auto">
                 {
-                  meetings.filter((meeting) => (new Date(meeting.date)).toDateString() === currDateOfSchedule.toDateString()).map((meeting, index) => (
+                  meetings.filter((meeting) => (new Date(meeting.date)).toDateString() === new Date(currDateOfSchedule).toDateString()).map((meeting, index) => (
 
                     <div key={index} className={`schedule-meeting flex justify-between p-2  border-2 rounded-md ${(new Date(meeting.date)) < (new Date()) ? 'bg-[#DDF1EE] border-gray-200 ' : 'bg-white border-[#DDF1EE]'} select-none`}>
                       <div className="grow flex flex-col text-xs hover:cursor-pointer"

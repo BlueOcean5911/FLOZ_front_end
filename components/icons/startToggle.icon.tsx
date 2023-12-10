@@ -4,11 +4,13 @@ const StarToogleIcon = ({ state = false, data, onChange, ...rest }: {
   state?: boolean,
   data?: any
   onChange?: (val: boolean, data:any) => void,
-  rest?: any
+  [rest: string]: any;
 }) => {
 
   const handleClicked = () => {
-    onChange(!state, data);
+    if(onChange) {
+      onChange(!state, data);
+    }
   }
 
   return (
@@ -16,7 +18,7 @@ const StarToogleIcon = ({ state = false, data, onChange, ...rest }: {
       {
         state ? <svg {...rest} width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="0.5" y="0.5" width="31" height="31" rx="3.5" fill="white" />
-          <rect x="0.5" y="0.5" width="31" height="31" rx="3.5" stroke="#747474" />
+          
           <path fillRule="evenodd" clipRule="evenodd" d="M16.8195 9.33887L18.2349 13.9543C18.2964 14.1389 18.481 14.2312 18.6656 14.2312H23.281C23.7426 14.2312 23.9272 14.8466 23.558 15.1235L19.8041 17.8927C19.6503 18.0158 19.5887 18.2312 19.6503 18.4158L21.4349 23.1543C21.558 23.585 21.0964 23.9543 20.7272 23.6773L16.6964 20.662C16.5426 20.5389 16.3272 20.5389 16.1426 20.662L12.081 23.6773C11.7118 23.9543 11.2195 23.585 11.3733 23.1543L13.0964 18.4158C13.158 18.2312 13.0964 18.0158 12.9426 17.8927L9.18872 15.1235C8.81949 14.8466 9.03488 14.2312 9.46565 14.2312H14.081C14.2964 14.2312 14.4503 14.1696 14.5118 13.9543L15.958 9.3081C16.081 8.87733 16.6964 8.9081 16.8195 9.33887Z" fill="#747474" stroke="#747474" strokeWidth="1.5" />
         </svg>
           : <svg {...rest} width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">

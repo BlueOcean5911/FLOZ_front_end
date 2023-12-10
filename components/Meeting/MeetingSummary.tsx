@@ -80,11 +80,11 @@ const MeetingSummary = ({ email, peoples }) => {
   }
 
   return (
-    <div className="meeting-summary relative h-[34%] m-2 px-1 flex flex-col justify-between gap-1 rounded-md bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
+    <div className="meeting-summary relative h-full md:h-[34%] m-2 px-1 flex flex-col justify-between gap-1 rounded-xl bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]">
 
       <div className="grow summary-content p-2 flex flex-col overflow-auto" >
         <div className='flex justify-between'>
-          <h2 className="font-bold">Meeting summary:</h2>
+          <h2 className="font-bold text-xl">Meeting summary:</h2>
           <div className="flex">
             <h2 className='text-gray-400'>To</h2>
             <div className='rounded-full border-[1px] borrder-gray-600 px-2 mx-2 select-none cursor-pointer' onClick={() => { setIsPeopleListOpen(!isPeopleListOpen) }}>
@@ -95,7 +95,7 @@ const MeetingSummary = ({ email, peoples }) => {
         </div>
         {isPolishing ? <div className="flex flex-col justify-center items-center"><div className='text-xl text-gray-600'>Polishing...</div></div> :
           <div className='grow flex flex-col overflow-auto' onClick={() => setIsPeopleListOpen(false)}>
-            <textarea className="font-sm leading-5 h-full border-0 focus:border-none focus:outline-none p-1" value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)}>
+            <textarea className="overflow-auto font-sm leading-5 h-auto min-h-[300px] md:h-full border-0 focus:border-none focus:outline-none p-1" value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)}>
             </textarea>
           </div>}
       </div>

@@ -18,7 +18,6 @@ import { TreeView } from '@mui/x-tree-view/TreeView';
 import { TreeItem, TreeItemProps, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import ProjectIcon from '@components/icons/project.icon';
 import Link from 'next/link';
-import { link } from 'fs';
 
 declare module 'react' {
   interface CSSProperties {
@@ -92,7 +91,6 @@ const StyledTreeItem = React.forwardRef(function StyledTreeItem(
     '--tree-view-bg-color':
       theme.palette.mode !== 'dark' ? bgColor : bgColorForDarkMode,
   };
-
   return (
     <StyledTreeItemRoot
       label={
@@ -103,12 +101,17 @@ const StyledTreeItem = React.forwardRef(function StyledTreeItem(
             p: 0.5,
             pr: 0,
           }}
+          // onClick={() => {
+          //   if (link) {
+          //     window.location.href = link;
+          //   }
+          // }}
         >
 
           <Box component={LabelIcon} color="inherit" sx={{ mr: 1 }} />
           <Typography variant="body2" sx={{ fontWeight: 'inherit', flexGrow: 1 }}>
-            <Link href={link ? link : '#'} >
-              {labelText}
+            <Link href={link ? link : '#'}  key={link} passHref={true} legacyBehavior>
+              <a>{labelText}</a>
             </Link>
           </Typography>
           <Typography variant="caption" color="inherit">
@@ -161,7 +164,7 @@ export default function SidebarTreeView({ data }: {
       defaultCollapseIcon={<ArrowDropDownIcon />}
       defaultExpandIcon={<ArrowRightIcon />}
       defaultEndIcon={<div style={{ width: 24 }} />}
-      sx={{ height: 264, flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
+      sx={{ height: '100%', flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
     >
       <StyledTreeItem nodeId="1" labelText="Floz" labelIcon={FlozIcon} >
         {

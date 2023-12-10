@@ -19,8 +19,9 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import DialogHeader from "@components/DialogHeader/DialogHeader";
 import ProjectCardList from "@components/ProjectCardList/ProjectCardList";
 
-import { ChevronDownIcon } from "@heroicons/react/20/solid"
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid"
 import { useRouter } from "next/navigation";
+import { MagnifyingGlass } from "react-loader-spinner";
 
 function setMeetingsDay(meetingsList) {
   // filter meetings for week days today, tomorrow, this week
@@ -181,23 +182,27 @@ export default function ProjectPanel({
           <div className="flex h-full flex-col justify-between">
             <div>
               <div className="flex flex-col sm:flex-row justify-between">
-                <div className="flex">
-                  <h3 className="my-auto pr-2 text-sm font-bold">Project</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="my-auto pr-2 text-md font-bold">Projects</h3>
                   <p className="my-auto text-sm">
                     As of today at <CurrentTimeDynamic />
                   </p>
+                  <p className="text-blue-500 underline">refresh</p>
                 </div>
                 <div className="flex">
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={searchProject}
-                    onChange={(e) => { setSearchProject(e.target.value) }}
-                    required
-                    placeholder="Search Project"
-                    className={`w-full rounded-md border p-2 px-4 outline-none `}
-                  />
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={searchProject}
+                      onChange={(e) => { setSearchProject(e.target.value) }}
+                      required
+                      placeholder="Search for a project"
+                      className={`w-full min-w-[220px] rounded-md border-2 border-gray-300 hover:border-gray-400 focus:border-gray-400  p-1 px-4 outline-none `}
+                    />
+                    <MagnifyingGlassIcon className=" relative -left-8 w-6 h-6 text-gray-600" />
+                  </div>
                   <button
                     style={{
                       color: "#349989",
@@ -207,7 +212,7 @@ export default function ProjectPanel({
                     }}
                     type="button"
                     onClick={openModal}
-                    className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-lg font-bold text-white"
+                    className="right-0 top-0 ms-4 rounded-md border border-neutral-300 bg-gray-700 px-4 text-sm font-bold text-white"
                   >
                     New
                   </button>
@@ -375,7 +380,7 @@ export default function ProjectPanel({
 
             <div className="title_color view-all">
               <Link href="/dashboard/project">
-                <h4 className="text-base text-blue-500">View All</h4>
+                <h4 className=" text-link text-sm">View All</h4>
               </Link>
             </div>
           </div>
@@ -384,21 +389,24 @@ export default function ProjectPanel({
         <div className="relative col-span-1 rounded border border-stone-300 bg-white p-3">
           <div className="flex h-full flex-col justify-between">
             <div>
-              <div className="flex justify-between">
+              <div className="flex justify-between flex-col sm:flex-row gap-2">
                 <div className="flex">
-                  <h3 className="my-auto pr-2 text-sm font-bold">Meetings</h3>
+                  <h3 className="my-auto pr-2 text-md font-bold">Meetings</h3>
                 </div>
                 <div className="flex">
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={searchMeeting}
-                    onChange={(e) => { setSearchMeeting(e.target.value) }}
-                    required
-                    placeholder="Search Meetings"
-                    className={`w-full rounded-md border p-2 px-4 outline-none `}
-                  />
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={searchMeeting}
+                      onChange={(e) => { setSearchMeeting(e.target.value) }}
+                      required
+                      placeholder="Search for a meeting"
+                      className={`w-full min-w-[220px] rounded-md border-2 border-gray-300 hover:border-gray-400 focus:border-gray-400 p-1 px-4 outline-none `}
+                    />
+                    <MagnifyingGlassIcon className="w-6 h-6 text-gray-600 relative -left-8" />
+                  </div>
 
                   <AddMeeting providerToken={data.providerToken} userId={data.userId} onNewMeeting={refreshMeetings}>
                     <button
@@ -409,7 +417,7 @@ export default function ProjectPanel({
                         background: "var(--foundation-gray-neutral-100, #FFF)",
                       }}
                       type="button"
-                      className="h-full px-3 ml-3 rounded-md border border-neutral-300 bg-gray-700 text-lg font-bold text-white"
+                      className="h-full px-3 ml-3 rounded-md border border-neutral-300 bg-gray-700 text-sm font-bold text-white"
                     >
                       New
                     </button>
@@ -485,7 +493,7 @@ export default function ProjectPanel({
             ) : (
               <div className="title_color view-all">
                 <Link href="/dashboard/calendar">
-                  <h4 className="f-small text-sm">View All</h4>
+                  <h4 className="f-small text-sm text-link">View All</h4>
                 </Link>
               </div>
             )}

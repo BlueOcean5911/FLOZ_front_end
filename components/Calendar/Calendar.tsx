@@ -18,7 +18,7 @@ const handleMonthChange = (newValue: DateObject) =>  {
   return (
     <Calendar
 
-      className="drop-shadow-none rmdp-mobile"
+      className="drop-shadow-none max-sm:rmdp-mobile"
       headerOrder={["LEFT_BUTTON", "MONTH_YEAR", "RIGHT_BUTTON"]}
 
       mapDays={({ date }) => {

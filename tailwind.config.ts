@@ -9,8 +9,8 @@ export default {
   ],
   theme: {
     boxShadow: {
-      sm: '0 2px 6px rgb(15 23 42 / 0.08)',
-      md: '0 8px 8px rgb(15 23 42 / 0.05), 0 3px 6px rgb(15 23 42 / 0.05)',
+      sm: '0px 2px 2px rgb(15 23 42 / 0.08)',
+      md: '0px 4px 4px rgba(1,1,1,0.5)',
       lg: '0 8px 15px rgb(15 23 42 / 0.08), 0 3px 6px rgb(15 23 42 / 0.08)',
       xl: '2px 11px 16px rgb(15 23 42 / 0.17), 0 1px 6px rgb(15 23 42 / 0.17), 3px 23px 24px rgb(15 23 42 / 0.17)',
     },
@@ -46,6 +46,9 @@ export default {
       },
       borderColor: {
         'tone': '#349989'
+      },
+      stroke: {
+        'tone' : '#349989'
       },
       textColor: {
         'tone': '#349989',

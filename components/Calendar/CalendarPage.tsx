@@ -244,7 +244,7 @@ export default function CalendarPage() {
 
   const handleChangeDateOfCalendar = (newValue: Date) => {
     setCurrentDateTime(newValue);
-    calendarRef.current.getApi().gotoDate(newValue.toISOString())
+    calendarRef.current.getApi().gotoDate(new Date(newValue).toISOString())
   }
 
   const handleFullCalendarClicked = (info) => {

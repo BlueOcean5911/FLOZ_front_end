@@ -92,26 +92,25 @@ const Milestone = ({meetings:data} : {
       <div className="min-h-[60px] flex flex-col items-center justify-center bg-gray-200">
         <div className="h-1 w-full bg-gray-300 rounded-full relative">
           {
-            meetings.map((item) => {
+            meetings.map((item, index) => {
               if (item.type === 3) {
                 return (
-                  <div className={`absolute -top-[9px] h-6`} style={{ left: `${item.percent}%` }}>
+                  <div key={index} className={`absolute -top-[9px] h-6`} style={{ left: `${item.percent}%` }}>
                     <div className="w-6 h-6 rounded-full border-2 border-white bg-green-400"></div>
                   </div>
                 )
               } else if (item.type === 1) {
                 return (
-                  <div className={`absolute -top-[7px] h-6`} style={{ left: `${item.percent}%` }}>
+                  <div key={index} className={`absolute -top-[7px] h-6`} style={{ left: `${item.percent}%` }}>
                     <div className="w-[20px] h-[20px] rounded-full border-[4px] border-green bg-white"></div>
                     <svg className="relative -top-9" width="19" height="15" viewBox="0 0 19 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M9.5 15L0.839745 0L18.1603 0L9.5 15Z" fill="#349989" />
                     </svg>
-
                   </div>
                 )
               } else if (item.type === 2) {
                 return (
-                  <div className={`absolute -top-[7px] h-6`} style={{ left: `${item.percent}%` }}>
+                  <div key={index} className={`absolute -top-[7px] h-6`} style={{ left: `${item.percent}%` }}>
                     <div className="w-[20px] h-[20px] rounded-full border-[4px] border-white bg-gray-400"></div>
                   </div>
                 )

@@ -150,7 +150,7 @@ const TodoList = ({ todoListData, meetingId, projectId, assignPeopleMap: assignM
       justify-center rounded-xl bg-white shadow-[0px_4px_4px_rgba(1,1,1,0.5)]"
       style={{ scrollbarWidth: 'none' }}>
       <div className="todolist-header flex justify-between w-full p-4 items-center">
-        <h2 className="font-bold text-[21px]">To do list:</h2>
+        <h2 className="font-bold text-xl">To do list:</h2>
       </div>
       <div className="grow todolist-tasks flex flex-col gap-1 px-6 overflow-auto">
         <TaskList data={todoList} handleClick={handleClickedTodo} editTask={onEditTask} assignPeopleMap={assignPeopleMap} handleRemove={handleRemove} />

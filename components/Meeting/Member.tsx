@@ -17,7 +17,7 @@ const Member = ({ index: id, name, email, role, setSelectedPersonId: setId, gene
         </div>
         <div className="flex w-1/2 max-h-[60px] gap-1 justify-between">
           <div className="border-2 border-solid min-h-[40px] flex flex-col justify-center items-center text-gray-500 w-1/2 border-[#C9C9C9] rounded-xl text-[13px] font-bold">{role}</div>
-          <button className="bg-[#06A59A] rounded-md text-[10px] w-1/2 text-white " onClick={() => { generate(id) }}>Generate<br />Email</button>
+          <button className="bg-[#06A59A] rounded-md text-[10px] w-1/2 text-white font-bold" onClick={() => { generate(id) }}>Generate<br />Email</button>
         </div>
       </div>
     </div>

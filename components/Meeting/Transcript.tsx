@@ -10,7 +10,7 @@ const Transcript = ({ transcript: content, people, assignPeopleMap, setAssignPeo
   const processTranscript = () => {
     const transcriptContent = content || ""
     const conversationData = [];
-    transcriptContent.split('\n').forEach((conversationForEach) => {
+    transcriptContent.split('\n')?.forEach((conversationForEach) => {
       const items = conversationForEach.split(':');
       if (items.length > 1) {
         conversationData.push({
@@ -34,11 +34,11 @@ const Transcript = ({ transcript: content, people, assignPeopleMap, setAssignPeo
   }
 
   return (
-    <div className="flex font-[13px] h-full flex-col space-y-2  mb-[26px] overflow-auto leading-5 shadow-sm p-10">
+    <div className="flex font-[13px] h-full flex-col space-y-2  mb-[26px] overflow-auto leading-5 shadow-sm p-1 md:p-10">
       {transcript.map((item, index) => (
         <div key={index}>
           <div className="flex gap-2">
-            <h3 className="text-xl font-bold">{item.name}</h3>
+            <h3 className=" font-bold">{item.name}</h3>
             <SelectForPeople
               people={people}
               value={assignPeopleMap[item.name]}

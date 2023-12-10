@@ -76,7 +76,7 @@ export default function ProjectItems({
   
 
   return (
-    <div className="flex flex-col t-box border rounded border-stone-300 bg-white px-3 py-3 grow sm:h-full overflow-auto" >
+    <div className="flex flex-col border bg-white px-3 py-3 grow sm:h-full overflow-auto" >
       <div className='title text-xl font-bold'>Manage Projects</div>
       <div className='projects-create-new flex justify-between items-center p-2 border-2 border-gray-300 rounded-md bg-gray-200'>
         <div className="flex items-center gap-4">

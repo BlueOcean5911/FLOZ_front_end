@@ -443,7 +443,7 @@ export default function ProjectView({
         </div>
 
         <div className="w-full  md:w-2/12 border rounded border-stone-300 p-3 bg-white shadow-md h-full" >
-          <h3 className="my-auto pr-2 pb-3 font-bold text-sm">To Do:</h3>
+          <h3 className="my-auto pr-2 pb-3 font-bold text-xl">To do List:</h3>
           {pendingTodos.length > 0 && <div className="grid grid-cols-1 to-do-container">
             <div>
               {pendingTodos.map((item, index) => (

@@ -94,8 +94,8 @@ const MeetingSummary = ({ email, peoples }) => {
           </div>
         </div>
         {isPolishing ? <div className="flex flex-col justify-center items-center"><div className='text-xl text-gray-600'>Polishing...</div></div> :
-          <div className='grow flex flex-col overflow-auto' onClick={() => setIsPeopleListOpen(false)}>
-            <textarea className="overflow-auto font-sm leading-5 h-auto min-h-[300px] md:h-full border-0 focus:border-none focus:outline-none p-1" value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)}>
+          <div className='grow flex flex-col p-1' onClick={() => setIsPeopleListOpen(false)}>
+            <textarea className="overflow-auto font-sm leading-5 min-h-[300px] sm:min-h-full  border-2 border-tone rounded-md shadow-shadow shadow-link focus:outline-none p-1" value={emailPrompt} onChange={(e) => setEmailPrompt(e.target.value)}>
             </textarea>
           </div>}
       </div>

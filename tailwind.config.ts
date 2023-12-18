@@ -13,6 +13,7 @@ export default {
       md: '0px 4px 4px rgba(1,1,1,0.5)',
       lg: '0 8px 15px rgb(15 23 42 / 0.08), 0 3px 6px rgb(15 23 42 / 0.08)',
       xl: '2px 11px 16px rgb(15 23 42 / 0.17), 0 1px 6px rgb(15 23 42 / 0.17), 3px 23px 24px rgb(15 23 42 / 0.17)',
+      'shadow' : '0px 0px 3px rgb(15 23 42 / 0.08)',
     },
     fontSize: {
       xs: ['0.75rem', { lineHeight: '1rem' }],
@@ -47,6 +48,9 @@ export default {
       borderColor: {
         'tone': '#349989'
       },
+      outlineColor: {
+        'tone': '#349989'
+      },
       stroke: {
         'tone' : '#349989'
       },
@@ -60,6 +64,9 @@ export default {
       },
       transition: {
         'width' : 'width 0.2s ease-in-out',
+      },
+      boxShadowColor: {
+        'link': '#0B5CAB'
       }
     },
   },

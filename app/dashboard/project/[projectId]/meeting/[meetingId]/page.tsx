@@ -142,7 +142,7 @@ const Page = ({ params }: { params: pageProps }) => {
   }
 
   return (
-    <div className="projects-layout grow bg-gray-100 flex flex-col gap-2 sm:flex-row sm:h-full">
+    <div className="projects-layout grow bg-gray-100 flex flex-col gap-8 sm:flex-row sm:h-full">
       <div className="w-3/12 sm:border rounded-xl border-stone-300 sm:p-3 bg-white sm:shadow-md overflow-auto">
           <Sidebar persons={peopleList} projects={projects} />
       </div>
@@ -170,7 +170,7 @@ const Page = ({ params }: { params: pageProps }) => {
           }
         </div>
       </div>
-      <div className="beside-layout flex flex-col grow md:h-full md:mr-[20px] md:ml-[27px] w-full md:w-[28%] overflow-auto">
+      <div className="beside-layout flex flex-col grow md:h-full w-full md:w-[28%] overflow-auto">
         <div className="grow flex flex-col gap-2 overflow-auto justify-between">
           {
             isTodosLoading ? (

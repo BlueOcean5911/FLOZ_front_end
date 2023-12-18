@@ -176,7 +176,7 @@ const MeetingView = ({
   }
 
   const handleClickedMeeting = (meeting: Meeting) => {
-    if (new Date(meeting.date).toDateString() < new Date().toDateString()) {
+    if (new Date(meeting.date).toISOString() < new Date().toISOString()) {
       window.open(`\\dashboard\\project\\${meeting.projectId}\\meeting\\${meeting._id}`, '_self');
     }
     else {
